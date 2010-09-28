@@ -1,0 +1,67 @@
+diff --git a/GUI/Schedule.xrc b/GUI/Schedule.xrc
+index 821f91b..ab78d5c 100644
+--- a/GUI/Schedule.xrc
++++ b/GUI/Schedule.xrc
+@@ -88,7 +88,7 @@
+ 				<option>0</option>
+ 				<flag>wxEXPAND</flag>
+ 				<border>5</border>
+-				<object class="wxStaticBoxSizer">
++				<object class="wxStaticBoxSizer" name="PeriodStaticBoxSizer">
+ 					<orient>wxVERTICAL</orient>
+ 					<label>Period</label>
+ 					<object class="sizeritem">
+@@ -211,7 +211,7 @@
+ 						<option>1</option>
+ 						<flag>wxEXPAND</flag>
+ 						<border>5</border>
+-						<object class="wxStaticBoxSizer">
++						<object class="wxStaticBoxSizer" name="ProfileStaticBoxSizer">
+ 							<orient>wxVERTICAL</orient>
+ 							<label>Profile</label>
+ 							<object class="sizeritem">
+@@ -277,7 +277,7 @@
+ 				<option>1</option>
+ 				<flag>wxEXPAND</flag>
+ 				<border>5</border>
+-				<object class="wxStaticBoxSizer">
++				<object class="wxStaticBoxSizer" name="ScheduleStaticBoxSizer">
+ 					<orient>wxVERTICAL</orient>
+ 					<label>Scheduled Periods</label>
+ 					<object class="sizeritem">
+@@ -292,7 +292,7 @@
+ 						<option>1</option>
+ 						<flag>wxEXPAND</flag>
+ 						<border>5</border>
+-						<object class="wxStaticBoxSizer">
++						<object class="wxStaticBoxSizer" name="SchedulePeriodWeeklyProfileBoxSizer">
+ 							<orient>wxVERTICAL</orient>
+ 							<label>Period Weekly Profile</label>
+ 							<object class="sizeritem">
+@@ -318,7 +318,7 @@
+ 				<option>1</option>
+ 				<flag>wxEXPAND</flag>
+ 				<border>5</border>
+-				<object class="wxStaticBoxSizer">
++				<object class="wxStaticBoxSizer" name="ProfileDailyStaticBoxSizer">
+ 					<orient>wxVERTICAL</orient>
+ 					<label>Daily Profile</label>
+ 					<object class="sizeritem">
+@@ -517,7 +517,7 @@
+ 				<option>1</option>
+ 				<flag>wxEXPAND</flag>
+ 				<border>5</border>
+-				<object class="wxStaticBoxSizer">
++				<object class="wxStaticBoxSizer" name="ProfileWeeklyStaticBoxSizer">
+ 					<orient>wxVERTICAL</orient>
+ 					<label>Weekly Profile</label>
+ 					<object class="sizeritem">
+@@ -694,7 +694,7 @@
+ 				<option>0</option>
+ 				<flag>wxEXPAND</flag>
+ 				<border>5</border>
+-				<object class="wxStaticBoxSizer">
++				<object class="wxStaticBoxSizer" name="OperationStaticBoxSizer">
+ 					<orient>wxVERTICAL</orient>
+ 					<label>Operation time</label>
+ 					<object class="sizeritem">

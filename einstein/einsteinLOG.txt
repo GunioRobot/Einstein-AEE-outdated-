@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "C:\Program Files\einstein\GUI\panelQ3.py", line 1218, in OnScheduleAddButtonClicked
+    newScheduleListCtrlItemIndex = self.addPeriod()
+  File "C:\Program Files\einstein\GUI\panelQ3.py", line 1239, in addPeriod
+    raise ScheduleNoProfilesError 
+einstein.modules.schedules.ScheduleNoProfilesError
+^C

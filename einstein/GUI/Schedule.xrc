@@ -1,0 +1,728 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<resource xmlns="http://www.wxwindows.org/wxxrc" version="2.3.0.1">
+	<object class="wxPanel" name="SchedulePanel">
+		<style>wxTAB_TRAVERSAL</style>
+		<size>722,532</size>
+		<object class="wxBoxSizer">
+			<orient>wxVERTICAL</orient>
+			<object class="sizeritem">
+				<option>0</option>
+				<flag>wxEXPAND</flag>
+				<border>5</border>
+				<object class="wxBoxSizer">
+					<orient>wxHORIZONTAL</orient>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxALL</flag>
+						<border>5</border>
+						<object class="unknown" name="StartupFloatEntry" />
+					</object>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxALL</flag>
+						<border>5</border>
+						<object class="unknown" name="InflowFloatEntry" />
+					</object>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxALL</flag>
+						<border>5</border>
+						<object class="unknown" name="OutflowFloatEntry" />
+					</object>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxALL</flag>
+						<border>5</border>
+						<object class="unknown" name="ToleranceFloatEntry" />
+					</object>
+				</object>
+			</object>
+			<object class="sizeritem">
+				<option>0</option>
+				<flag>wxEXPAND</flag>
+				<border>5</border>
+				<object class="wxBoxSizer">
+					<orient>wxHORIZONTAL</orient>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxALL</flag>
+						<border>5</border>
+						<object class="wxStaticText" name="HolidayLabel">
+							<label>Holiday Scaling:</label>
+						</object>
+					</object>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxTOP|wxBOTTOM|wxLEFT</flag>
+						<border>5</border>
+						<object class="wxSpinCtrl" name="HolidaySpinCtrl">
+							<style>wxSP_ARROW_KEYS</style>
+							<size>60,-1</size>
+							<value>0</value>
+							<min>0</min>
+							<max>100</max>
+						</object>
+					</object>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxTOP|wxBOTTOM|wxRIGHT</flag>
+						<border>5</border>
+						<object class="wxStaticText" name="HolidaySpinCtrlLabel">
+							<label>%</label>
+						</object>
+					</object>
+					<object class="sizeritem">
+						<option>1</option>
+						<flag>wxALL</flag>
+						<border>5</border>
+						<object class="wxSlider" name="HolidaySlider">
+							<style>wxSL_HORIZONTAL</style>
+							<value>0</value>
+							<min>0</min>
+							<max>100</max>
+						</object>
+					</object>
+				</object>
+			</object>
+			<object class="sizeritem">
+				<option>0</option>
+				<flag>wxEXPAND</flag>
+				<border>5</border>
+				<object class="wxStaticBoxSizer" name="PeriodStaticBoxSizer">
+					<orient>wxVERTICAL</orient>
+					<label>Period</label>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxEXPAND</flag>
+						<border>5</border>
+						<object class="wxBoxSizer">
+							<orient>wxHORIZONTAL</orient>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL</flag>
+								<border>5</border>
+								<object class="wxStaticText" name="PeriodFromLabel">
+									<label>from</label>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL</flag>
+								<border>5</border>
+								<object class="wxDatePickerCtrl" name="PeriodFromDatePicker">
+									<style>wxDP_DEFAULT</style>
+									<size>130,-1</size>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL</flag>
+								<border>5</border>
+								<object class="wxStaticText" name="PeriodUntilLabel">
+									<label>until</label>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL</flag>
+								<border>5</border>
+								<object class="wxDatePickerCtrl" name="PeriodUntilDatePicker">
+									<size>130,-1</size>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL</flag>
+								<border>5</border>
+								<object class="wxStaticText" name="PeriodStepLabel">
+									<label>every</label>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL</flag>
+								<border>5</border>
+								<object class="wxSpinCtrl" name="PeriodStepSpinCtrl">
+									<style>wxSP_ARROW_KEYS|wxSP_WRAP</style>
+									<size>60,-1</size>
+									<value>1</value>
+									<min>1</min>
+									<max>365</max>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL</flag>
+								<border>5</border>
+								<object class="wxStaticText" name="PeriodStepSpinCtrlLabel">
+									<label>days</label>
+								</object>
+							</object>
+						</object>
+					</object>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxEXPAND</flag>
+						<border>5</border>
+						<object class="wxBoxSizer">
+							<orient>wxHORIZONTAL</orient>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL</flag>
+								<border>5</border>
+								<object class="wxStaticText" name="PeriodScaleLabel">
+									<label>at</label>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxTOP|wxBOTTOM|wxLEFT</flag>
+								<border>5</border>
+								<object class="wxSpinCtrl" name="PeriodScaleSpinCtrl">
+									<style>wxSP_ARROW_KEYS</style>
+									<size>60,-1</size>
+									<value>100</value>
+									<min>0</min>
+									<max>100</max>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxTOP|wxBOTTOM|wxRIGHT</flag>
+								<border>5</border>
+								<object class="wxStaticText" name="PeriodScaleSpinCtrlLabel">
+									<label>%</label>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>1</option>
+								<flag>wxALL</flag>
+								<border>5</border>
+								<object class="wxSlider" name="PeriodScaleSlider">
+									<style>wxSL_HORIZONTAL</style>
+									<value>100</value>
+									<min>0</min>
+									<max>100</max>
+								</object>
+							</object>
+						</object>
+					</object>
+					<object class="sizeritem">
+						<option>1</option>
+						<flag>wxEXPAND</flag>
+						<border>5</border>
+						<object class="wxStaticBoxSizer" name="ProfileStaticBoxSizer">
+							<orient>wxVERTICAL</orient>
+							<label>Profile</label>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL|wxEXPAND</flag>
+								<border>5</border>
+								<object class="wxListCtrl" name="ProfileListCtrl">
+									<style>wxLC_HRULES|wxLC_REPORT</style>
+								</object>
+							</object>
+						</object>
+					</object>
+				</object>
+			</object>
+			<object class="sizeritem">
+				<option>0</option>
+				<flag>wxEXPAND</flag>
+				<border>5</border>
+				<object class="wxBoxSizer">
+					<orient>wxHORIZONTAL</orient>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxALL</flag>
+						<border>5</border>
+						<object class="wxButton" name="ScheduleAddButton">
+							<label>Add</label>
+							<default>0</default>
+						</object>
+					</object>
+					<object class="spacer">
+						<option>1</option>
+						<flag>wxEXPAND</flag>
+						<border>5</border>
+						<size>0,0</size>
+					</object>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxALL</flag>
+						<border>5</border>
+						<object class="wxButton" name="ScheduleChangeButton">
+							<label>Change</label>
+							<default>0</default>
+						</object>
+					</object>
+					<object class="spacer">
+						<option>1</option>
+						<flag>wxEXPAND</flag>
+						<border>5</border>
+						<size>0,0</size>
+					</object>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxALL</flag>
+						<border>5</border>
+						<object class="wxButton" name="ScheduleRemoveButton">
+							<label>Remove</label>
+							<default>0</default>
+						</object>
+					</object>
+				</object>
+			</object>
+			<object class="sizeritem">
+				<option>1</option>
+				<flag>wxEXPAND</flag>
+				<border>5</border>
+				<object class="wxStaticBoxSizer" name="ScheduleStaticBoxSizer">
+					<orient>wxVERTICAL</orient>
+					<label>Scheduled Periods</label>
+					<object class="sizeritem">
+						<option>1</option>
+						<flag>wxALL|wxEXPAND</flag>
+						<border>5</border>
+						<object class="wxListCtrl" name="ScheduleListCtrl">
+							<style>wxLC_HRULES|wxLC_REPORT</style>
+						</object>
+					</object>
+					<object class="sizeritem">
+						<option>1</option>
+						<flag>wxEXPAND</flag>
+						<border>5</border>
+						<object class="wxStaticBoxSizer" name="SchedulePeriodWeeklyProfileBoxSizer">
+							<orient>wxVERTICAL</orient>
+							<label>Period Weekly Profile</label>
+							<object class="sizeritem">
+								<option>1</option>
+								<flag>wxEXPAND|wxTOP|wxBOTTOM</flag>
+								<border>5</border>
+								<object class="wxPanel" name="SchedulePeriodWeeklyProfilePanel">
+									<style>wxTAB_TRAVERSAL</style>
+								</object>
+							</object>
+						</object>
+					</object>
+				</object>
+			</object>
+		</object>
+	</object>
+	<object class="wxPanel" name="ProfilePanel">
+		<style>wxTAB_TRAVERSAL</style>
+		<size>724,466</size>
+		<object class="wxBoxSizer">
+			<orient>wxVERTICAL</orient>
+			<object class="sizeritem">
+				<option>1</option>
+				<flag>wxEXPAND</flag>
+				<border>5</border>
+				<object class="wxStaticBoxSizer" name="ProfileDailyStaticBoxSizer">
+					<orient>wxVERTICAL</orient>
+					<label>Daily Profile</label>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxEXPAND</flag>
+						<border>5</border>
+						<object class="wxBoxSizer">
+							<orient>wxHORIZONTAL</orient>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL</flag>
+								<border>5</border>
+								<object class="wxStaticText" name="ProfileDailyFromLabel">
+									<label>from</label>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxTOP|wxBOTTOM|wxLEFT</flag>
+								<border>5</border>
+								<object class="wxSpinCtrl" name="ProfileDailyFromHourSpinCtrl">
+									<style>wxSP_ARROW_KEYS|wxSP_WRAP</style>
+									<size>50,-1</size>
+									<value>14</value>
+									<min>0</min>
+									<max>24</max>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxTOP|wxBOTTOM</flag>
+								<border>5</border>
+								<object class="wxStaticText" name="ProfileDailyFromSepLabel">
+									<label>:</label>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxTOP|wxBOTTOM|wxRIGHT</flag>
+								<border>5</border>
+								<object class="wxSpinCtrl" name="ProfileDailyFromMinuteSpinCtrl">
+									<style>wxSP_ARROW_KEYS|wxSP_WRAP</style>
+									<size>50,-1</size>
+									<value>0</value>
+									<min>0</min>
+									<max>59</max>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL</flag>
+								<border>5</border>
+								<object class="wxStaticText" name="ProfileDailyUntilLabel">
+									<label>until</label>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxTOP|wxBOTTOM|wxLEFT</flag>
+								<border>5</border>
+								<object class="wxSpinCtrl" name="ProfileDailyUntilHourSpinCtrl">
+									<style>wxSP_ARROW_KEYS|wxSP_WRAP</style>
+									<size>50,-1</size>
+									<value>15</value>
+									<min>0</min>
+									<max>24</max>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxTOP|wxBOTTOM</flag>
+								<border>5</border>
+								<object class="wxStaticText" name="ProfileDailyUntilSepLabel">
+									<label>:</label>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxTOP|wxBOTTOM|wxRIGHT</flag>
+								<border>5</border>
+								<object class="wxSpinCtrl" name="ProfileDailyUntilMinuteSpinCtrl">
+									<style>wxSP_ARROW_KEYS|wxSP_WRAP</style>
+									<size>50,-1</size>
+									<value>0</value>
+									<min>0</min>
+									<max>59</max>
+								</object>
+							</object>
+						</object>
+					</object>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxEXPAND</flag>
+						<border>5</border>
+						<object class="wxBoxSizer">
+							<orient>wxHORIZONTAL</orient>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL</flag>
+								<border>5</border>
+								<object class="wxStaticText" name="ProfileDailyScaleLabel">
+									<label>at</label>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxTOP|wxBOTTOM|wxLEFT</flag>
+								<border>5</border>
+								<object class="wxSpinCtrl" name="ProfileDailyScaleSpinCtrl">
+									<style>wxSP_ARROW_KEYS</style>
+									<size>60,-1</size>
+									<value>100</value>
+									<min>0</min>
+									<max>100</max>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxTOP|wxBOTTOM|wxRIGHT</flag>
+								<border>5</border>
+								<object class="wxStaticText" name="ProfileDailyScaleSpinCtrlLabel">
+									<label>%</label>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>1</option>
+								<flag>wxALL</flag>
+								<border>5</border>
+								<object class="wxSlider" name="ProfileDailyScaleSlider">
+									<style>wxSL_HORIZONTAL</style>
+									<value>100</value>
+									<min>0</min>
+									<max>100</max>
+								</object>
+							</object>
+						</object>
+					</object>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxEXPAND</flag>
+						<border>5</border>
+						<object class="wxBoxSizer">
+							<orient>wxHORIZONTAL</orient>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL</flag>
+								<border>5</border>
+								<object class="wxButton" name="ProfileDailyAddButton">
+									<label>Add</label>
+									<default>0</default>
+								</object>
+							</object>
+							<object class="spacer">
+								<option>1</option>
+								<flag>wxEXPAND</flag>
+								<border>5</border>
+								<size>0,0</size>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL</flag>
+								<border>5</border>
+								<object class="wxButton" name="ProfileDailyChangeButton">
+									<label>Change</label>
+									<default>0</default>
+								</object>
+							</object>
+							<object class="spacer">
+								<option>1</option>
+								<flag>wxEXPAND</flag>
+								<border>5</border>
+								<size>0,0</size>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL</flag>
+								<border>5</border>
+								<object class="wxButton" name="ProfileDailyRemoveButton">
+									<label>Remove</label>
+									<default>0</default>
+								</object>
+							</object>
+						</object>
+					</object>
+					<object class="sizeritem">
+						<option>1</option>
+						<flag>wxALL|wxEXPAND</flag>
+						<border>5</border>
+						<object class="wxListCtrl" name="ProfileDailyListCtrl">
+							<style>wxLC_HRULES|wxLC_REPORT</style>
+						</object>
+					</object>
+				</object>
+			</object>
+			<object class="sizeritem">
+				<option>1</option>
+				<flag>wxEXPAND</flag>
+				<border>5</border>
+				<object class="wxStaticBoxSizer" name="ProfileWeeklyStaticBoxSizer">
+					<orient>wxVERTICAL</orient>
+					<label>Weekly Profile</label>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxSHAPED|wxEXPAND</flag>
+						<border>5</border>
+						<object class="wxBoxSizer">
+							<orient>wxHORIZONTAL</orient>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL</flag>
+								<border>5</border>
+								<object class="wxCheckBox" name="ProfileWeeklyMondayCheckBox">
+									<label>monday</label>
+									<checked>1</checked>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL</flag>
+								<border>5</border>
+								<object class="wxCheckBox" name="ProfileWeeklyTuesdayCheckBox">
+									<label>tuesday</label>
+									<checked>1</checked>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL</flag>
+								<border>5</border>
+								<object class="wxCheckBox" name="ProfileWeeklyWednesdayCheckBox">
+									<label>wednesday</label>
+									<checked>1</checked>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL</flag>
+								<border>5</border>
+								<object class="wxCheckBox" name="ProfileWeeklyThursdayCheckBox">
+									<label>thursday</label>
+									<checked>1</checked>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL</flag>
+								<border>5</border>
+								<object class="wxCheckBox" name="ProfileWeeklyFridayCheckBox">
+									<label>friday</label>
+									<checked>1</checked>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL</flag>
+								<border>5</border>
+								<object class="wxCheckBox" name="ProfileWeeklySaturdayCheckBox">
+									<label>saturday</label>
+									<checked>1</checked>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL</flag>
+								<border>5</border>
+								<object class="wxCheckBox" name="ProfileWeeklySundayCheckBox">
+									<label>sunday</label>
+									<checked>1</checked>
+								</object>
+							</object>
+						</object>
+					</object>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxEXPAND</flag>
+						<border>5</border>
+						<object class="wxBoxSizer">
+							<orient>wxHORIZONTAL</orient>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL</flag>
+								<border>5</border>
+								<object class="wxStaticText" name="ProfileWeeklyNameLabel">
+									<label>name</label>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>1</option>
+								<flag>wxALL</flag>
+								<border>5</border>
+								<object class="wxTextCtrl" name="ProfileWeeklyNameTextCtrl">
+									<value></value>
+									<maxlength>0</maxlength>
+								</object>
+							</object>
+						</object>
+					</object>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxEXPAND</flag>
+						<border>5</border>
+						<object class="wxBoxSizer">
+							<orient>wxHORIZONTAL</orient>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL</flag>
+								<border>5</border>
+								<object class="wxButton" name="ProfileWeeklyAddButton">
+									<label>Add</label>
+									<default>0</default>
+								</object>
+							</object>
+							<object class="spacer">
+								<option>1</option>
+								<flag>wxEXPAND</flag>
+								<border>5</border>
+								<size>0,0</size>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL</flag>
+								<border>5</border>
+								<object class="wxButton" name="ProfileWeeklyChangeButton">
+									<label>Change</label>
+									<default>0</default>
+								</object>
+							</object>
+							<object class="spacer">
+								<option>1</option>
+								<flag>wxEXPAND</flag>
+								<border>5</border>
+								<size>0,0</size>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL</flag>
+								<border>5</border>
+								<object class="wxButton" name="ProfileWeeklyRemoveButton">
+									<label>Remove</label>
+									<default>0</default>
+								</object>
+							</object>
+						</object>
+					</object>
+					<object class="sizeritem">
+						<option>1</option>
+						<flag>wxALL|wxEXPAND</flag>
+						<border>5</border>
+						<object class="wxListCtrl" name="ProfileWeeklyListCtrl">
+							<style>wxLC_HRULES|wxLC_REPORT</style>
+						</object>
+					</object>
+				</object>
+			</object>
+		</object>
+	</object>
+	<object class="wxPanel" name="OperationPanel">
+		<style>wxTAB_TRAVERSAL</style>
+		<size>500,300</size>
+		<object class="wxBoxSizer">
+			<orient>wxVERTICAL</orient>
+			<object class="sizeritem">
+				<option>0</option>
+				<flag>wxALL</flag>
+				<border>5</border>
+				<object class="wxCheckBox" name="DetailedScheduleCheckBox">
+					<style>wxALIGN_RIGHT</style>
+					<label>Detailed schedule:</label>
+					<checked>0</checked>
+				</object>
+			</object>
+			<object class="sizeritem">
+				<option>0</option>
+				<flag>wxEXPAND</flag>
+				<border>5</border>
+				<object class="wxStaticBoxSizer" name="OperationStaticBoxSizer">
+					<orient>wxVERTICAL</orient>
+					<label>Operation time</label>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxALL</flag>
+						<border>5</border>
+						<object class="unknown" name="HPerDayFloatEntry" />
+					</object>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxALL</flag>
+						<border>5</border>
+						<object class="unknown" name="NCyclesFloatEntry" />
+					</object>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxALL</flag>
+						<border>5</border>
+						<object class="unknown" name="HCycleFloatEntry" />
+					</object>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxALL</flag>
+						<border>5</border>
+						<object class="unknown" name="NDaysFloatEntry" />
+					</object>
+				</object>
+			</object>
+		</object>
+	</object>
+</resource>
