@@ -1,0 +1,60 @@
+USE einstein;
+
+-- -----------------------------------------------------
+-- Table `einstein`.`pinchstream`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `einstein`.`pinchstream`;
+
+CREATE TABLE IF NOT EXISTS `einstein`.`pinchstream` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(255) default NULL ,
+  `Hot_Cold` VARCHAR(6) default NULL ,
+  `Type` VARCHAR(8) default NULL ,  
+  `source_id` INT default NULL ,
+  `source_type` VARCHAR(64) default NULL ,
+  `medium_id` INT default NULL ,
+  `StartTemp` double default NULL ,
+  `EndTemp` double default NULL ,
+  `StreamType` VARCHAR(64) default NULL ,
+  `HeatCapacity` double default NULL ,
+  `MassFlowNom` double default NULL ,
+  `SpecHeatCapacity` double default NULL ,
+  `SpecEnthalpy` double default NULL ,
+  `EnthalpyNom` double default NULL ,
+  `HeatTransferCoeff` double default NULL ,
+  PRIMARY KEY (`id`) )
+ENGINE = MyISAM;
+
+
+
+-- -----------------------------------------------------
+-- Table `einstein`.`heatexchanger_pinchstream`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `einstein`.`heatexchanger_pinchstream`;
+
+CREATE TABLE IF NOT EXISTS `einstein`.`heatexchanger_pinchstream` (
+  `id` INT NOT NULL AUTO_INCREMENT ,
+  `qheatexchanger_QHeatExchanger_Id` INT NOT NULL COMMENT 'foreign key into qheatexchanger' , 
+  `pinchstream_id` INT NOT NULL COMMENT 'foreign key into pinchstream' ,
+  `inletTemp` double default NULL ,
+  `outletTemp` double default NULL ,
+  `outletOfHX_id` INT default NULL ,
+  `inletOfHX_id` INT default NULL ,
+  `HeatFlowPercent` INT default NULL ,
+  PRIMARY KEY (`id`) ,
+  UNIQUE (`pinchstream_id`, `qheatexchanger_QHeatExchanger_Id`) ,
+  INDEX `fk_heatexchanger_pinchstream_qheatexchanger` (`qheatexchanger_QHeatExchanger_Id` ASC) ,
+  INDEX `fk_heatexchanger_pinchstream_pinchstream` (`pinchstream_id` ASC) ,
+  CONSTRAINT `fk_heatexchanger_pinchstream_qheatexchanger`
+    FOREIGN KEY (`qheatexchanger_QHeatExchanger_Id` )
+    REFERENCES `einstein`.`qheatexchanger` (`QHeatExchanger_Id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_heatexchanger_pinchstream_pinchstream`
+    FOREIGN KEY (`pinchstream_id` )
+    REFERENCES `einstein`.`pinchstream` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+  )
+ENGINE = MyISAM
+DEFAULT CHARACTER SET = utf8;
