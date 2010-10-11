@@ -30,6 +30,7 @@ heiko.henning@imsai.de
 import logging
 import time
 import os
+import sys
 import codecs
 from ConfigParser import ConfigParser
 
@@ -79,7 +80,7 @@ class ConfigHelper():
     def __init__(self):
         global ConfigFile
         self.config = ConfigParser()
-        self.config.read(ConfigFile)
+        self.config.read(sys.path[0] + '//' + ConfigFile)
 
 
     def get(self, section, setting):

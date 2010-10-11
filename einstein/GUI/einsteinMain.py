@@ -502,14 +502,14 @@ class EinsteinFrame(wx.Frame):
         self.box1.SetForegroundColour(ORANGE)
         self.box1.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD))
 
-        self.staticBitmap1 = wx.StaticBitmap(bitmap=wx.Bitmap(os.path.join('img','brochureTitlePage.jpg'),
+        self.staticBitmap1 = wx.StaticBitmap(bitmap=wx.Bitmap(os.path.join(sys.path[0],'img','brochureTitlePage.jpg'),
                                              wx.BITMAP_TYPE_JPEG),
                                              id=-1,#TS 2008-3-26 changed from id=wxID_PANELCCPIC1,
                                              parent=self.pageTitle,
                                              pos=wx.Point(60, 100),
                                              size=wx.Size(700, 480),
                                              style=wx.SUNKEN_BORDER)
-        self.staticBitmap2 = wx.StaticBitmap(bitmap=wx.Bitmap(os.path.join('img','einstein_logo_small.jpg'),
+        self.staticBitmap2 = wx.StaticBitmap(bitmap=wx.Bitmap(os.path.join(sys.path[0], 'img','einstein_logo_small.jpg'),
                                              wx.BITMAP_TYPE_JPEG),
                                              id=-1,#TS 2008-3-26 changed from id=wxID_PANELCCPIC1,
                                              parent=self.pageTitle,
