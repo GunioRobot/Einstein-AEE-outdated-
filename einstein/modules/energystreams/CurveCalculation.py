@@ -1,5 +1,5 @@
 from einstein.GUI.status import *
-
+from einstein.modules.dataHR import *
 __author__="Andre Rattinger"
 __date__ ="$25.09.2010 01:03:40$"
 
@@ -71,6 +71,8 @@ class CurveCalculation():
         self.__calculateGCCResults()
         self.__calculateHCCResults()
         self.__calculateCCCResults()
+        
+        self.setDataCurves()
         
     def printResults(self):
         print "GCC Arrows: "
@@ -282,6 +284,21 @@ class CurveCalculation():
     def __calculateCCCResults(self):
         for elem in self.ccc_arrows:
             elem.kw = elem.MCP * self.dTmin
+            
+            
+    def setDataCurves(self):
+        if Status.int.hrdata == None:
+            Status.int.hrdata = HRData(Status.PId,Status.ANo)
+            
+        data = Status.int.hrdata
+        
+        ccc = Curve()
+        hcc = Curve()
+        gcc = Curve()
+        
+        
+        data.curves = [ccc, hcc, gcc]
+
 
 class ArrowCCCHCC():
     MCP = None
