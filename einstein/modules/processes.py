@@ -285,6 +285,7 @@ class Processes(object):
 
                     Status.int.QWHEqTotal_Tt[iT][it] += QWHj_Tt[iT][it]
             self.createHeatFlow_t(equipe.QWHEq, schedule.fav, Status.int.QWHEq_t)
+#            self.createHeatFlow_tDict(equipe.QWHEq, schedule.favTemp, Status.int.QWHEq_t, equipe.QGenerationHC_ID)
         Status.int.QWHEqTotal_t = copy.deepcopy(Status.int.QWHEqTotal_Tt[0])
 #        print "Process (calcAggDemand): QWHEq(t) = ",Status.int.QWHEqTotal_t
         
@@ -376,7 +377,7 @@ class Processes(object):
         list = []
         for elem in schedule:
 #            try:
-            list.append(elem*HeatFlow*Status.Nt)
+            list.append(elem*HeatFlow)
 #            except: list.append(-1)
         HeatFlow_t[ProcessID] = list
 #        HeatFlow_t.append(list)

@@ -343,12 +343,14 @@ class StreamUtils():
         print "Enthalpy Nominal: ", stream.EnthalpyNom
         print "Enthalpy Vector: ", hEList
         print "MassFlow Avg", stream.MassFlowAvg
+        print "MF Avg Vector: ", sum(stream.MassFlowVector)/len(stream.MassFlowVector)
+        print "MF max Vector: ", max(stream.MassFlowVector)
         print "Specific Heat Capacity: ", stream.SpecHeatCap
         print "Specific Enthalpy: ", stream.SpecEnthalpy
         print "Heat Transfer Coefficient: ", stream.HeatTransferCoeff
         print "Fluid Density", stream.FluidDensity
         print "ID: ", stream.id
-        print "Operating Hours: ", self.OperatingHours
+#        print "Operating Hours: ", self.OperatingHours
         print
 
 class ProcessValues():
@@ -1082,8 +1084,6 @@ class WHEEStreams(StreamUtils, StreamSet):
                     self.printStream(el)
 
 
-
-
     def loadValues(self, stream, whee, DBConnection):
         DB = DBConnection
         wheeval = WHEEValues()
@@ -1504,7 +1504,7 @@ class EquipmentStreams(StreamUtils, StreamSet):
 
 
     def getOffGasFlow(self, FuelConsum, PartLoad, Offgas):
-        FuelAmount = FuelConsum * PartLoad
+        FuelAmount = (FuelConsum/3600) * PartLoad
         OffgasFlow = Offgas * FuelAmount
 #        m_vector = []
 #        for i in xrange(8760):
@@ -1563,6 +1563,7 @@ class NameGeneration():
 #        self.distline.detailPrint()
 #        self.equipment.detailPrint()
 #        self.whee.detailPrint()
+        self.printStreams()
 
     def printStreams(self):
         self.process.detailPrint()

@@ -50,8 +50,11 @@ class CurveCalculation():
 #        self.__getStreams()
 
     def __getStreams(self):
-        self.streams = Status.int.NameGen.getAllStreams()
-
+        try:
+            self.streams = Status.int.NameGen.getAllStreams()
+        except:
+            self.streams = []
+            
     def calculate(self):
         self.__getStreams()
 
@@ -68,6 +71,7 @@ class CurveCalculation():
         self.__calculateGCCResults()
         self.__calculateHCCResults()
         self.__calculateCCCResults()
+        
     def printResults(self):
         print "GCC Arrows: "
         for elem in self.gcc_arrows:
@@ -94,7 +98,7 @@ class CurveCalculation():
         startTemp = stream.StartTemp.getAvg()
         endTemp = stream.EndTemp.getAvg()
 
-        print stream.name, startTemp, endTemp
+        print stream.name, startTemp, endTemp, stream.HeatCap, stream.HotOrCold
         if(not self.sort_for_section.containsKey(startTemp)):
             self.sort_for_section.append(startTemp, current_pos)
 
@@ -159,8 +163,8 @@ class CurveCalculation():
 
             for j in xrange(len(self.streams)):
                 if self.streams[j].HotOrCold == "Cold" or self.streams[j].HotOrCold == "Sink":
-                    if self.streams[j].StartTemp.getAvg() > self.sections_only_cold.Keys(i-1) and \
-                        self.streams[j].EndTemp.getAvg() < self.sections_only_cold.Keys(i):
+                    if self.streams[j].EndTemp.getAvg() > self.sections_only_cold.Keys(i-1) and \
+                        self.streams[j].StartTemp.getAvg() < self.sections_only_cold.Keys(i):
                         cp_cold += self.streams[j].HeatCap
 
             self.only_cold_cp_section.append(cp_cold)
@@ -195,7 +199,7 @@ class CurveCalculation():
             self.pre_heat_input.append(self.pre_heat_output[i-1])
             self.pre_heat_output.append(self.pre_heat_input[i] - self.difference[i])
 
-        minimum_heat_input = min(self.pre_heat_input)
+        minimum_heat_input = min(self.pre_heat_input) *-1
 
         for i in xrange(len(self.pre_heat_input)):
             self.heat_input.append(self.pre_heat_input[i] + minimum_heat_input)
@@ -243,8 +247,6 @@ class CurveCalculation():
 
 #        for i in xrange(self.sections_only_hot.count):
 #            print i, ":", self.sections_only_hot.Keys(i)
-#
-
 
         for i in xrange(len(self.only_hot_cp_section)):
 #            print  "length", self.sections_only_hot.count, "temp_index", temperature_index
@@ -259,7 +261,7 @@ class CurveCalculation():
 
     def __calculateCCCArrows(self):
         temperature_index = 0
-
+        print "only cold cp: ", str(self.only_cold_cp_section)
         for i in xrange(len(self.only_cold_cp_section)-1, 0, -1):
             arrow_ccc = ArrowCCCHCC(self.only_cold_cp_section[i], \
                         self.sections_only_cold.Keys(temperature_index), \

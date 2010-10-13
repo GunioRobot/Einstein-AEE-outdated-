@@ -593,7 +593,15 @@ class EinsteinFrame(wx.Frame):
 
     def OnMenuExportProject(self, event):
 #        print 'PId='+repr(Status.PId)
-        ex = ExportProject(pid=Status.PId)
+#        ex = ExportProject(pid=Status.PId)
+
+# DO CURVE CALCULATION
+        if Status.processData.outOfDate == True:
+            Status.processData.createAggregateDemand()
+        Status.int.NameGen.calcStreams()
+        curvecalc = CurveCalculation()
+        curvecalc.calculate()
+        curvecalc.printResults()
 
     def OnMenuImportProject(self, event):
         ex = ImportProject()

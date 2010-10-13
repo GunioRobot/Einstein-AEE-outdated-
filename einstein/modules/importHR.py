@@ -72,7 +72,7 @@ class DataBaseClass:
             index = self.nodes.index(name)
             return self.__values[index]
         except:
-            return null
+            return None
     
     def printData(self): #debug
         print "DATA----------------------"
@@ -170,7 +170,7 @@ class CurveData:
         print self.__points
         
     def getPoints(self):
-        return __points
+        return self.__points
     
     def getXValues(self):
         X = []
@@ -219,6 +219,7 @@ class XMLDocHRModuleImport:
                 self.curvedatabase.append(curve)
             else:
                 logDebug("Invalid curve data ("+curve.Name+")")
+        
         
     def __HandleStreams(self,doc):
         streams = doc.getElementsByTagName('ExportStreamInformation')

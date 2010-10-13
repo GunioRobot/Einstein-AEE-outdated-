@@ -69,7 +69,7 @@
 #
 #============================================================================== 
 
-import sys
+import sys, os
 from math import *
 from numpy import *
 
@@ -220,7 +220,9 @@ class ModuleHR(object):
         
         key = "HX%02d_PLOT_REPORT"%Status.ANo
         dataReport2 = []
-        doc = XMLImportHRModule.importXML("export.xml")
+        exportPath = os.path.join(sys.path[0],"export.xml")
+        print "Export Path: ", exportPath
+        doc = XMLImportHRModule.importXML(exportPath)
         self.data.loadCurves(doc)
         QD_T = []
         QA_T = []
@@ -365,8 +367,10 @@ class ModuleHR(object):
                                             
         if Status.schedules.outOfDate == True:
             Status.schedules.create()   #creates the process and equipment schedules
-                         
-        XMLExportHRModule.export("inputHR.xml",Status.PId, Status.ANo,exhx)
+        
+        inputPath = os.path.join(sys.path[0],"inputHR.xml")                 
+        print "inputPath: ", inputPath
+        XMLExportHRModule.export(inputPath, Status.PId, Status.ANo,exhx)
         
         try:
             args = ['..\PE\ProcessEngineering.exe',"..\GUI\inputHR.xml","..\GUI\export.xml",redesign_network_flag,con_condensation_flag]

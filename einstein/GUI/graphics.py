@@ -261,7 +261,7 @@ def drawStackedBarPlot(self):
     if len(legend)>0:
         legendlabels = legend
     legendptr = []
-    vx = arange(len(labelrow[1:cols])) # intervals on x
+    vx = xrange(len(labelrow[1:cols])) # intervals on x
     width = 0.8                          # the width of the bars
     if hasattr(self, 'subplot'):
         del self.subplot
@@ -399,7 +399,7 @@ def drawSimpleBarPlot(self):
     # load the x tick labels (1st. row of the transposed matrix)
     xticklabels = data[0]
     # load the data
-    vx = arange(len(xticklabels))  # intervals on x
+    vx = xrange(len(xticklabels))  # intervals on x
     width = 0.8               # the width of the bars
     if hasattr(self, 'subplot'):
         del self.subplot

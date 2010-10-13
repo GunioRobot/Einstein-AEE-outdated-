@@ -323,21 +323,12 @@ class ContinuousMassFlow(ProcessMassFlow):
         return m_average, m_vector
 
     def getStUpOperatingHours(self):
-        OperatingHours = []
-        print self.periodSchedule.getNumberOfBatchesPerYear()
-        try:
-            for elem in self.periodSchedule.getNumberOfBatchesPerYear():
-                OperatingHours.append(elem*self.periodSchedule.startup)
-        except:
-            return None
-        return OperatingHours
-
+        return self.periodSchedule.getNumberOfBatchesPerYear()*self.periodSchedule.startup
 
 class BatchMassFlow(ProcessMassFlow):
 
     def __init__(self, periodSchedule = None):
         self.periodSchedule = periodSchedule
-
 
 
     def getMassFlowCirc(self, FluidDensity, VInflowCycle = None, mInflowNom = None, VInflowDay = None, HperDay = None):
@@ -361,9 +352,6 @@ class BatchMassFlow(ProcessMassFlow):
         for i in xrange(len(yearlyContinuousInflow)):
             m_vector.append(m_average*yearlyContinuousInflow[i])
         return m_average, m_vector
-
-
-
 
 
     def getMassFlowWH(self, FluidDensity, VOutflowCycle = None, mOutflowNom = None):

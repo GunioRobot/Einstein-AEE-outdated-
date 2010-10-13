@@ -48,7 +48,31 @@ class Stream():
     Currently the energystream is only saved at runtime.
     Functions for writing into DB or into a File can be introduced later.
     """
-
+    ProcessID = None
+    MediumID = None
+    StartTemp = None
+    EndTemp = None
+    Type = None
+    HeatCap = None
+    HotOrCold = None
+    MassFlowAvg = None
+    MassFlowVector = None
+    SpecHeatCap = None
+    SpecEnthalpy = None
+    EnthalpyVector = None
+    EnthalpyNom = None
+    HeatTransferCoeff = None
+    FluidDensity = None
+    OperatingHours = None
+    id = None
+    name = ""
+    Source = None
+    BaseValues = None
+    DBID = None
+    DBType = None
+    activ = True
+    HXSource = None
+        
     def __init__(self, MediumID=None, StartTemp=None, EndTemp=None):
         self.ProcessID = None
         self.MediumID = None
