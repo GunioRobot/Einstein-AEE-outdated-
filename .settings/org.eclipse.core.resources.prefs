@@ -1,6 +1,7 @@
-#Tue Oct 12 18:14:51 CEST 2010
+#Wed Oct 13 15:26:01 CEST 2010
 eclipse.preferences.version=1
 encoding//einstein/GUI/HelperClass.py=cp1252
 encoding//einstein/GUI/panelHR.py=UTF-8
+encoding//einstein/modules/interfaces.py=cp1252
 encoding//einstein/modules/moduleHR.py=cp1252
 encoding//einstein/modules/processes.py=cp1252

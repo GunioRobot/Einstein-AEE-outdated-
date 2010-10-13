@@ -343,8 +343,9 @@ class StreamUtils():
         print "Enthalpy Nominal: ", stream.EnthalpyNom
         print "Enthalpy Vector: ", hEList
         print "MassFlow Avg", stream.MassFlowAvg
-        print "MF Avg Vector: ", sum(stream.MassFlowVector)/len(stream.MassFlowVector)
-        print "MF max Vector: ", max(stream.MassFlowVector)
+        if len(stream.MassFlowVector)>0:
+            print "MF Avg Vector: ", sum(stream.MassFlowVector)/len(stream.MassFlowVector)
+            print "MF max Vector: ", max(stream.MassFlowVector)
         print "Specific Heat Capacity: ", stream.SpecHeatCap
         print "Specific Enthalpy: ", stream.SpecEnthalpy
         print "Heat Transfer Coefficient: ", stream.HeatTransferCoeff
@@ -1446,7 +1447,7 @@ class EquipmentStreams(StreamUtils, StreamSet):
         schedule = []
         for elem in QWHEq_t:
             schedule.append((elem/Status.TimeStep)/(EnthalpyNom))
-        return Schedule
+        return schedule
 
     def generateCombustionAirStream(self, stream):
         """
@@ -1469,6 +1470,13 @@ class EquipmentStreams(StreamUtils, StreamSet):
         print "USHj: " + str(Status.int.USHj)
         for elem in Status.int.USHj_t:
             stream.EnthalpyVector.append((elem/Status.TimeStep)/(val.HCGPnom*val.PartLoad))
+        
+        # TODO Change back to real Vector
+        
+        stream.EnthalpyVector = []
+        for i in xrange(Status.Nt):
+            stream.EnthalpyVector.append(0.1)
+        
         stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, stream.EndTemp, stream.StartTemp)
 
         stream.HeatTransferCoeff = self.getHeatTransferCoefficient(stream.FluidDensity)
@@ -1486,7 +1494,7 @@ class EquipmentStreams(StreamUtils, StreamSet):
         HCGPnom = equip[0]['HCGPnom']
 
         for elem in Status.int.USHj_t:
-            stream.EnthalpyVector.append((elem/Status.TimeStep)/(HCGPnom*PartLoad))
+            stream.EnthalpyVector.append((elem/Status.TimeStep)/(HCGPnom*partload))
 
     def getMassFlowVectorCombAir(self, stream):
         stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, stream.EndTemp, stream.StartTemp)
@@ -1520,7 +1528,7 @@ class EquipmentStreams(StreamUtils, StreamSet):
         return H20#, m_vector
 
     def getCombustionAirMassFlow(self, FuelConsum, CombAir, PartLoad):
-        CombustionAir = PartLoad * FuelConsum * CombAir
+        CombustionAir = PartLoad * (FuelConsum/3600) * CombAir
 #        m_vector = []
 #        for i in xrange(8760):
 #            m_vector.append(CombustionAir)
