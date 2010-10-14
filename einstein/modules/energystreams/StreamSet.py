@@ -190,12 +190,15 @@ class StreamSet():
 
         massFlowVector = []
         for elem in EnthalpyVector:
-            massFlowVector.append(elem/(SpecHeatCap*(EndTemp.getAvg()-StartTemp.getAvg())))
+            if EndTemp.getAvg()== StartTemp.getAvg():
+                massFlowVector.append(0)
+            else:
+                massFlowVector.append(elem/(SpecHeatCap*abs((EndTemp.getAvg()-StartTemp.getAvg()))))
         return massFlowVector
 
 
     def getEnthalpyNom(self, EndTemp, StartTemp, SpecHeatCap, massFlowNom):
-        enthalpy_nom = (EndTemp.getAvg()-StartTemp.getAvg())*SpecHeatCap*massFlowNom
+        enthalpy_nom = abs((EndTemp.getAvg()-StartTemp.getAvg()))*SpecHeatCap*massFlowNom
         return enthalpy_nom
 
     def getMassVectorFromEnthalpy():

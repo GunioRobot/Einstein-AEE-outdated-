@@ -137,9 +137,14 @@ class HXCombination():
                         stream.EnthalpyVector[i] = (stream.EnthalpyVector[i]/(elem.stream.EndTemp.getAvg()-elem.stream.StartTemp.getAvg()))\
                         *(elem.outletTemp-elem.stream.StartTemp.getAvg())
                 elif elem.stream.HotOrCold == "Source" or elem.stream.HotOrCold == "Hot":
-                    if elem.inletTemp != None and elem.inletTemp < elem.stream.StartTemp.getAvg():
+                    if elem.stream.MassFlowVector[i]!=0:
+                        elem.outletTemp = elem.inletTemp-stream.EnthalpyVector[i]/(elem.stream.MassFlowVector[i]*elem.stream.SpecHeatCap)
+                    else:
+                        elem.outletTemp = elem.inletTemp
+                    if elem.outletTemp != None and elem.outletTemp < elem.stream.EndTemp.getAvg() and elem.stream.StartTemp.getAvg()!=elem.stream.EndTemp.getAvg():
                         stream.EnthalpyVector[i] = (stream.EnthalpyVector[i]/(elem.stream.StartTemp.getAvg()-elem.stream.EndTemp.getAvg()))\
                         *(elem.inletTemp-elem.stream.EndTemp.getAvg())
+                        print elem.outletTemp, elem.inletTemp
                 combH[i] += stream.EnthalpyVector[i]*(elem.percentHeatFlow/100)
 
 #        for elem in pinchstreams[0].stream.EnthalpyVector:
@@ -286,7 +291,7 @@ class HXSimulation():
         self.Energy = Energy
         self.Thsout = self.toList(Thsout, Status.Nt)
         self.Tcsout = self.toList(Tcsout, Status.Nt)
-        self.UA = UA
+        self.UA = 1000
         self.hxPinchCon = hxPinchCon
         if hxPinchCon.combinedSource.percentHeatFlow != None:
             self.bhxhs = self.toList(hxPinchCon.combinedSource.percentHeatFlow, Status.Nt)
@@ -821,7 +826,8 @@ class HXSimulation():
         possibleStorage = []
         for i in xrange(len(self.QHX1hs)):
             dE.append(self.QHX1hs[i]-self.QHX1cs[i])
-            if dE[i] > 0:
+            # to overcome rounding error, dE >1 instead >0
+            if dE[i] > 1:
                 possibleStorage.append(dE[i])
             else: possibleStorage.append(0)
 
@@ -854,7 +860,8 @@ class HXSimulation():
                     csdemand = self.QHX1cs[startrow+1]
                     hsdemand = self.QHX1hs[startrow+1]
 
-                while instorage + instoragenext < csdemand - hsdemand or startrow > lastrow:
+#Do Until (instorage + instoragenext) < (csdemand - hsdemand) Or startrow > lastrow
+                while instorage + instoragenext > csdemand - hsdemand or startrow < lastrow:
                     if csdemand > hsdemand:
                         realStorageOut[startrow+1] = csdemand - hsdemand
 

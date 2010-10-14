@@ -365,7 +365,7 @@ class Processes(object):
         list = []
         for elem in schedule:
 #            try:
-            list.append(elem*HeatFlow*Status.Nt)
+            list.append(elem*HeatFlow)
 #            except: list.append(-1)
         HeatFlow_t.append(list)
 
@@ -373,11 +373,16 @@ class Processes(object):
         """
         HeatFlow can be UPHm, UPHs, QWHEE, QWH
         """
-
+        hours_nominal=0.1
+        for elem in schedule:
+            hours_nominal += elem
+            
         list = []
+        sum=0
         for elem in schedule:
 #            try:
-            list.append(elem*HeatFlow)
+            list.append(elem*HeatFlow/(hours_nominal))
+            sum +=(elem*HeatFlow/(hours_nominal))
 #            except: list.append(-1)
         HeatFlow_t[ProcessID] = list
 #        HeatFlow_t.append(list)
