@@ -1,4 +1,4 @@
-# -*- coding: cp1252 -*-
+# -*- coding: utf-8 -*-
 #==============================================================================
 #
 #	E I N S T E I N
@@ -57,20 +57,27 @@ class Interfaces(object):
 
 #..........................................................................
 # DATA BLOCK 1: energy flows in the system
-    T = []      #temperature steps
+    #temperature steps for heating
+    T = [iT*Status.TemperatureInterval for iT in xrange(Status.NT+1)]+[999.0]
+    #temperature steps for cooling
+    TC = [-99.0] + [-50.0 + (i * Status.TemperatureIntervalC) for i in xrange(Status.NT)] + [999.0]
 
-# total heat demand and availability in the system
+# total heat/cold demand and availability in the system
 
     QD_T = []       #aggregate heat demand as seen by the heat supply
+    QDc_T = []      #aggregate cooling demand as seen by the heat supply
     QA_T = []       #equipment. similar (identical ?) to USHm_T
     QD_Tt = []
+    QDc_Tt = []
     QA_Tt = []
     
-# intermediate heat demand / availability within equipment cascade
+# intermediate heat/cold demand / availability within equipment cascade
 
     QD_T_mod = []    
+    QDc_T_mod = []    
     QA_T_mod = []
     QD_Tt_mod = []
+    QDc_Tt_mod = []
     QA_Tt_mod = []
 
 # UPH by processes
@@ -94,14 +101,18 @@ class Interfaces(object):
 
     UPHwTotal_T = []
     UPHwTotal_Tt = []
+    UPCwTotal_Tt = []
 
     UPHProcTotal_Tt = []    # heat supplied externally to processes (= UPH - QHXProc)
     UPHProcTotal_T = []
+    UPCProcTotal_Tt = []
+    UPCProcTotal_T = []
+
 
     QWHAmb_Tt = []          # waste heat dissipated to ambient (not used)
     QWHAmb_T = []
     
-# heat supplied by each equipment
+# heat and cooling supplied by each equipment
     USHj_Tt = []    
     USHj_T = []
     USHj_t = []
@@ -109,6 +120,8 @@ class Interfaces(object):
     
     USHTotal_Tt = []
     USHTotal_T = []
+    USCTotal_Tt = []
+    USCTotal_T = []
     
 # waste heat absorbed (QHXj) and generated (QWHj) in each equipment
     QHXj_Tt = []    
@@ -167,78 +180,41 @@ class Interfaces(object):
     GData = {}
 
    
-#------------------------------------------------------------------------------		
     def __init__(self):
-#------------------------------------------------------------------------------		
-#
-# Instance initialization
-#
-        self.T = []
-        for iT in range(Status.NT+1):
-            self.T.append(iT*Status.TemperatureInterval)
-        self.T.append(999.0)
-        
+        pass
 #        self.setDefaultDemand()
         
-#------------------------------------------------------------------------------		
-#------------------------------------------------------------------------------		
     def createQ_Tt(self):
-#------------------------------------------------------------------------------		
-#   function for creating an empty matrix for temperature and time dependent
-#   energy flows
-#------------------------------------------------------------------------------		
-        Q_Tt = []
-        for iT in range(Status.NT+2):
-            Q_Tt.append(self.createQ_t())
+        """
+        Return an empty matrix for temperature and time dependent energy flows.
+        
+        """
+        return [self.createQ_t() for dummy in xrange(Status.NT+2)]
 
-        return Q_Tt
-
-#------------------------------------------------------------------------------		
     def createQ_t(self):
-#------------------------------------------------------------------------------		
-#   function for creating an empty vector for time dependent
-#   energy flows
-#------------------------------------------------------------------------------		
-        Q_t = []
-        for it in range(Status.Nt+1):
-            Q_t.append(0.0)
-        
-        return Q_t
+        """Return an empty vector for time dependent energy flows."""
+        return [0.0] * (Status.Nt+1)
 
-#------------------------------------------------------------------------------		
     def createQ_T(self):
-#------------------------------------------------------------------------------		
-#   function for creating an empty vector for time dependent
-#   energy flows
-#------------------------------------------------------------------------------		
-        Q_T = []
-        for iT in range(Status.NT+2):
-            Q_T.append(0.0)
-        
-        return Q_T
+        """ Return an empty vector for temperature dependent energy flows."""
+        return [0.0] * (Status.NT+2)
 
-#------------------------------------------------------------------------------		
     def calcQ_T(self,Q_Tt):
-#------------------------------------------------------------------------------		
-#   Function that calculates the annual integral
-#------------------------------------------------------------------------------		
-
-        Q_T = []
-        for iT in range(Status.NT + 2):
-            Q_T.append([])
-            Q_T[iT] = 0
-            for it in range(Status.Nt):
-                Q_T[iT] += Q_Tt[iT][it]
+        """Return the the annual integral of Q_Tt."""
+        Q_T = [0] * (Status.NT + 2)
+        for iT in xrange(Status.NT + 2):
+            Q_T[iT] = sum(Q_Tt[iT][0:Status.Nt])
             Q_T[iT] *= Status.EXTRAPOLATE_TO_YEAR
         return Q_T
 
-#------------------------------------------------------------------------------		
     def initCascadeArrays(self,cascadeSize):
-#------------------------------------------------------------------------------		
-#..............................................................................
-# initialising storage space for energy flows in cascade
-# assigning total heat demand and availability to the first row in cascade
-
+        """
+        Initialize storage space for energy flows in a cascade
+        assigning total heat demand and availability to the first row in cascade
+        
+        Warning: this function changes already existing arrays.
+        :param cascadeSize: number of levels the cascade shall have
+        """
         logTrack("Interfaces (initCascadeArrays): creating cascade of size %s"%cascadeSize)
         if self.cascadeUpdateLevel < 0:
             logDebug("Interfaces (initCascadeArrays): demand profile not yet created")
@@ -246,19 +222,25 @@ class Interfaces(object):
 
         self.QD_Tt_mod = []      
         self.QD_T_mod = []
+        self.QDc_Tt_mod = []      
+        self.QDc_T_mod = []
         self.QA_Tt_mod = []       
         self.QA_T_mod = []
 
         self.QD_Tt_mod.append(self.createQ_Tt())       
         self.QD_T_mod.append(self.createQ_T())
+        self.QDc_Tt_mod.append(self.createQ_Tt())       
+        self.QDc_T_mod.append(self.createQ_T())
         self.QA_Tt_mod.append(self.createQ_Tt())      
         self.QA_T_mod.append(self.createQ_T())
 
-        for iT in range(Status.NT+2):
-            for it in range(Status.Nt+1):
+        for iT in xrange(Status.NT+2):
+            for it in xrange(Status.Nt+1):
                 self.QD_Tt_mod[0][iT][it] = self.QD_Tt[iT][it]
+                self.QDc_Tt_mod[0][iT][it] = self.QDc_Tt[iT][it]
                 self.QA_Tt_mod[0][iT][it] = self.QA_Tt[iT][it]
             self.QD_T_mod[0][iT] = self.QD_T[iT]
+            self.QDc_T_mod[0][iT] = self.QDc_T[iT]
             self.QA_T_mod[0][iT] = self.QA_T[iT]
 
         logTrack("Interfaces (initCArrays): QD = %s"%self.QD_T_mod[0])
@@ -269,23 +251,25 @@ class Interfaces(object):
             
 #------------------------------------------------------------------------------		
     def extendCascadeArrays(self,cascadeSize):
-#------------------------------------------------------------------------------		
-#..............................................................................
-# creates storage space for energy flows in cascade
-# similar to initCascadeArrays, but without changing content of already existing
-# arrays
+        """
+        Create storage space for energy flows in cascade
+        
+        This function is similar to initCascadeArrays, but does not
+        change the content of already existing arrays.
+ 
+        :param cascadeSize: number of levels the cascade shall have
+        
+        """
         if self.cascadeSize is None:
             self.initCascadeArrays(0)
-
-        for j in range(self.cascadeSize,cascadeSize):
+        for j in xrange(self.cascadeSize,cascadeSize):
             self.addCascadeArrays()
             
-#------------------------------------------------------------------------------		
     def addCascadeArrays(self):
-#------------------------------------------------------------------------------		
-
         self.QD_Tt_mod.append(self.createQ_Tt())       
         self.QD_T_mod.append(self.createQ_T())
+        self.QDc_Tt_mod.append(self.createQ_Tt())       
+        self.QDc_T_mod.append(self.createQ_T())
         self.QA_Tt_mod.append(self.createQ_Tt())      
         self.QA_T_mod.append(self.createQ_T())
 
@@ -301,9 +285,7 @@ class Interfaces(object):
         self.QWHj_T.append(self.createQ_T())
         self.QWHj_t.append(self.createQ_t())
 
-#..............................................................................
-# lists of annual main results
-
+        # lists of annual main results
         self.USHj.append(0.0)
         self.QWHj.append(0.0)
         self.QHXj.append(0.0)
@@ -315,12 +297,11 @@ class Interfaces(object):
 
         self.cascadeSize += 1
 
-#------------------------------------------------------------------------------		
     def deleteCascadeArrays(self,NEquipe):
-#------------------------------------------------------------------------------		
-
         self.QD_Tt_mod.pop(NEquipe-1)       
         self.QD_T_mod.pop(NEquipe-1)
+        self.QDc_Tt_mod.pop(NEquipe-1)       
+        self.QDc_T_mod.pop(NEquipe-1)
         self.QA_Tt_mod.pop(NEquipe-1)      
         self.QA_T_mod.pop(NEquipe-1)
 
@@ -335,9 +316,8 @@ class Interfaces(object):
         self.QWHj_Tt.pop(NEquipe-1)
         self.QWHj_T.pop(NEquipe-1)
         self.QWHj_t.pop(NEquipe-1)
-#..............................................................................
-# lists of annual main results
 
+        # lists of annual main results
         self.USHj.pop(NEquipe-1)
         self.QWHj.pop(NEquipe-1)
         self.QHXj.pop(NEquipe-1)
@@ -349,85 +329,89 @@ class Interfaces(object):
 
         self.cascadeSize -= 1
         
-#------------------------------------------------------------------------------		
-    def printCascade(self,):
-#------------------------------------------------------------------------------		
-
+    def printCascade(self):
         NT = Status.NT
         print "Heat Demand"
         print "CascadeIndex - QD_total - QD_Tt(first day)"
-        for i in range(self.NEquipe+1):
+        for i in xrange(self.NEquipe+1):
             print i,\
             "%10.4f"%self.QD_T_mod[i][NT+1],\
             self.QD_Tt_mod[i][NT+1][0:23]
+        print "Cooling Demand"
+        print "CascadeIndex - QDc_total - QDc_Tt(first day)"
+        for i in xrange(self.NEquipe+1):
+            print i,\
+            "%10.4f"%self.QDc_T_mod[i][NT+1],\
+            self.QDc_Tt_mod[i][NT+1][0:23]
         print "Heat Availability"
         print "CascadeIndex - QA_total - QA_Tt(first day)"
-        for i in range(self.NEquipe+1):
+        for i in xrange(self.NEquipe+1):
             print i,\
             "%10.4f"%self.QA_T_mod[i][0],\
             self.QA_Tt_mod[i][0][0:23]
         
-#------------------------------------------------------------------------------		
     def printUSH(self):
-#------------------------------------------------------------------------------		
-
         NT = Status.NT
         print "USH"
         print "CascadeIndex - USHj_total - USHj_Tt(first day)"
-        for i in range(self.NEquipe+1):
+        for i in xrange(self.NEquipe+1):
             print i,\
             "%10.4f"%self.USHj_T[i][NT],\
             self.USHj_Tt[i][NT][0:23]
         
-#------------------------------------------------------------------------------		
     def printCascade_mod(self,cascade):
-#------------------------------------------------------------------------------		
-
         NT = Status.NT
         print "Heat Demand"
         print "CascadeIndex - QD_total - QD_Tt(first day)"
-        for i in range(self.NEquipe+1):
+        for i in xrange(self.NEquipe+1):
             if i == cascade:
                 print i,\
                 "%10.4f"%self.QD_T_mod[i][NT+1],\
                 self.QD_Tt_mod[i][NT+1][0:23]
             else:
                 pass
+        print "Cooling Demand"
+        print "CascadeIndex - QDc_total - QDc_Tt(first day)"
+        for i in xrange(self.NEquipe+1):
+            if i == cascade:
+                print i,\
+                "%10.4f"%self.QDc_T_mod[i][NT+1],\
+                self.QDc_Tt_mod[i][NT+1][0:23]
+            else:
+                pass
         print "Heat Availability"
         print "CascadeIndex - QA_total - QA_Tt(first day)"
-        for i in range(self.NEquipe+1):
+        for i in xrange(self.NEquipe+1):
             if i == cascade:
                 print i,\
                 "%10.4f"%self.QA_T_mod[i][0],\
                 self.QA_Tt_mod[i][0][0:23]
             else:
                 pass
-#------------------------------------------------------------------------------
+
     def getEquipmentCascade(self):
-#------------------------------------------------------------------------------
-#   gets the equipment list
-#------------------------------------------------------------------------------
-
-
+        """
+        Fetch the equipment list into self.EquipTableDataList.
+        """
         sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s' ORDER BY CascadeIndex ASC"%(Status.PId,Status.ANo)
         self.equipments = Status.DB.qgenerationhc.sql_select(sqlQuery) #SD change 30/04.2008
         self.NEquipe = len(self.equipments) #SD change 30/04.2008
 
         self.cascade = []
-        for j in range(self.NEquipe):
+        for j in xrange(self.NEquipe):
             self.cascade.append({"equipeID":self.equipments[j].QGenerationHC_ID,\
                                  "equipeNo":self.equipments[j].EqNo,\
                                  "equipeType":self.equipments[j].EquipType,\
                                  "equipePnom":self.equipments[j].HCGPnom})
             if (self.equipments[j].CascadeIndex != j+1):
-                print "self (getEquipmentCascade): error in SQL data - cascade index %s corrected to new index %s"%\
-                      (self.equipments[j].CascadeIndex,j+1)
+                logError("self (getEquipmentCascade): error in SQL data - cascade index %s corrected to new index %s"%\
+                      (self.equipments[j].CascadeIndex,j+1))
                 self.equipments[j].CascadeIndex = j+1
                 Status.SQL.commit()
 
 
         self.EquipTableDataList = []
-        for j in range(self.NEquipe):
+        for j in xrange(self.NEquipe):
             self.EquipTableDataList.append([unicode(self.equipments[j].Equipment,"utf-8"),
                                             self.equipments[j].HCGPnom,
                                             self.equipments[j].HCGTEfficiency, \
@@ -437,11 +421,8 @@ class Interfaces(object):
 
         self.extendCascadeArrays(self.NEquipe)  #security feature: assure that for all equipes there's enough space                                       
 
-#------------------------------------------------------------------------------
     def changeInCascade(self,index):
-#------------------------------------------------------------------------------
-#   gets the equipment list
-#------------------------------------------------------------------------------
+        """Lower the cascadeUpdateLevel as changes have occurred in level index."""
         if index >= 0:
             self.cascadeUpdateLevel = min(self.cascadeUpdateLevel,index-1)
             Status.prj.setStatus("Energy",0)
@@ -451,15 +432,13 @@ class Interfaces(object):
             logDebug("Interfaces (changeInCascade): cannot change a cascade level "+\
                      "that does not exist [-> level %s]"%index)
 
-#------------------------------------------------------------------------------		
-    def setGraphicsData(self,key, data):
-#------------------------------------------------------------------------------		
-# method for storing graphics data
-# the data are stored in the dictionary GData under the key 'key'
-#------------------------------------------------------------------------------		
+    def setGraphicsData(self, key, data):
+        """
+        Store graphics data.
+        The data is stored in the dictionary GData under the key 'key'
+        """
         self.GData[key] = copy.deepcopy(data)
 
-#==============================================================================
 
 if __name__ == "__main__":
     # for testing purposes only
@@ -475,8 +454,6 @@ if __name__ == "__main__":
 
 
     # values for testing purposes
-    NT = 5
-    Nt = 6
     Status.PId=1
     Status.ANo=1
     # Connect to database
@@ -487,7 +464,7 @@ if __name__ == "__main__":
     # where the initialization work is done and the class variables are loaded.
     # Afterwards, it is not necessary to instantiate the class, just a reference
     # of type Interfaces.variable will allow access to the class variables.
-    intf = Interfaces(NT, Nt) # initialization.
+    intf = Interfaces() # initialization.
     intf.chargeCurvesQDQA()
 
     print 'T='+repr(Interfaces.T)

@@ -43,63 +43,58 @@
 #==============================================================================
 
 class Status(object):
-  PId = None #Active project identity [==> SQL: ActiveProject]
-  ANo = None #Active alternative under processing [==> SQL: ActiveAlternative]
-  ActiveAlternativeName = ""
-  ActiveProjectName = ""
-  SetUpId = 0 #Active configuration
-  DB = None
-  SQL = None
-  #------------------------------------------------------------------------------		
-  # Statistical data of project [==> SQL Table STATUS]
+    PId = None # Active project identity [==> SQL: ActiveProject]
+    ANo = None # Active alternative under processing [==> SQL: ActiveAlternative]
+    ActiveAlternativeName = ""
+    ActiveProjectName = ""
+    SetUpId = 0 # Active configuration
+    DB = None
+    SQL = None
+    prj = None # Access to controller of the project data
+
+    # Statistical data of project [==> SQL Table STATUS]
+    ProjectCreationDate = None
+    ProjectFinalisationDate = None
+    LastModificationDate = None
+    AuditorId = None
+    ConfidentialityLevel = "Public"
+
+    # Tool interface configuration [==> SQL Table STATUS]
+    UserInteractionLevel = "interactive" # Selected level of user interaction
+    LanguageTool = "en"         # Selected language for tool interface
+    Units = "SI-kWh"                 # System of units (default: SI-kWh)
+    Country = "Spain"                # Configuration for country specific aids ... NOT USED AT PRESENT
+    UserType = "Expert"              # type of user: expert, student, end-user ... ???
+
+    # Status of processing [==> SQL Table STATUS]
+    DataImportOK = False        #no longer used -> CHECK before eliminating !!!
+    ConsistencyCheckOK = False  #no longer used -> CHECK before eliminating !!!
+    NoOfAlternatives = 0 
+    AlternativesOK =[]          #no longer used -> CHECK before eliminating !!!
+    ComparativeAnalysisOK = False #no longer used -> CHECK before eliminating !!!
+    ReportOK = False            #no longer used -> CHECK before eliminating !!!
+    LanguageReport = "english"       # Selected language for report
+    
+    # Tool configuration
+    TimeStep = 1.0
+    TemperatureInterval = 5.0
+    MaximumTemperature = 400.0
   
-  ProjectCreationDate = None
-  ProjectFinalisationDate = None
-  LastModificationDate = None
-  AuditorId = None
-  ConfidentialityLevel = "Public"
-
-  #------------------------------------------------------------------------------		
-  # Tool interface configuration [==> SQL Table STATUS]
-
-  UserInteractionLevel = "interactive" # Selected level of user interaction
-  LanguageTool = "en"         # Selected language for tool interface
-  Units = "SI-kWh"                 # System of units (default: SI-kWh)
-  Country = "Spain"                # Configuration for country specific aids ... NOT USED AT PRESENT
-  UserType = "Expert"              # type of user: expert, student, end-user ... ???
-
-  #------------------------------------------------------------------------------		
-  # Status of processing [==> SQL Table STATUS]
-
-  DataImportOK = False        #no longer used -> CHECK before eliminating !!!
-  ConsistencyCheckOK = False  #no longer used -> CHECK before eliminating !!!
-  NoOfAlternatives = 0 
-  AlternativesOK =[]          #no longer used -> CHECK before eliminating !!!
-  ComparativeAnalysisOK = False #no longer used -> CHECK before eliminating !!!
-  ReportOK = False            #no longer used -> CHECK before eliminating !!!
-  LanguageReport = "english"       # Selected language for report
-
-  #------------------------------------------------------------------------------		
-  # Tool configuration
-  TimeStep = 1.0
-  TemperatureInterval = 5.0
-  MaximumTemperature = 400.0
+    TemperatureIntervalC = 2.0
+    MaximumTemperatureC = 100.0
+    MinimumTemperatureC = -60.0
   
-  NT = (int) (MaximumTemperature / TemperatureInterval + 0.1)
-  Nt = 8760
+    NT = (int) (MaximumTemperature / TemperatureInterval + 0.1)
+    assert(NT == (int)((MaximumTemperatureC-MinimumTemperatureC)/TemperatureIntervalC + 0.1))
+    Nt = 8760
+    SIMULATED_YEAR = Nt*TimeStep
+    EXTRAPOLATE_TO_YEAR = 8760.0 / SIMULATED_YEAR
 
-  SIMULATED_YEAR = Nt*TimeStep
-  EXTRAPOLATE_TO_YEAR = 8760.0 / SIMULATED_YEAR
+    HRTool = "PE2"
 
-  HRTool = "PE2"
-
-#------------------------------------------------------------------------------		
-# Instance variables
-
-  def __init__(self, name):
-    self.myname = name
-
-#==============================================================================
+    # Instance variables
+    def __init__(self, name):
+        self.myname = name
 
 
 if __name__ == "__main__":
@@ -115,4 +110,3 @@ if __name__ == "__main__":
     # let's verify:
     print 's1.myname=%s s1.Country=%s' % (s1.myname, s1.Country) 
     print 's2.myname=%s s2.Country=%s' % (s2.myname, s2.Country) 
-

@@ -124,7 +124,7 @@ def getConnections():
 #..............................................................................
 # 2. USHj-USHm-Link: conecction equipment to pipe
 
-    pipes_j = Status.prj.getEqList("PipeDuctEquip")
+    pipes_j = Status.prj.getEquipmentList("PipeDuctEquip")
         
     pipeID_m = Status.prj.getPipeList("QDistributionHC_ID")
 

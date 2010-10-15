@@ -41,11 +41,11 @@ MAXBALANCEERROR = 1.e-3
 NMAXITERATIONS = 5
 INFINITE = 1.e99    # numerical value assigned to "infinite"
 
-from math import *
 from ccheckFunctions import *
 from numpy import *
 
-from einstein.GUI.status import *
+from einstein.GUI.status import Status
+global DEBUG
 
 #------------------------------------------------------------------------------
 class CheckTotals():
@@ -54,7 +54,7 @@ class CheckTotals():
 #------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
-    def __init__(self,name,FECi,FETi,USHj,UPH):     #function that is called at the beginning when object is created
+    def __init__(self, name, FECi, FETi, USHj, UPH):     #function that is called at the beginning when object is created
 #------------------------------------------------------------------------------
 #   init function is only called once at the beginning (every time that base
 #   actions that should be carried out in each iteration -> initCheck()
@@ -70,19 +70,19 @@ class CheckTotals():
         self.USHj = USHj
         self.UPHk = UPH
 
-        self.FEC = CCPar("FEC",priority=2)
+        self.FEC = CCPar("FEC", priority=2)
         self.FEC1 = CCPar("FEC1")
-        self.FEO = CCPar("FEO",priority=2)
-        self.FET = CCPar("FET",priority=1)
+        self.FEO = CCPar("FEO", priority=2)
+        self.FET = CCPar("FET", priority=1)
         self.FET1 = CCPar("FET1")
-        self.USH = CCPar("USH",priority=1)
+        self.USH = CCPar("USH", priority=1)
         self.USH1 = CCPar("USH1")
-        self.UPH = CCPar("UPH",priority=1)
+        self.UPH = CCPar("UPH", priority=1)
         self.UPH1 = CCPar("UPH1")
 
         self.importData()
 
-        if DEBUG in ["ALL","BASIC","MAIN"]:
+        if DEBUG in ["ALL", "BASIC", "MAIN"]:
             self.showAll()
         
 #------------------------------------------------------------------------------
@@ -158,16 +158,16 @@ class CheckTotals():
 #------------------------------------------------------------------------------
 #   main function carrying out the check of the block
 #------------------------------------------------------------------------------
-        if DEBUG in ["ALL","MAIN","BASIC"]:
+        if DEBUG in ["ALL", "MAIN", "BASIC"]:
             print "-------------------------------------------------"
             print " Checking Totals"
             print "-------------------------------------------------"
 
         for n in range(1):  #while no adjust, 1 cycle is enough !!!!
 
-            if DEBUG in ["ALL","MAIN"]:
+            if DEBUG in ["ALL", "MAIN"]:
                 print "-------------------------------------------------"
-                print "Ciclo %s"%n
+                print "Ciclo %s" % n
                 print "-------------------------------------------------"
         
 # Step 1: Call all calculation routines in a given sequence
@@ -175,11 +175,11 @@ class CheckTotals():
             if DEBUG in ["ALL"]:
                 print "Step 1: calculating from left to right (CALC)"
             
-            self.FEC1 = calcRowSum("FEC1",self.FETi,self.NFuels+1)
-            self.FET1 = calcRowSum("FET1",self.FETi,self.NFuels+1)
-            self.USH1 = calcRowSum("USH1",self.USHj,self.NEquipe)
-            self.UPH1 = calcRowSum("UPH1",self.UPHk,self.NThProc)
-            self.FEO = calcDiff("FEO",self.FEC,self.FET)
+            self.FEC1 = calcRowSum("FEC1", self.FETi)
+            self.FET1 = calcRowSum("FET1", self.FETi)
+            self.USH1 = calcRowSum("USH1", self.USHj)
+            self.UPH1 = calcRowSum("UPH1", self.UPHk)
+            self.FEO = calcDiff("FEO", self.FEC, self.FET)
 
             if DEBUG in ["ALL"]:
                 self.showAll()
@@ -215,7 +215,7 @@ class CheckTotals():
 # End of the cycle. Last print in DEBUG mode
 
 
-        if DEBUG in ["ALL","BASIC","MAIN"]:
+        if DEBUG in ["ALL", "BASIC", "MAIN"]:
             self.showAll()
             
 #------------------------------------------------------------------------------
@@ -223,10 +223,10 @@ class CheckTotals():
 #------------------------------------------------------------------------------
 #   ccheck block
 #------------------------------------------------------------------------------
-        ccheck1(self.FEC,self.FEC1)
-        ccheck1(self.FET,self.FET1)
-        ccheck1(self.USH,self.USH1)
-        ccheck1(self.UPH,self.UPH1)
+        ccheck1(self.FEC, self.FEC1)
+        ccheck1(self.FET, self.FET1)
+        ccheck1(self.USH, self.USH1)
+        ccheck1(self.UPH, self.UPH1)
 
 #==============================================================================
 
@@ -235,7 +235,7 @@ if __name__ == "__main__":
     NI = 2
     NJ = 3
     
-    FECi = CCRow("FECi",NI)
+    FECi = CCRow("FECi", NI)
     FECi[0].val = 2
     FECi[0].sqerr = 0.
     FECi[0].valMin = 1.9
@@ -246,7 +246,7 @@ if __name__ == "__main__":
     FECi[1].valMin = 3.9
     FECi[1].valMax = 4.1
 
-    FECj = CCRow("FECj",NJ)
+    FECj = CCRow("FECj", NJ)
     FECj[0].val = 3
     FECj[0].valMin = 2.9
     FECj[0].valMax = 3.1
@@ -260,6 +260,6 @@ if __name__ == "__main__":
     FECj[2].valMin = 0
     FECj[2].valMax = INFINITE
 
-    CT = CheckTotals("FECi-FECj",FECi,FECj,FECLink)
+    CT = CheckTotals("FECi-FECj", FECi, FECj, FECLink)
     
     CT.check()

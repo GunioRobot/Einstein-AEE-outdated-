@@ -69,7 +69,7 @@
 #
 #============================================================================== 
 
-import sys, os
+import sys
 from math import *
 from numpy import *
 
@@ -125,7 +125,7 @@ class ModuleHR(object):
 #            self.__updateCurveData()
 
 # HS20090530: new version from JR:
-        if (self.data==None)or(self.data.ano != Status.ANo)or(Status.PId != self.data.pid):
+        if (self.data == None)or(self.data.ano != Status.ANo)or(Status.PId != self.data.pid):
             self.updateData()
         else:
             self.__updateGridData()
@@ -134,7 +134,7 @@ class ModuleHR(object):
 
 # HS20090530: new function added from JR:
     def updateData(self):
-        self.data = HRData(Status.PId,Status.ANo)  
+        self.data = HRData(Status.PId, Status.ANo)  
         self.data.loadDatabaseData()  
         self.runHRModule()
         self.__updateGridData()
@@ -147,23 +147,23 @@ class ModuleHR(object):
             index = 0
             for hx in self.data.hexers:
                 try:
-                    opcost = float(hx["OMVar"])+float(hx["OMFix"])
+                    opcost = float(hx["OMVar"]) + float(hx["OMFix"])
                     opcost_str = str(opcost)
                 except:
                     opcost_str = ""
                 name = hx["HXName"]
                 
                 if (index in self.HiddenHX):
-                    name=name+" (hidden)"
+                    name = name + " (hidden)"
                 
                 StorageSize = "%.2f" % float(hx["StorageSize"])
                 Surface = "%.2f" % float(hx["Area"])
                 TurnKeyPrice = "%.0f" % float(hx["TurnKeyPrice"])
                 opcost_str = "%.2f" % float(opcost_str)
                 
-                row = [name,hx["QdotHX"],StorageSize,hx["HXSource"],hx["HXTSourceInlet"],hx["HXTSourceOutlet"],hx["HXSink"],hx["HXTSinkInlet"],hx["HXTSinkOutlet"],Surface,TurnKeyPrice,opcost_str]
+                row = [name, hx["QdotHX"], StorageSize, hx["HXSource"], hx["HXTSourceInlet"], hx["HXTSourceOutlet"], hx["HXSink"], hx["HXTSinkInlet"], hx["HXTSinkOutlet"], Surface, TurnKeyPrice, opcost_str]
                 dataList.append(noneFilter(row))
-                index+=1
+                index += 1
             data = array(dataList)
             Status.int.setGraphicsData(self.keys[0], data)
         except:
@@ -188,50 +188,48 @@ class ModuleHR(object):
         for hx in self.data.hexers:
             
             q = hx["QHX"]
-            if qTotal > 0 and q is not None: qhxperc = 100.0*q/qTotal
+            if qTotal > 0 and q is not None: qhxperc = 100.0 * q / qTotal
             else: qhxperc = "---"
 
             if hx["QHX"] is not None:
-                qhx_MWh = q/1000.
+                qhx_MWh = q / 1000.
             else:
                 qhx_MWh = 0.0
-            row = [hx["HXName"],hx["QdotHX"],hx["HXSource"],hx["HXSink"],qhx_MWh,qhxperc]
+            row = [hx["HXName"], hx["QdotHX"], hx["HXSource"], hx["HXSink"], qhx_MWh, qhxperc]
             if index < 20:
                 dataListReport.append(noneFilter(row))
             elif index == 20:
                 logDebug("More than 20 HX in the system. Do not fit into the report")
-            index+=1
+            index += 1
 
-        for i in range(index,20):
-            row = [" "," "," "," "," "," "]
+        for i in range(index, 20):
+            row = [" ", " ", " ", " ", " ", " "]
             dataListReport.append(row)
 
-        row = [_("Total"),qdotTotal," "," ",qTotal/1000.0,100.0]
+        row = [_("Total"), qdotTotal, " ", " ", qTotal / 1000.0, 100.0]
         dataListReport.append(row)
         
         dataReport = array(dataListReport)
 
-        key = "HX%02d"%Status.ANo
+        key = "HX%02d" % Status.ANo
 #            print "%s\n"%key,dataReport
         Status.int.setGraphicsData(key, dataReport)
         
         #---------------------------------------------------------------------------
         #REPORT GRAPHS
         
-        key = "HX%02d_PLOT_REPORT"%Status.ANo
+        key = "HX%02d_PLOT_REPORT" % Status.ANo
         dataReport2 = []
-        exportPath = os.path.join(sys.path[0],"export.xml")
-        print "Export Path: ", exportPath
-        doc = XMLImportHRModule.importXML(exportPath)
+        doc = XMLImportHRModule.importXML("export.xml")
         self.data.loadCurves(doc)
         QD_T = []
         QA_T = []
-        if (hasattr( self.data, 'QA_T' )):
+        if (hasattr(self.data, 'QA_T')):
 #            print "Report PE² data"
             QD_T = self.data.QD_T
             QA_T = self.data.QA_T
         else:
-            if (len(Status.int.QA_T)!=0):
+            if (len(Status.int.QA_T) != 0):
 #                print "Report estimated data"
                 QD_T = Status.int.QD_T   #todo: set the right data!
                 QA_T = Status.int.QA_T
@@ -248,38 +246,38 @@ class ModuleHR(object):
         QA_index = 5
         MAXROWS = 81
 
-        dataReport2 = [["T-CCC","CCC","T-HCC","HCC","QD","QA"]]
+        dataReport2 = [["T-CCC", "CCC", "T-HCC", "HCC", "QD", "QA"]]
 # HS 20090611. Row with strings added
 # the data transfer to OpenOffice spreadsheet for some reason doesn't like arrays with
 # numbers only
 
 #        print "start curves"
-        for i in range(0,MAXROWS):
-            row = ["","","","","",""]
+        for i in range(0, MAXROWS):
+            row = ["", "", "", "", "", ""]
             dataReport2.append(row)
         entryCount = len(self.data.curves[0].X)
-        for i in range(0,min(MAXROWS,entryCount)):            
-            dataReport2[i+1][CCC_X_index] = self.data.curves[0].X[i]
-            dataReport2[i+1][CCC_Y_index] = self.data.curves[0].Y[i]/1000.0
+        for i in range(0, min(MAXROWS, entryCount)):            
+            dataReport2[i + 1][CCC_X_index] = self.data.curves[0].X[i]
+            dataReport2[i + 1][CCC_Y_index] = self.data.curves[0].Y[i] / 1000.0
 
-        for i in range(min(MAXROWS,entryCount),MAXROWS):
-            dataReport2[i+1][CCC_X_index] = self.data.curves[0].X[entryCount-1]
-            dataReport2[i+1][CCC_Y_index] = self.data.curves[0].Y[entryCount-1]/1000.0
+        for i in range(min(MAXROWS, entryCount), MAXROWS):
+            dataReport2[i + 1][CCC_X_index] = self.data.curves[0].X[entryCount - 1]
+            dataReport2[i + 1][CCC_Y_index] = self.data.curves[0].Y[entryCount - 1] / 1000.0
            
         entryCount = len(self.data.curves[1].X)
-        for i in range(0,min(MAXROWS,entryCount)):            
-            dataReport2[i+1][HCC_X_index] = self.data.curves[1].X[i]
-            dataReport2[i+1][HCC_Y_index] = self.data.curves[1].Y[i]/1000.0                              
+        for i in range(0, min(MAXROWS, entryCount)):            
+            dataReport2[i + 1][HCC_X_index] = self.data.curves[1].X[i]
+            dataReport2[i + 1][HCC_Y_index] = self.data.curves[1].Y[i] / 1000.0                              
 
-        for i in range(min(MAXROWS,entryCount),MAXROWS):
-            dataReport2[i+1][HCC_X_index] = self.data.curves[1].X[entryCount-1]
-            dataReport2[i+1][HCC_Y_index] = self.data.curves[1].Y[entryCount-1]/1000.0
+        for i in range(min(MAXROWS, entryCount), MAXROWS):
+            dataReport2[i + 1][HCC_X_index] = self.data.curves[1].X[entryCount - 1]
+            dataReport2[i + 1][HCC_Y_index] = self.data.curves[1].Y[entryCount - 1] / 1000.0
 
 #        print "start qd"
-        for i in range(0,min(MAXROWS,len(QD_T))):
-            dataReport2[i+1][QD_index] = QD_T[i]/1000.0                
-        for i in range(0,min(MAXROWS,len(QA_T))):
-            dataReport2[i+1][QA_index] = QA_T[i]/1000.0
+        for i in range(0, min(MAXROWS, len(QD_T))):
+            dataReport2[i + 1][QD_index] = QD_T[i] / 1000.0                
+        for i in range(0, min(MAXROWS, len(QA_T))):
+            dataReport2[i + 1][QA_index] = QA_T[i] / 1000.0
 
 #        print "end"
 #        print "%s\n"%key,dataReport2
@@ -293,9 +291,9 @@ class ModuleHR(object):
 # Public Methodes
 #----------------------------------------------------------------------------------------------------   
                          
-    def runHRDesign(self,exhx = True):        
-        dlg = DialogGauge(Status.main,_("EINSTEIN heat recovery module"),_("calculating"))
-        self.__runPE2(redesign = True,concondensation = self.ConCondensation, exhx = exhx)
+    def runHRDesign(self, exhx=True):        
+        dlg = DialogGauge(Status.main, _("EINSTEIN heat recovery module"), _("calculating"))
+        self.__runPE2(redesign=True, concondensation=self.ConCondensation, exhx=exhx)
         dlg.update(50.0)
         
         self.__doPostProcessing()
@@ -306,17 +304,21 @@ class ModuleHR(object):
 ### HS2008-10-21: this block is necessary in order to update global demand
 # arrays that will be used in the system simulation
         Status.int.QD_Tt = Status.int.createQ_Tt()   
+        Status.int.QDc_Tt = Status.int.createQ_Tt()   
         Status.int.QA_Tt = Status.int.createQ_Tt()
 
-        for iT in range(Status.NT+2):
+        for iT in range(Status.NT + 2):
             for it in range(Status.Nt):
                 Status.int.QD_Tt[iT][it] = Status.int.USHTotal_Tt[iT][it]
+                Status.int.QDc_Tt[iT][it] = Status.int.USCTotal_Tt[iT][it]
                 Status.int.QA_Tt[iT][it] = Status.int.QWHAmb_Tt[iT][it]
 
         Status.int.QD_T = Status.int.calcQ_T(Status.int.QD_Tt)
+        Status.int.QDc_T = Status.int.calcQ_T(Status.int.QDc_Tt)
         Status.int.QA_T = Status.int.calcQ_T(Status.int.QA_Tt)
 
-        logTrack("Aggregate demand = %s"%str(Status.int.QD_T))
+        logTrack("Aggregate heat demand = %s" % str(Status.int.QD_T))
+        logTrack("Aggregate cooling demand = %s" % str(Status.int.QDc_T))
 
         Status.int.initCascadeArrays(0) #start
 
@@ -324,21 +326,23 @@ class ModuleHR(object):
                       
         dlg.Destroy()
 
-    def runHRModule(self,exhx = True):
-        dlg = DialogGauge(Status.main,_("EINSTEIN heat recovery module"),_("calculating"))
+    def runHRModule(self, exhx=True):
+        dlg = DialogGauge(Status.main, _("EINSTEIN heat recovery module"), _("calculating"))
         redesign_network_flag = None
         if Status.HRTool == "estimate":
             self.__estimativeMethod()
         else:
-            ret = self.__runPE2(redesign = False,concondensation = self.ConCondensation)
-
-            if ret == 0:
-                dlg.update(50.0)
-                self.__doPostProcessing()
-            else:
-                showError("Error in external heat recovery module (PE2)\n"+ \
-                         "\n Recalculating heat recovery in internal mode (estimate)")
-                self.__estimativeMethod()
+            logWarning("Doing the estimative method anyway.")
+            self.__estimativeMethod()
+#            ret = self.__runPE2(redesign = False,concondensation = self.ConCondensation)
+#
+#            if ret == 0:
+#                dlg.update(50.0)
+#                self.__doPostProcessing()
+#            else:
+#                showError("Error in external heat recovery module (PE2)\n"+ \
+#                         "\n Recalculating heat recovery in internal mode (estimate)")
+#                self.__estimativeMethod()
 
         dlg.update(99.0)
 
@@ -352,7 +356,7 @@ class ModuleHR(object):
 # Internal Calculations
 #----------------------------------------------------------------------------------------------------  
 
-    def __runPE2(self,redesign = True, concondensation = False , exhx = True):        
+    def __runPE2(self, redesign=True, concondensation=False , exhx=True):        
         if (redesign):
             logWarning(_("Redesigning HX network. This may take some time. (Tool: PE2)"))
             redesign_network_flag = "t"
@@ -367,22 +371,20 @@ class ModuleHR(object):
                                             
         if Status.schedules.outOfDate == True:
             Status.schedules.create()   #creates the process and equipment schedules
-        
-        inputPath = os.path.join(sys.path[0],"inputHR.xml")                 
-        print "inputPath: ", inputPath
-        XMLExportHRModule.export(inputPath, Status.PId, Status.ANo,exhx)
+                         
+        XMLExportHRModule.export("inputHR.xml", Status.PId, Status.ANo, exhx)
         
         try:
-            args = ['..\PE\ProcessEngineering.exe',"..\GUI\inputHR.xml","..\GUI\export.xml",redesign_network_flag,con_condensation_flag]
+            args = ['..\PE\ProcessEngineering.exe', "..\GUI\inputHR.xml", "..\GUI\export.xml", redesign_network_flag, con_condensation_flag]
             retcode = call(args, shell=True)
-            logDebug(_("External program returned: ")+str(retcode))
-            if (retcode!=0):
+            logDebug(_("External program returned: ") + str(retcode))
+            if (retcode != 0):
                 raise
         except:
             logError(_("Error in external program (ProcessEngineering.exe)"))
 
             if(self.data is None):
-                self.data = HRData(Status.PId,Status.ANo)
+                self.data = HRData(Status.PId, Status.ANo)
 
             return (1)
             
@@ -390,11 +392,11 @@ class ModuleHR(object):
             doc = XMLImportHRModule.importXML("export.xml")                      
 
             if(self.data is None):
-                self.data = HRData(Status.PId,Status.ANo)
+                self.data = HRData(Status.PId, Status.ANo)
             elif ((self.data.ano != Status.ANo) or (self.data.pid != Status.PId)):
-                self.data = HRData(Status.PId,Status.ANo)
+                self.data = HRData(Status.PId, Status.ANo)
                         
-            self.data.loadFromDocument(doc,overrideHX = True)
+            self.data.loadFromDocument(doc, overrideHX=True)
 
             return(0)
                     
@@ -428,7 +430,7 @@ class ModuleHR(object):
         UPHw_T = Status.int.calcQ_T(UPHw_Tt)
 #        print "UPHw_T = %r"%UPHw_T
         
-        for iT in range(Status.NT+2):
+        for iT in range(Status.NT + 2):
             for it in range(Status.Nt):
                 QWHAmb_Tt[iT][it] += Status.int.QWHEqTotal_Tt[iT][it] + Status.int.QWHEE_Tt[iT][it]
         
@@ -445,77 +447,77 @@ class ModuleHR(object):
 #        print "QD_T (PE2) = %r"%self.data.QD_T
 #        print "QA_T (PE2) = %r"%self.data.QA_T
 
-        for iT in range(Status.NT+2):
-            QHX_T_res[iT] = max(Status.int.UPHTotal_T[iT] - self.data.QD_T[iT],0.0)
-            iTw = min(iT+2,Status.NT+1)
+        for iT in range(Status.NT + 2):
+            QHX_T_res[iT] = max(Status.int.UPHTotal_T[iT] - self.data.QD_T[iT], 0.0)
+            iTw = min(iT + 2, Status.NT + 1)
 
             diff = QHX_T_res[iT] - QWHAmb_T[2]
             if diff > 1.e-10:
-                logDebug("ModuleHR (doPostProcessing): Severe error corrected in PE2 results - recovered heat greater than total available waste heat at T = %s"% \
+                logDebug("ModuleHR (doPostProcessing): Severe error corrected in PE2 results - recovered heat greater than total available waste heat at T = %s" % \
                          (Status.int.T[iT]))
-            QHX_T_res[iT] = min(QHX_T_res[iT],QWHAmb_T[2])     #necessary, because waste heat from
+            QHX_T_res[iT] = min(QHX_T_res[iT], QWHAmb_T[2])     #necessary, because waste heat from
                                                                 #exhaust gas not available ...
 #            print "iT %s UPH %s QD %s QHX %s"% \
 #                  (iT,Status.int.UPHTotal_T[iT],self.data.QD_T[iT],QHX_T_res[iT])
 
 # security check. in some cases strange behaviour is obtained
-        for iT in range(Status.NT,-1,-1):
-            diff = QHX_T_res[iT] - QHX_T_res[iT+1]
+        for iT in range(Status.NT, -1, -1):
+            diff = QHX_T_res[iT] - QHX_T_res[iT + 1]
             if diff > 1.e-10:
-                logDebug("ModuleHR (doPostProcessing): Severe error corrected in PE2 results - negative slope in QHX at T = %s"% \
+                logDebug("ModuleHR (doPostProcessing): Severe error corrected in PE2 results - negative slope in QHX at T = %s" % \
                          (Status.int.T[iT]))
-            QHX_T_res[iT] = min(QHX_T_res[iT],QHX_T_res[iT+1])
+            QHX_T_res[iT] = min(QHX_T_res[iT], QHX_T_res[iT + 1])
 
 #..............................................................................
 # now distribute QHX_T to the time intervals
 
-        dQHX_T =Status.int.createQ_T()   #exchanged heat correspon
+        dQHX_T = Status.int.createQ_T()   #exchanged heat correspon
                                 
-        for timeShift in range(0,25):  # maximum one day time shift ... if that's not enough send error message !!!
+        for timeShift in range(0, 25):  # maximum one day time shift ... if that's not enough send error message !!!
 
 #            print "time shift = %s"%timeShift
             
-            dQHX_Tt = self.__maxHRPotential(UPHProc_Tt,QWHAmb_Tt,timeShift)
+            dQHX_Tt = self.__maxHRPotential(UPHProc_Tt, QWHAmb_Tt, timeShift)
 
             dQHXmax_T = Status.int.calcQ_T(dQHX_Tt)    # maximum heat recovery as reference for calculating fR
 
 # 1. if the actual heat recovery is less than the maximum possible, shift HCC to the left
-            QUnUsed = max(dQHXmax_T[Status.NT+1] - QHX_T_res[Status.NT+1],0.0)
-            dQHXmax = dQHXmax_T[Status.NT+1] - QUnUsed
+            QUnUsed = max(dQHXmax_T[Status.NT + 1] - QHX_T_res[Status.NT + 1], 0.0)
+            dQHXmax = dQHXmax_T[Status.NT + 1] - QUnUsed
 
             dQHX_T[0] = 0
-            for iT in range(1,Status.NT+2):       
+            for iT in range(1, Status.NT + 2):       
 
 # 2. dQHX_T = QHX_T_res; constrained by theoretical limit: dQHX_T >= dQHXmax_T
 
                 dQHX_T[iT] = max(dQHXmax_T[iT] - QUnUsed, QHX_T_res[iT])
-                dQHX_T[iT] = max(dQHX_T[iT],dQHX_T[iT-1])
+                dQHX_T[iT] = max(dQHX_T[iT], dQHX_T[iT - 1])
 
 # 3. theoretical limit: dQHX <= dQHXmax
-                dQHX_T[iT] = min(dQHX_T[iT],dQHXmax)
+                dQHX_T[iT] = min(dQHX_T[iT], dQHXmax)
                                     
 # 4. theoretical limit: dQHX/dT <= dUPH/dT
 
-                maxSlopeD = max(UPHProc_T[iT] - UPHProc_T[iT-1],0.0)
-                maxSlopeRes = max(QHX_T_res[iT] - QHX_T_res[iT-1],0.0)
+                maxSlopeD = max(UPHProc_T[iT] - UPHProc_T[iT - 1], 0.0)
+                maxSlopeRes = max(QHX_T_res[iT] - QHX_T_res[iT - 1], 0.0)
 
 # this should be no longer necessary, already implicit in condition QHX_T < HCC_real_T
-                iTw = iT+2
+                iTw = iT + 2
 
-                if iTw <= Status.NT+2:
-                    maxSlopeA = max(QWHAmb_T[iTw-1],0.0)
+                if iTw <= Status.NT + 2:
+                    maxSlopeA = max(QWHAmb_T[iTw - 1], 0.0)
                 else:
                     maxSlopeA = 0.0
                 
-                maxSlope = min(maxSlopeA,maxSlopeD)
-                maxSlope = min(maxSlopeRes,maxSlope)
+                maxSlope = min(maxSlopeA, maxSlopeD)
+                maxSlope = min(maxSlopeRes, maxSlope)
 
-                dQHX_T[iT] = min(dQHX_T[iT],dQHX_T[iT-1] + maxSlope)
+                dQHX_T[iT] = min(dQHX_T[iT], dQHX_T[iT - 1] + maxSlope)
 
                 if UPHProc_T[iT] > 0:
-                    fR = dQHX_T[iT]/UPHProc_T[iT]
+                    fR = dQHX_T[iT] / UPHProc_T[iT]
                     for it in range(Status.Nt):
-                        dQHX_Tt[iT][it] = UPHProc_Tt[iT][it]*fR #correction real vs. theoretical (maximum) heat recovery
+                        dQHX_Tt[iT][it] = UPHProc_Tt[iT][it] * fR #correction real vs. theoretical (maximum) heat recovery
 
                 else:
                     fR = -1.0
@@ -524,7 +526,7 @@ class ModuleHR(object):
             
 # check constraint dQHX/dT <= dUPH/dT for each time interval
 
-            for iT in range(1,Status.NT+2):       
+            for iT in range(1, Status.NT + 2):       
 #                print "CHECKING constraint dQHX/dT <= dUPH/dT for instantaneous dQHX at iT = %s"%iT
                 for n in range(10):
                     dP = 0.0
@@ -536,8 +538,8 @@ class ModuleHR(object):
                     NList = []
                     dQP = []
                     for it in range(Status.Nt):
-                        ddQHX = dQHX_Tt[iT][it] - dQHX_Tt[iT-1][it]
-                        dUPHProc = UPHProc_Tt[iT][it] - UPHProc_Tt[iT-1][it]
+                        ddQHX = dQHX_Tt[iT][it] - dQHX_Tt[iT - 1][it]
+                        dUPHProc = UPHProc_Tt[iT][it] - UPHProc_Tt[iT - 1][it]
                         
                         if ddQHX > (dUPHProc + EPS):
                             dP += ddQHX - dUPHProc
@@ -558,24 +560,24 @@ class ModuleHR(object):
 #                        print "dQHX_Tt check interrupted after %s iterations"%n
                         break
                     else:
-                        for iTp in range(iT,Status.NT+2):
+                        for iTp in range(iT, Status.NT + 2):
                             for it in PList:
                                 dQHX_Tt[iTp][it] -= dQP[it]
 #                                print "dQHX_Tt[%s][%s] updated by dQP from %s to %s"% \
 #                                      (iTp,it,dQHX_Tt[iTp][it]+dQP[it],dQHX_Tt[iTp][it])
                                 
                             for it in NList:
-                                dQHX_Tt[iT][it] += dP/nN
+                                dQHX_Tt[iT][it] += dP / nN
 #                                print "dQHX_Tt[%s][%s] updated by dP/nN from %s to %s"% \
 #                                      (iTp,it,dQHX_Tt[iTp][it]-dP/nN,dQHX_Tt[iTp][it])
 
                     if n == 9:
-                        logDebug("ModuleHR (doPostProcessing): ERROR - dQHX_Tt check not converged for iT = %s!!!!"%iT)
+                        logDebug("ModuleHR (doPostProcessing): ERROR - dQHX_Tt check not converged for iT = %s!!!!" % iT)
 
 
 # check constraint dQHX_Tt/dT >= 0
 
-            for iT in range(1,Status.NT+2):       
+            for iT in range(1, Status.NT + 2):       
 #                print "CHECKING constraint dQHX/dT >= 0 for instantaneous dQHX"
                 for n in range(10):
                     dP = 0.0
@@ -587,9 +589,9 @@ class ModuleHR(object):
                     NList = []
                     dQP = []
                     for it in range(Status.Nt):
-                        ddQHX = dQHX_Tt[iT][it] - dQHX_Tt[iT-1][it]
+                        ddQHX = dQHX_Tt[iT][it] - dQHX_Tt[iT - 1][it]
                         
-                        if ddQHX < - EPS:
+                        if ddQHX < -EPS:
                             dP -= ddQHX
                             nP += 1
                             PList.append(it)
@@ -607,7 +609,7 @@ class ModuleHR(object):
 #                        print "dQHX_Tt check 2 interrupted after %s iterations"%n
                         break
                     else:
-                        for iTp in range(iT,Status.NT+2):
+                        for iTp in range(iT, Status.NT + 2):
                             for it in PList:
                                 dQHX_Tt[iTp][it] += dQP[it]
                                 
@@ -615,14 +617,14 @@ class ModuleHR(object):
 #                                      (iTp,it,dQHX_Tt[iTp][it]-dQP[it],dQHX_Tt[iTp][it])
                                 
                             for it in NList:
-                                dQHX_Tt[iTp][it] -= dP/nN
+                                dQHX_Tt[iTp][it] -= dP / nN
                                 
 #                                print "dQHX_Tt[%s][%s] updated from %s to %s"% \
 #                                      (iTp,it,dQHX_Tt[iTp][it]+dP/nN,dQHX_Tt[iTp][it])
                     
 
 # now add/subtract dQHX (for the present time shift) from QHXProc/UPHProc
-            for iT in range(1,Status.NT+2):
+            for iT in range(1, Status.NT + 2):
                 for it in range(Status.Nt):
 
                     QHXProc_Tt[iT][it] += dQHX_Tt[iT][it]
@@ -633,24 +635,24 @@ class ModuleHR(object):
 
 # substract exchanged heat from residual QHX still to be allocated
 
-            for iT in range(Status.NT+2):
+            for iT in range(Status.NT + 2):
                 QHX_T_res[iT] -= dQHX_T[iT]
-                QHX_T_res[iT] = max(QHX_T_res[iT],0.0)
+                QHX_T_res[iT] = max(QHX_T_res[iT], 0.0)
 
             for it in range(Status.Nt):
 
-                itw = (it + Status.Nt - timeShift)%Status.Nt
+                itw = (it + Status.Nt - timeShift) % Status.Nt
                 
-                for iTw in range(Status.NT+1):
-                    iT = max(iTw-2,0)
-                    QWHAmb_Tt[iTw][itw] -= (dQHX_Tt[Status.NT+1][it] - dQHX_Tt[iT][it])
-                    QWHAmb_Tt[iTw][itw] = max(QWHAmb_Tt[iTw][itw],0.0)
+                for iTw in range(Status.NT + 1):
+                    iT = max(iTw - 2, 0)
+                    QWHAmb_Tt[iTw][itw] -= (dQHX_Tt[Status.NT + 1][it] - dQHX_Tt[iT][it])
+                    QWHAmb_Tt[iTw][itw] = max(QWHAmb_Tt[iTw][itw], 0.0)
                     if iTw > 0:
-                        QWHAmb_Tt[iTw][itw] = min(QWHAmb_Tt[iTw][itw],QWHAmb_Tt[iTw-1][itw])    #guarantee monotonous curve
+                        QWHAmb_Tt[iTw][itw] = min(QWHAmb_Tt[iTw][itw], QWHAmb_Tt[iTw - 1][itw])    #guarantee monotonous curve
 
             QWHAmb_T = Status.int.calcQ_T(QWHAmb_Tt)
 
-            if QHX_T_res[Status.NT+1] < 0.01*UPHProc_T[Status.NT+1]:
+            if QHX_T_res[Status.NT + 1] < 0.01 * UPHProc_T[Status.NT + 1]:
                 break
 
             elif timeShift == 24:
@@ -660,10 +662,10 @@ class ModuleHR(object):
 #..............................................................................
                            
 
-        self.__storeResults(UPHProc_Tt,QHXProc_Tt,QWHAmb_Tt)
+        self.__storeResults(UPHProc_Tt, QHXProc_Tt, QWHAmb_Tt)
             
 #------------------------------------------------------------------------------
-    def __maxHRPotential(self,UPH_Tt,QWH_Tt,timeShift):
+    def __maxHRPotential(self, UPH_Tt, QWH_Tt, timeShift):
 #------------------------------------------------------------------------------
 #       returns a vector with the maximum heat recovery potential
 #       for a given time and temperature shift
@@ -679,7 +681,7 @@ class ModuleHR(object):
 
         for it in range(Status.Nt):
 
-            itw = (it + Status.Nt - timeShift)%Status.Nt
+            itw = (it + Status.Nt - timeShift) % Status.Nt
 
 #..............................................................................
 
@@ -688,17 +690,17 @@ class ModuleHR(object):
             QWH_max = QWH_Tt[2][itw]   
             
             for iT in range(Status.NT):
-                QHX_Tt[iT][it] = (QWH_max - QWH_Tt[iT+2][itw])  #maximum available energy
-            QHX_Tt[Status.NT][it]   = QHX_Tt[Status.NT-1][it]         #includes shift by DTmin
-            QHX_Tt[Status.NT+1][it] = QHX_Tt[Status.NT-1][it]
+                QHX_Tt[iT][it] = (QWH_max - QWH_Tt[iT + 2][itw])  #maximum available energy
+            QHX_Tt[Status.NT][it] = QHX_Tt[Status.NT - 1][it]         #includes shift by DTmin
+            QHX_Tt[Status.NT + 1][it] = QHX_Tt[Status.NT - 1][it]
 
 #then shift so that QHX always < UPH -> = Hot Composite Curve
             shift = 0.0
-            for iT in range(Status.NT+2):
-                shift = max(shift,QHX_Tt[iT][it]-UPH_Tt[iT][it])      #assure that QHXProc < UPH
+            for iT in range(Status.NT + 2):
+                shift = max(shift, QHX_Tt[iT][it] - UPH_Tt[iT][it])      #assure that QHXProc < UPH
 
-            for iT in range(Status.NT+2):
-                QHX_Tt[iT][it] = max(0.0,QHX_Tt[iT][it]-shift)          # = shift of HCC in Q
+            for iT in range(Status.NT + 2):
+                QHX_Tt[iT][it] = max(0.0, QHX_Tt[iT][it] - shift)          # = shift of HCC in Q
 
 #            print "shift(%s) = %s, QWHmax: %s QHX[2] %s QHX[3] %s QHXtotal %s"% \
 #                  (it,shift,QWH_max,QHX_Tt[2][it],QHX_Tt[3][it],QHX_Tt[Status.NT+1][it])
@@ -714,7 +716,7 @@ class ModuleHR(object):
         try:
             streams = self.data.streams[:]
             
-            hidden  = self.data.getStreamsFromHiddenHX(self.HiddenHX)
+            hidden = self.data.getStreamsFromHiddenHX(self.HiddenHX)
             for stream in hidden:
                 streams.append(stream)
         except:
@@ -746,7 +748,7 @@ class ModuleHR(object):
         
         try:
             streams = self.data.streams[:]
-            hidden  = self.data.getStreamsFromHiddenHX(self.HiddenHX)
+            hidden = self.data.getStreamsFromHiddenHX(self.HiddenHX)
             for stream in hidden:
                 streams.append(stream)
 
@@ -779,74 +781,74 @@ class ModuleHR(object):
     
     def __calcQD_Tt(self):
         streams = self.data.streams[:]
-        hidden  = self.data.getStreamsFromHiddenHX(self.HiddenHX)
+        hidden = self.data.getStreamsFromHiddenHX(self.HiddenHX)
         for stream in hidden:
             streams.append(stream)
             
         temperature_step = 5
-        time_step        = 1
+        time_step = 1
         
         QD_Tt = []
 
-        for hours in xrange(0,8760,time_step):
+        for hours in xrange(0, 8760, time_step):
             QD_Tt.append([])
-            for temperature in xrange(0,406,temperature_step):
-                QD_Tt[hours/time_step].append(0)
+            for temperature in xrange(0, 406, temperature_step):
+                QD_Tt[hours / time_step].append(0)
         
-        for hours in xrange(0,8760,time_step):
-            for temperature in xrange(0,406,temperature_step):
+        for hours in xrange(0, 8760, time_step):
+            for temperature in xrange(0, 406, temperature_step):
                 for stream in streams:                
                     if (stream.HotColdType == "cold"):
                         if (hours < stream.OperatingHours):                            
                             if  ((temperature - stream.StartTemp) > 0) and (stream.HeatType == "sensible"):  
                                 if (temperature <= stream.EndTemp and stream.EndTemp <> stream.StartTemp):
-                                    QD_Tt[hours/time_step][temperature/temperature_step]+= stream.HeatLoad / \
+                                    QD_Tt[hours / time_step][temperature / temperature_step] += stream.HeatLoad / \
                                                                                            abs(stream.EndTemp - stream.StartTemp) * \
                                                                                            abs(temperature - stream.StartTemp) * time_step                                       
                                 else:
-                                    QD_Tt[hours/time_step][temperature/temperature_step]+= stream.HeatLoad * time_step
+                                    QD_Tt[hours / time_step][temperature / temperature_step] += stream.HeatLoad * time_step
                             else:
                                 if (stream.HeatType == "latent")  and ((temperature - stream.StartTemp) >= 0):
-                                    QD_Tt[hours/time_step][temperature/temperature_step]+= stream.HeatLoad * time_step
+                                    QD_Tt[hours / time_step][temperature / temperature_step] += stream.HeatLoad * time_step
         self.data.QD_Tt = QD_Tt     
 #        self.debugPrint("QD_Tt.csv", QD_Tt)     
     
     
     def __calcQA_Tt(self):
         streams = self.data.streams[:]
-        hidden  = self.data.getStreamsFromHiddenHX(self.HiddenHX)
+        hidden = self.data.getStreamsFromHiddenHX(self.HiddenHX)
         for stream in hidden:
             streams.append(stream)
             
         temperature_step = 5
-        time_step        = 1
+        time_step = 1
         
         QA_Tt = []
         
-        for hours in xrange(0,8760,time_step):
+        for hours in xrange(0, 8760, time_step):
             QA_Tt.append([])
-            for temperature in xrange(0,406,temperature_step):
-                QA_Tt[hours/time_step].append(0)
+            for temperature in xrange(0, 406, temperature_step):
+                QA_Tt[hours / time_step].append(0)
                 
-        for hours in xrange(0,8760,time_step):  
-            for temperature in xrange(406,0,-temperature_step):                      
+        for hours in xrange(0, 8760, time_step):  
+            for temperature in xrange(406, 0, -temperature_step):                      
                 for stream in streams:                
                     if (stream.HotColdType == "hot"):
                         if (hours < stream.OperatingHours):                            
                             if  ((temperature - stream.StartTemp) <= 0) and (stream.HeatType == "sensible"):  
                                 if (temperature >= stream.EndTemp):
-                                    QA_Tt[hours/time_step][temperature/temperature_step]+= stream.HeatLoad / abs(stream.EndTemp - stream.StartTemp) * abs(temperature - stream.StartTemp) * time_step                                       
+                                    QA_Tt[hours / time_step][temperature / temperature_step] += stream.HeatLoad / abs(stream.EndTemp - stream.StartTemp) * abs(temperature - stream.StartTemp) * time_step                                       
                                 else:
-                                    QA_Tt[hours/time_step][temperature/temperature_step]+= stream.HeatLoad * time_step
+                                    QA_Tt[hours / time_step][temperature / temperature_step] += stream.HeatLoad * time_step
                             else:
                                 if (stream.HeatType == "latent")  and ((temperature - stream.StartTemp) <= 0):
-                                    QA_Tt[hours/time_step][temperature/temperature_step]+= stream.HeatLoad * time_step
+                                    QA_Tt[hours / time_step][temperature / temperature_step] += stream.HeatLoad * time_step
         self.data.QA_Tt = QA_Tt
         #self.debugPrint("QA_Tt.csv", QA_Tt)   
 
 
 #------------------------------------------------------------------------------
-    def ShowHideHX(self,index):   
+    def ShowHideHX(self, index):   
 #------------------------------------------------------------------------------
 #called when "Show/HideHX"-Button pressed
 #1) adds or removes the index of the hx to the/fromthe hide list
@@ -869,7 +871,7 @@ class ModuleHR(object):
             
      
 #------------------------------------------------------------------------------
-    def changeHX(self,index):
+    def changeHX(self, index):
 #------------------------------------------------------------------------------
 # recalculates cost values for HEX
 # uses values from DlgChangeHX
@@ -880,11 +882,11 @@ class ModuleHR(object):
                 hx = self.data.hexers[index]
                 dlg = DlgChangeHX(None)
             
-                types = ['sst_liquid','sst_gaseous','sst_condensation']
+                types = ['sst_liquid', 'sst_gaseous', 'sst_condensation']
                 hoti = types.index(hx["StreamStatusSource"])
-                coldi= types.index(hx["StreamStatusSink"])
+                coldi = types.index(hx["StreamStatusSink"])
             
-                dlg.LockChoices(hoti,coldi)
+                dlg.LockChoices(hoti, coldi)
                 dlg.ShowModal()
             except:
                 logError(_("SteamStatusSink/StreamStatusSource not defined. Can't do recalculation"))
@@ -894,10 +896,10 @@ class ModuleHR(object):
 #                print "Recalc hx:"
                 #calculation of hx cost             
                 wall_thickness = 0.001
-                Lambda         = 15.0
-                AlphaL         = dlg.AlphaLiquid()
-                AlphaG         = dlg.AlphaGas()
-                AlphaC         = dlg.AlphaPC()
+                Lambda = 15.0
+                AlphaL = dlg.AlphaLiquid()
+                AlphaG = dlg.AlphaGas()
+                AlphaC = dlg.AlphaPC()
                 
                 material_type = dlg.MaterialType()
                 if (material_type == HXConsts.MAT_TYPE_CS):
@@ -910,34 +912,34 @@ class ModuleHR(object):
                 cold = Stream()
                 cold.generateColdStreamFromHEX(hx)
                 
-                deltas = [ [10.0, 15.0, 7.5 ],[15.0,20.0,12.5],[7.5,12.5,5.0]]   #0=liquid, 1=gas, 2=cont
-                alphas = [AlphaL,AlphaG,AlphaC]                        #0=liquid, 1=gas, 2=cont                                                      
-                alpha_hot_stream  = alphas[hoti]
+                deltas = [ [10.0, 15.0, 7.5 ], [15.0, 20.0, 12.5], [7.5, 12.5, 5.0]]   #0=liquid, 1=gas, 2=cont
+                alphas = [AlphaL, AlphaG, AlphaC]                        #0=liquid, 1=gas, 2=cont                                                      
+                alpha_hot_stream = alphas[hoti]
                 alpha_cold_stream = alphas[coldi]                                              
                 
-                delta_T_in  = abs(hot.StartTemp - cold.EndTemp)   
-                delta_T_out = abs(hot.EndTemp   - cold.StartTemp)                 
-                delta_T_max = max(delta_T_in,delta_T_out)
-                delta_T_min = min(delta_T_in,delta_T_out)
+                delta_T_in = abs(hot.StartTemp - cold.EndTemp)   
+                delta_T_out = abs(hot.EndTemp - cold.StartTemp)                 
+                delta_T_max = max(delta_T_in, delta_T_out)
+                delta_T_min = min(delta_T_in, delta_T_out)
                 
-                delta_T_logaritmic = (delta_T_max - delta_T_min)/log10(delta_T_max / delta_T_min)
+                delta_T_logaritmic = (delta_T_max - delta_T_min) / log10(delta_T_max / delta_T_min)
                 
                 one_div_k = 1 / alpha_hot_stream + wall_thickness / Lambda + 1 / alpha_cold_stream
-                k         = 1 / one_div_k
-                area_value= float(hx["QdotHX"]) / ((k / 1000) * delta_T_logaritmic)
+                k = 1 / one_div_k
+                area_value = float(hx["QdotHX"]) / ((k / 1000) * delta_T_logaritmic)
                 
-                hxtype = dlg.HXType(hoti,coldi)
+                hxtype = dlg.HXType(hoti, coldi)
                 
                 if (hxtype == HXConsts.HX_TYPE_P):
 #                    print "PLATE"
-                    K1 =  4.6656
+                    K1 = 4.6656
                     K2 = -0.1557
-                    K3 =  0.1547
-                    C1 =  0
-                    C2 =  0
-                    C3 =  0
-                    B1 =  0.96
-                    B2 =  1.21       
+                    K3 = 0.1547
+                    C1 = 0
+                    C2 = 0
+                    C3 = 0
+                    B1 = 0.96
+                    B2 = 1.21       
                     material_factor = 0
                     if (material_type == "SS"):
                         material_factor = 2.45                                    
@@ -950,14 +952,14 @@ class ModuleHR(object):
                                 
                 elif (hxtype == HXConsts.HX_TYPE_S):  
 #                    print "SHELL"              
-                    K1 =  3.9912
-                    K2 =  0.0668
-                    K3 =  0.243
-                    C1 =  -0.4045
-                    C2 =  0.1859
-                    C3 =  0
-                    B1 =  1.75
-                    B2 =  1.55
+                    K1 = 3.9912
+                    K2 = 0.0668
+                    K3 = 0.243
+                    C1 = -0.4045
+                    C2 = 0.1859
+                    C3 = 0
+                    B1 = 1.75
+                    B2 = 1.55
                     
                     material_factor = 0
                     if (material_type == "SS"):                      
@@ -970,24 +972,24 @@ class ModuleHR(object):
                         material_factor = 1.69  
                  
                 
-                purchased_cost = pow(10,K1 + K2 * log10(area_value)+ K3 * log10(area_value)*log10(area_value))
-                pressure_value  = dlg.PressureValue()
-                pressure_factor = pow(10,C1 + C2*log10(pressure_value) + C3*log10(pressure_value)*log10(pressure_value))
+                purchased_cost = pow(10, K1 + K2 * log10(area_value) + K3 * log10(area_value) * log10(area_value))
+                pressure_value = dlg.PressureValue()
+                pressure_factor = pow(10, C1 + C2 * log10(pressure_value) + C3 * log10(pressure_value) * log10(pressure_value))
                 
                 bare_module_factor = B1 + B2 * material_factor * pressure_factor
                 cepci_2001 = 394.3
                 cepci_2008 = 539.7
                 USD_EUR_ratio = 1.55
                 
-                v2001_USD_cost = purchased_cost*bare_module_factor
+                v2001_USD_cost = purchased_cost * bare_module_factor
                 v2008_USD_cost = v2001_USD_cost * cepci_2008 / cepci_2001
                 v2008_EUR_cost = v2008_USD_cost / USD_EUR_ratio 
                                                 
                 add_perc_cost = dlg.AdditionalCostPercent()
-                v2008_EUR_cost_new = v2008_EUR_cost - 0.22*v2008_EUR_cost + (0.22+add_perc_cost/100.0) * v2008_EUR_cost
+                v2008_EUR_cost_new = v2008_EUR_cost - 0.22 * v2008_EUR_cost + (0.22 + add_perc_cost / 100.0) * v2008_EUR_cost
 
                 if (v2008_EUR_cost_new / area_value > 5000):                    
-                    x = area_value/50000.0
+                    x = area_value / 50000.0
                     v2008_EUR_cost_new = v2008_EUR_cost_new * 0.4 * exp(-x)
                 if (area_value < 10):
                     v2008_EUR_cost_new = area_value * 2000;                        
@@ -995,8 +997,8 @@ class ModuleHR(object):
                     v2008_EUR_cost_new = area_value * 10000;
 
                 HEX_OMcost = v2008_EUR_cost_new / 15 \
-                             + 0.004*v2008_EUR_cost_new \
-                             + 0.01*v2008_EUR_cost_new
+                             + 0.004 * v2008_EUR_cost_new \
+                             + 0.01 * v2008_EUR_cost_new
                 
 #                print "pressure_factor:" + str(pressure_factor)
 #                print "pressure_value:" + str(pressure_value)
@@ -1007,8 +1009,8 @@ class ModuleHR(object):
 #                print "OMFix[EUR]:"+str(HEX_OMcost)
              
                 #store new information in Database
-                query = "UPDATE qheatexchanger SET HXType='%s', TurnKeyPrice=%s, OMFix=%s, Area=%s" % (hxtype,v2008_EUR_cost_new,HEX_OMcost,area_value)
-                query +="WHERE QHeatExchanger_ID=%s;" % (hx["QHeatExchanger_ID"])
+                query = "UPDATE qheatexchanger SET HXType='%s', TurnKeyPrice=%s, OMFix=%s, Area=%s" % (hxtype, v2008_EUR_cost_new, HEX_OMcost, area_value)
+                query += "WHERE QHeatExchanger_ID=%s;" % (hx["QHeatExchanger_ID"])
                 Status.DB.sql_query(query)
                 
                 #updateInformation in panel                                                                           
@@ -1045,8 +1047,8 @@ class ModuleHR(object):
         UPHw_Tt = Status.int.UPHwTotal_Tt
 
         QWH_Tt = copy.deepcopy(UPHw_Tt)      # initial value = UPHw (QWHProc) + QWHEq. will be reduced by QHX
-        for iT in range(Status.NT+2):
-            for it in range(Status.Nt):
+        for iT in xrange(Status.NT + 2):
+            for it in xrange(Status.Nt):
                 QWH_Tt[iT][it] += Status.int.QWHEqTotal_Tt[iT][it] + Status.int.QWHEE_Tt[iT][it]
         
         QWHAmb_Tt = copy.deepcopy(QWH_Tt)      # initial value = UPHw (QWHProc) + QWHEq. will be reduced by QHX
@@ -1064,7 +1066,7 @@ class ModuleHR(object):
 #..............................................................................
 #..............................................................................
 
-        for it in range(Status.Nt):
+        for it in xrange(Status.Nt):
 
 #..............................................................................
 
@@ -1072,41 +1074,41 @@ class ModuleHR(object):
 
             QWH_max = QWH_Tt[2][it]   
             
-            for iT in range(Status.NT):
-                QHXProc_Tt[iT][it] = fHR*(QWH_max - QWH_Tt[iT+2][it])  #maximum available energy
+            for iT in xrange(Status.NT):
+                QHXProc_Tt[iT][it] = fHR * (QWH_max - QWH_Tt[iT + 2][it])  #maximum available energy
                 if iT > 0:
-                    if QHXProc_Tt[iT][it] <= QHXProc_Tt[iT-1][it] - 0.001:
-                        logDebug("error in slope of QWH[%s][%s]"%(iT,it))
+                    if QHXProc_Tt[iT][it] <= QHXProc_Tt[iT - 1][it] - 0.001:
+                        logDebug("error in slope of QWH[%s][%s]" % (iT, it))
 
-            QHXProc_Tt[Status.NT][it]   = QHXProc_Tt[Status.NT-1][it]         #includes shift by DTmin
-            QHXProc_Tt[Status.NT+1][it] = QHXProc_Tt[Status.NT-1][it]
+            QHXProc_Tt[Status.NT][it] = QHXProc_Tt[Status.NT - 1][it]         #includes shift by DTmin
+            QHXProc_Tt[Status.NT + 1][it] = QHXProc_Tt[Status.NT - 1][it]
 
 #then shift so that QHXProc always < UPH -> = Hot Composite Curve
             shift = 0.0
-            for iT in range(Status.NT+2):
-                shift = max(shift,QHXProc_Tt[iT][it]-UPH_Tt[iT][it])      #assure that QHXProc < UPH
+            for iT in xrange(Status.NT + 2):
+                shift = max(shift, QHXProc_Tt[iT][it] - UPH_Tt[iT][it])      #assure that QHXProc < UPH
 
-            for iT in range(Status.NT+2):
-                QHXProc_Tt[iT][it] = max(0.0,QHXProc_Tt[iT][it]-shift)    # = shift of HCC in Q
+            for iT in xrange(Status.NT + 2):
+                QHXProc_Tt[iT][it] = max(0.0, QHXProc_Tt[iT][it] - shift)    # = shift of HCC in Q
 
                 if iT > 0:
-                    if QHXProc_Tt[iT][it] <= QHXProc_Tt[iT-1][it] - 0.001:
-                        logDebug("error in slope of QHXProc[%s][%s] after shift"%(iT,it))
+                    if QHXProc_Tt[iT][it] <= QHXProc_Tt[iT - 1][it] - 0.001:
+                        logDebug("error in slope of QHXProc[%s][%s] after shift" % (iT, it))
             
 #substract recovered heat from total available waste heat -> QHWAmb
-            QHXProc_max = QHXProc_Tt[Status.NT+1][it]
+            QHXProc_max = QHXProc_Tt[Status.NT + 1][it]
             QWHAmb_Tt[0][it] = QWH_Tt[0][it]
             QWHAmb_Tt[1][it] = QWH_Tt[1][it]
-            for iT in range(2,Status.NT+2):
-                QWHAmb_Tt[iT][it] = QWH_Tt[iT][it] - (QHXProc_max-QHXProc_Tt[iT-2][it])
+            for iT in xrange(2, Status.NT + 2):
+                QWHAmb_Tt[iT][it] = QWH_Tt[iT][it] - (QHXProc_max - QHXProc_Tt[iT - 2][it])
                 
 #substract recovered heat from demand -> UPHProc
-            for iT in range(Status.NT+2):
+            for iT in xrange(Status.NT + 2):
                 UPHProc_Tt[iT][it] = UPH_Tt[iT][it] - QHXProc_Tt[iT][it] 
 
 #cut "noses" in UPHProc
-            for iT in range(Status.NT,-1,-1):
-                UPHProc_Tt[iT][it] = min(UPHProc_Tt[iT+1][it],UPHProc_Tt[iT][it])
+            for iT in xrange(Status.NT, -1, -1):
+                UPHProc_Tt[iT][it] = min(UPHProc_Tt[iT + 1][it], UPHProc_Tt[iT][it])
 
 #                if iT > 0:
 #                    if UPHProc_Tt[iT][it] <= UPHProc_Tt[iT-1][it] - 0.001:
@@ -1114,16 +1116,16 @@ class ModuleHR(object):
                            
 #..............................................................................
                 
-        self.__storeResults(UPHProc_Tt,QHXProc_Tt,QWHAmb_Tt)
+        self.__storeResults(UPHProc_Tt, QHXProc_Tt, QWHAmb_Tt)
         
 #------------------------------------------------------------------------------
-    def __storeResults(self,UPHProc_Tt,QHXProc_Tt,QWHAmb_Tt):
+    def __storeResults(self, UPHProc_Tt, QHXProc_Tt, QWHAmb_Tt):
 #------------------------------------------------------------------------------
 
 #..............................................................................
 # settings of the conversion UPH -> USH
 
-        (projectData,generalData) = Status.prj.getProjectData()
+        (projectData, generalData) = Status.prj.getProjectData()
         if generalData.HDEffAvg is not None:
             DistributionEfficiency = generalData.HDEffAvg
         else:
@@ -1131,49 +1133,58 @@ class ModuleHR(object):
             DistributionEfficiency = 0.9
 
         if DistributionEfficiency < 0.3:
-            logWarning("Very low distribution efficiency: %s. Revise your data"%DistributionEfficiency)
+            logWarning("Very low distribution efficiency: %s. Revise your data" % DistributionEfficiency)
             
-        fDist = 1./max(DistributionEfficiency,0.1)  #distribution efficiency < 10% doesn't make much sense
+        fDist = 1. / max(DistributionEfficiency, 0.1)  #distribution efficiency < 10% doesn't make much sense
         
-#..............................................................................
-#..............................................................................
-# from UPHext to USH: shift in temperature (10 K) and divide by distribution efficiency
-
+        # from UPHext to USH: shift in temperature (10 K) and divide by distribution efficiency
+        # for cooling simulate calculations by shifting -6 K and use the same distribution efficiency
         USH_Tt = Status.int.createQ_Tt()        # heat demand at entry of pipes
+        USC_Tt = Status.int.createQ_Tt()        # cooling demand at entry of pipes
 
-        for it in range(Status.Nt):
-            
+        for it in xrange(Status.Nt):
             USH_Tt[0][it] = 0
             USH_Tt[1][it] = 0
-            for iT in range(2,Status.NT+2):
-                USH_Tt[iT][it] = UPHProc_Tt[iT-2][it]*fDist
-
-#..............................................................................
-#..............................................................................
-
+            for iT in xrange(2, Status.NT + 2):
+                USH_Tt[iT][it] = UPHProc_Tt[iT - 2][it] * fDist
+        for it in xrange(Status.Nt):
+            USC_Tt[Status.NT + 1][it] = 0
+            USC_Tt[Status.NT][it] = 0
+            USC_Tt[Status.NT - 1][it] = 0
+            for iT in xrange(3, Status.NT + 2):
+                USC_Tt[iT - 3][it] = Status.int.UPCTotal_Tt[iT][it] * fDist
+            
+        #..............................................................................
         Status.int.USHTotal_Tt = USH_Tt
+        Status.int.USCTotal_Tt = USC_Tt
         Status.int.UPHProcTotal_Tt = UPHProc_Tt
+        Status.int.UPCProcTotal_Tt = copy.deepcopy(Status.int.UPCTotal_Tt)
         Status.int.QHXProcTotal_Tt = QHXProc_Tt
         Status.int.QWHAmb_Tt = QWHAmb_Tt
 
         Status.int.USHTotal_T = Status.int.calcQ_T(USH_Tt)
+        Status.int.USCTotal_T = Status.int.calcQ_T(USC_Tt)
         Status.int.UPHProcTotal_T = Status.int.calcQ_T(UPHProc_Tt)
+        Status.int.UPCProcTotal_T = Status.int.calcQ_T(Status.int.UPCProcTotal_Tt)
         Status.int.QHXProcTotal_T = Status.int.calcQ_T(QHXProc_Tt)
         Status.int.QWHAmb_T = Status.int.calcQ_T(QWHAmb_Tt)
 
-        Status.int.USHTotal = Status.int.USHTotal_T[Status.NT+1]
-        
+        Status.int.USHTotal = Status.int.USHTotal_T[Status.NT + 1]
+        Status.int.USCTotal = Status.int.USCTotal_T[0]
 #..............................................................................
 # copying USH/QWHAmb to QD/QA copied into runHRModule                           
         Status.int.QD_Tt = Status.int.createQ_Tt()   
+        Status.int.QDc_Tt = Status.int.createQ_Tt() 
         Status.int.QA_Tt = Status.int.createQ_Tt()
 
-        for iT in range(Status.NT+2):
-            for it in range(Status.Nt):
+        for iT in xrange(Status.NT + 2):
+            for it in xrange(Status.Nt):
                 Status.int.QD_Tt[iT][it] = Status.int.USHTotal_Tt[iT][it]
+                Status.int.QDc_Tt[iT][it] = Status.int.USCTotal_Tt[iT][it]
                 Status.int.QA_Tt[iT][it] = Status.int.QWHAmb_Tt[iT][it]
 
         Status.int.QD_T = Status.int.calcQ_T(Status.int.QD_Tt)
+        Status.int.QDc_T = Status.int.calcQ_T(Status.int.QDc_Tt)
         Status.int.QA_T = Status.int.calcQ_T(Status.int.QA_Tt)
 
         Status.int.initCascadeArrays(0)
@@ -1183,21 +1194,21 @@ class ModuleHR(object):
 #------------------------------------------------------------------------------
 # Helpers
 #------------------------------------------------------------------------------
-    def indexExists(self,index):
-        if (len(self.data.hexers)>index):
+    def indexExists(self, index):
+        if (len(self.data.hexers) > index):
             return True
         else:
             return False
                             
                             
-    def debugPrint(self,name,obj):
+    def debugPrint(self, name, obj):
         saveout = sys.stdout
-        fsock = open(name,'w')
+        fsock = open(name, 'w')
         sys.stdout = fsock
         for row in obj:
             strrow = ""
             for value in row:     
-                strrow=strrow+str(value)+","
+                strrow = strrow + str(value) + ","
             print strrow
         sys.stdout = saveout
         fsock.close()   

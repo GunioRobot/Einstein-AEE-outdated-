@@ -17,39 +17,39 @@ def _U(text):
 
 class PanelInfo(wx.StatusBar):
     def __init__(self, parent, main):
-	self.main = main
-	self.parent = parent
-	self.main = main
-	
-	project = Status.ActiveProjectName
-	alternative = Status.ActiveAlternativeName
-	level = Status.UserInteractionLevel
+        self.main = main
+        self.parent = parent
+        self.main = main
+        
+        project = Status.ActiveProjectName
+        alternative = Status.ActiveAlternativeName
+        level = Status.UserInteractionLevel
 
 #------------------------------------------------------------------------------
 #--- UI setup
 #------------------------------------------------------------------------------
 
         wx.StatusBar.__init__(self, id=-1, name='PanelInfo', parent=parent, style=wx.SUNKEN_BORDER)
-	self.SetFieldsCount(3)
+        self.SetFieldsCount(3)
         self.SetFont(wx.Font(8, wx.ROMAN, wx.NORMAL, wx.BOLD, False, 'Times Roman'))
 
-	self.SetStatusText(_U('Project'),0)
+        self.SetStatusText(_U('Project'),0)
         self.t0 = wx.TextCtrl(id=-1, parent=self,pos=wx.Point(60,0),size=wx.Size(270, 21),
 			      value=project, style=wx.TE_READONLY)
         self.t0.SetFont(wx.Font(8, wx.ROMAN, wx.NORMAL, wx.BOLD, False, 'Times Roman'))
-	self.t0.Center(direction=wx.VERTICAL)
+        self.t0.Center(direction=wx.VERTICAL)
 
-	self.SetStatusText(_U('Alternative'),1)
+        self.SetStatusText(_U('Alternative'),1)
         self.t1 = wx.TextCtrl(id=-1, parent=self,pos=wx.Point(416, 0),size=wx.Size(260, 21),
 			      value=alternative, style=wx.TE_READONLY)
         self.t1.SetFont(wx.Font(8, wx.ROMAN, wx.NORMAL, wx.BOLD, False, 'Times Roman'))
-	self.t1.Center(direction=wx.VERTICAL)
+        self.t1.Center(direction=wx.VERTICAL)
 
-	self.SetStatusText(_U('Design assistant'),2)
+        self.SetStatusText(_U('Design assistant'),2)
         self.choiceAssistant = wx.Choice(choices=ASSISTANTLIST,
               id=-1, name='choiceAssistant', parent=self, pos=wx.Point(800, 0),size=wx.Size(200,21))
         self.choiceAssistant.SetFont(wx.Font(8, wx.ROMAN, wx.NORMAL, wx.BOLD, False, 'Times Roman'))
-	self.choiceAssistant.Center(direction=wx.VERTICAL)
+        self.choiceAssistant.Center(direction=wx.VERTICAL)
 
         self.Bind(wx.EVT_SIZE, self.OnSize, self)
         self.Bind(wx.EVT_CHOICE, self.OnChoiceAssistant, self.choiceAssistant)
@@ -61,27 +61,27 @@ class PanelInfo(wx.StatusBar):
 #--- UI actions
 #------------------------------------------------------------------------------		
     def _szpos(self,index,control,labelwidth):
-	rect=self.GetFieldRect(index)
-	end = rect.x + rect.width
-	p = control.GetPosition()
-	sz = control.GetSize()
-	sz.width = rect.width-labelwidth
-	npos = wx.Point(end-sz.width,p.y)
-	control.SetPosition(npos)
-	control.SetSize(sz)
+        rect=self.GetFieldRect(index)
+        end = rect.x + rect.width
+        p = control.GetPosition()
+        sz = control.GetSize()
+        sz.width = rect.width-labelwidth
+        npos = wx.Point(end-sz.width,p.y)
+        control.SetPosition(npos)
+        control.SetSize(sz)
 
     def OnChoiceAssistant(self, event):
-	i = self.choiceAssistant.GetCurrentSelection()
-	self.main.logWarning(_U('Design assistant changed to ')+repr(ASSISTANTLIST[i]))	
+        i = self.choiceAssistant.GetCurrentSelection()
+        self.main.logWarning(_U('Design assistant changed to ')+repr(ASSISTANTLIST[i]))	
         Status.prj.setUserInteractionLevel(ASSISTANTLIST[i])
         self.main.changeAssistantMainMenu(i)
         if event is not None:
             event.Skip()
 
     def OnSize(self, event):
-	self._szpos(0,self.t0,60)
-	self._szpos(1,self.t1,80)
-	self._szpos(2,self.choiceAssistant,140)
+        self._szpos(0,self.t0,60)
+        self._szpos(1,self.t1,80)
+        self._szpos(2,self.choiceAssistant,140)
 
 #------------------------------------------------------------------------------
 # public methods

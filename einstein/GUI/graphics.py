@@ -33,14 +33,10 @@ from numCtrl import *
 from einstein.modules.interfaces import *
 from matplotlib.ticker import FuncFormatter
 
-#
 # some constants
-#
-COLORTABLE = ['#0000FF','#00FF00','#FF0000','#00FFFF','#FF00FF',
-              '#FFFF00','#000000','#FFFFFF']
-#
+COLORTABLE = ['#0000FF', '#00FF00', '#FF0000', '#00FFFF', '#FF00FF',
+              '#FFFF00', '#000000', '#FFFFFF']
 # title properties dictionary
-#
 TITLE_FONT_DICT = {'fontname'  : 'Roman',
                    'fontweight': 'bold',
                    'color'     : '#808080',
@@ -124,7 +120,7 @@ def drawPiePlot(self):
 
 
     try:
-        (rows,cols) = Interfaces.GData[key].shape
+        (rows, cols) = Interfaces.GData[key].shape
         theValues = []
         theLabels = []
         for r in range(rows):
@@ -145,7 +141,7 @@ def drawPiePlot(self):
         return
     if hasattr(self, 'subplot'):
         del self.subplot
-    self.subplot = self.figure.add_subplot(1,1,1)
+    self.subplot = self.figure.add_subplot(1, 1, 1)
     self.figure.subplots_adjust(left=spacing_left, right=spacing_right, bottom=spacing_bottom, top=spacing_top)
     self.figure.set_facecolor(backcolor)
 
@@ -176,80 +172,70 @@ def drawPiePlot(self):
 ##############################################################################
 
 def drawStackedBarPlot(self):
-    #
-    # generic function for stacked bars.
-    # Takes its data from the dictionary Interfaces.GData.
-    # The data is a numpy array. The first column has the labels, and another
-    # column has the values
-    #
-    #
+    """
+    A generic matplotlib function to draw a stacked bars plot.
+    
+    Takes its data from the dictionary Interfaces.GData.
+    The data is a numpy array. The first column has the labels, and another
+    column has the values
+    
+    """
     # some constants for the stacked bar plot
-    #
     spacing_left = 0.125
     spacing_right = 0.9
     spacing_bottom = 0.1
     spacing_top = 0.9
 
     # the following params are mandatory
-    #
     try:
         index_data = int(self.params['data'])      # index to the column of data
     except KeyError:
-        print "drawPiePlot: missing index to data column."
+        logError("drawStackedBarPlot: missing index to data column.")
         return
-
     try:
         key = self.params['key']                   # key for Interfaces.GData
     except KeyError:
-        print "drawPiePlot: missing key to data."
+        logError("drawStackedBarPlot: missing key to data.")
         return
 
-    # the following params are optative
+    # the following params are optional
     try:
         index_labels = int(self.params['labels'])  # index to the column of labels
     except KeyError:
         index_labels = 0
-
     try:
         title = self.params['title']               # title of the graphic
     except KeyError:
         title = ''
-
     try:
         legend = self.params['legend']             # legend list
     except KeyError:
         legend = []
-
     try:
         ylabel = self.params['ylabel']             # label on the y axis
     except KeyError:
         ylabel = ''
-
     try:
         backcolor = self.params['backcolor']       # background color of the graph
     except KeyError:
         backcolor = '#FFFFFF'
-
     try:
         tickfontsize = self.params['tickfontsize'] # fontsize of the tick mark labels
     except KeyError:
         tickfontsize = 8
-
     try:
         ignoredrows = self.params['ignoredrows']  # list of rows to be ignored (totals and such)
     except KeyError:
         ignoredrows = []
-
-        
     try:
         # make a local copy of the transposed data matrix
         data = Interfaces.GData[key].transpose()
         # transpose the matrix so each row is a dataset
         # now, row 0 are the vert. labels
-        (rows,cols) = data.shape
+        (rows, cols) = data.shape
     except:
-        print "drawStackedBarPlot: values %s missing or bad." % (key,)
-        print "Interfaces.GData['%s'] contains:\n%s\n" % (key, repr(Interfaces.GData[key]))
+        logError("drawStackedBarPlot: values %s missing or bad." % (key,))
+        logError("Interfaces.GData['%s'] contains:\n%s\n" % (key, repr(Interfaces.GData[key])))
         return
 
     # load the x tick labels
@@ -258,14 +244,14 @@ def drawStackedBarPlot(self):
     # if the legend has been given as a parameter, use it
     # if not, take the texts from col 0
     legendlabels = []
-    if len(legend)>0:
+    if len(legend) > 0:
         legendlabels = legend
     legendptr = []
-    vx = xrange(len(labelrow[1:cols])) # intervals on x
+    vx = arange(len(labelrow[1:cols])) # intervals on x
     width = 0.8                          # the width of the bars
     if hasattr(self, 'subplot'):
         del self.subplot
-    self.subplot = self.figure.add_subplot(1,1,1)
+    self.subplot = self.figure.add_subplot(1, 1, 1)
     self.figure.subplots_adjust(left=spacing_left, right=spacing_right, bottom=spacing_bottom, top=spacing_top)
     self.figure.set_facecolor(backcolor)
 
@@ -273,23 +259,23 @@ def drawStackedBarPlot(self):
     self.subplot.axes.xaxis.set_major_formatter(major_formatter)
     self.subplot.axes.yaxis.set_major_formatter(major_formatter)
 
-    # FIXME: rows and cols index wrongly
-    for r in range(1,rows):
+    previous = array([0.0 for dummy in range(len(data[0][1:cols]))])
+    for r in range(1, rows):
         row = data[r]
         if len(legend) <= 0:
-            legendlabels.append(row[0].replace("\n"," "))
-        floatdata = map(lambda a: float(a), row[1:cols])
+            legendlabels.append(row[0].replace("\n", " "))
+        floatdata = array([float(a) for a in row[1:cols]])
         if r == 1:
             p = self.subplot.bar(vx, floatdata, width, color=COLORTABLE[r % 8])
         else:
             p = self.subplot.bar(vx, floatdata, width, color=COLORTABLE[r % 8], bottom=previous)
         legendptr.append(p[0])
-        previous = floatdata[:]
+        previous = previous + floatdata
 
     self.subplot.axes.set_ylabel(ylabel)
     self.subplot.set_title(title, TITLE_FONT_DICT)
     # create xticks
-    self.subplot.axes.set_xticks(map(lambda x: x + width/2., vx))
+    self.subplot.axes.set_xticks(map(lambda x: x + width / 2., vx))
     xlabels = self.subplot.axes.set_xticklabels(xticklabels)
     for xlabel in xlabels:
         xlabel.set_size(tickfontsize)
@@ -298,10 +284,10 @@ def drawStackedBarPlot(self):
     #self.subplot.axes.set_yticks(arange(0,61,10))
 
     # draw legend and set legend parameters
-    self.subplot.legend(legendptr,legendlabels,loc='best')
+    self.subplot.legend(legendptr, legendlabels, loc='best')
     # legend text size
     lg = self.subplot.get_legend()
-    ltext  = lg.get_texts()             # all the text.Text instance in the legend
+    ltext = lg.get_texts()             # all the text.Text instance in the legend
     for txt in ltext:
         txt.set_fontsize(tickfontsize)  # the legend text fontsize
     # legend line thickness
@@ -309,7 +295,7 @@ def drawStackedBarPlot(self):
     for lli in llines:
         lli.set_linewidth(1.5)          # the legend linewidth
     # color of the legend frame
-    frame  = lg.get_frame()             # the patch.Rectangle instance surrounding the legend
+    frame = lg.get_frame()             # the patch.Rectangle instance surrounding the legend
     frame.set_facecolor('#F0F0F0')      # set the frame face color to light gray
     # should the legend frame be painted
     lg.draw_frame(False)                # don't draw the legend frame
@@ -390,7 +376,7 @@ def drawSimpleBarPlot(self):
         data = Interfaces.GData[key].transpose()
         # transpose the matrix so each row is a dataset
         # now, row 0 are the vert. labels
-        (rows,cols) = data.shape
+        (rows, cols) = data.shape
     except:
         print "drawSimpleBarPlot: values %s missing or bad." % (key,)
         print "Interfaces.GData['%s'] contains:\n%s\n" % (key, repr(Interfaces.GData[key]))
@@ -399,17 +385,17 @@ def drawSimpleBarPlot(self):
     # load the x tick labels (1st. row of the transposed matrix)
     xticklabels = data[0]
     # load the data
-    vx = xrange(len(xticklabels))  # intervals on x
+    vx = arange(len(xticklabels))  # intervals on x
     width = 0.8               # the width of the bars
     if hasattr(self, 'subplot'):
         del self.subplot
-    self.subplot = self.figure.add_subplot(1,1,1)
+    self.subplot = self.figure.add_subplot(1, 1, 1)
     self.figure.subplots_adjust(left=spacing_left, right=spacing_right, bottom=spacing_bottom, top=spacing_top)
     self.figure.set_facecolor(backcolor)
     # extract data from second row on
     legendlabels = legend
     legendptr = []
-    for r in range(1,rows):
+    for r in range(1, rows):
         row = data[r]
         floatdata = map(lambda a: float(a), row)
         p = self.subplot.bar(vx, floatdata, width, color=COLORTABLE[r % 8])
@@ -418,7 +404,7 @@ def drawSimpleBarPlot(self):
     self.subplot.axes.set_ylabel(ylabel)
     self.subplot.set_title(title, TITLE_FONT_DICT)
     # create xticks
-    self.subplot.axes.set_xticks(map(lambda x: x + width/2., vx))
+    self.subplot.axes.set_xticks(map(lambda x: x + width / 2., vx))
     xlabels = self.subplot.axes.set_xticklabels(xticklabels)
     for xlabel in xlabels:
         xlabel.set_size(tickfontsize)
@@ -428,10 +414,10 @@ def drawSimpleBarPlot(self):
     self.subplot.axes.yaxis.set_major_formatter(major_formatter)
 
     # draw legend and set legend parameters
-    self.subplot.legend(legendptr,legendlabels,loc='best')
+    self.subplot.legend(legendptr, legendlabels, loc='best')
     # legend text size
     lg = self.subplot.get_legend()
-    ltext  = lg.get_texts()
+    ltext = lg.get_texts()
     for txt in ltext:
         txt.set_fontsize(tickfontsize)
     # legend line thickness
@@ -439,7 +425,7 @@ def drawSimpleBarPlot(self):
     for lli in llines:
         lli.set_linewidth(1.5)
     # color of the legend frame
-    frame  = lg.get_frame()
+    frame = lg.get_frame()
     frame.set_facecolor('#F0F0F0')
     # should the legend frame be painted
     lg.draw_frame(False)
@@ -525,8 +511,8 @@ def drawComparedBarPlot(self):
 
     try:
         data = Interfaces.GData[key].transpose()
-        (rows,cols) = data.shape
-        xticklabels =  data[0]
+        (rows, cols) = data.shape
+        xticklabels = data[0]
 
     except:
         print "drawComparedBarPlot: values %s missing or bad." % (key,)
@@ -540,25 +526,25 @@ def drawComparedBarPlot(self):
     if hasattr(self, 'subplot'):
         del self.subplot
 
-    self.subplot = self.figure.add_subplot(1,1,1)
+    self.subplot = self.figure.add_subplot(1, 1, 1)
     self.figure.subplots_adjust(left=spacing_left, right=spacing_right, bottom=spacing_bottom, top=spacing_top)
     self.figure.set_facecolor(backcolor)
 
     # extract the transposed data from second row on
-    for r in range(1,rows):
+    for r in range(1, rows):
         row = data[r]
         floatdata = map(lambda a: float(a), row)
-        p = self.subplot.bar(map(lambda x: x+((r-1)*width),vx),
+        p = self.subplot.bar(map(lambda x: x + ((r - 1) * width), vx),
                              floatdata, width, color=COLORTABLE[r % 8])
         legendptr.append(p[0])
 
     if not hasattr(self, 'subplot'):
-        self.subplot = self.figure.add_subplot(1,1,1)
+        self.subplot = self.figure.add_subplot(1, 1, 1)
 
     self.subplot.axes.set_ylabel(ylabel)
     self.subplot.set_title(title, TITLE_FONT_DICT)
     # create xticks
-    self.subplot.axes.set_xticks(map(lambda x: x + width/2., vx))
+    self.subplot.axes.set_xticks(map(lambda x: x + width / 2., vx))
     xlabels = self.subplot.axes.set_xticklabels(xticklabels)
     for xlabel in xlabels:
         xlabel.set_size(tickfontsize)
@@ -568,10 +554,10 @@ def drawComparedBarPlot(self):
     self.subplot.axes.yaxis.set_major_formatter(major_formatter)
 
     # draw legend and set legend parameters
-    self.subplot.legend(legendptr,legendlabels,loc='best')
+    self.subplot.legend(legendptr, legendlabels, loc='best')
     # legend text size
     lg = self.subplot.get_legend()
-    ltext  = lg.get_texts()
+    ltext = lg.get_texts()
     for txt in ltext:
         txt.set_fontsize(tickfontsize)
     # legend line thickness
@@ -579,7 +565,7 @@ def drawComparedBarPlot(self):
     for lli in llines:
         lli.set_linewidth(1.5)
     # color of the legend frame
-    frame  = lg.get_frame()
+    frame = lg.get_frame()
     frame.set_facecolor('#F0F0F0')
     # should the legend frame be painted
     lg.draw_frame(False)

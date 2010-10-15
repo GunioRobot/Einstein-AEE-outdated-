@@ -1075,7 +1075,7 @@ class PanelQ6(wx.Panel):
     def OnHeatSourceChoice(self, event):
 	# FIXME: HERE I LEFT
 	getProcessIdByName()
-#	fillChoice(self.tc6_1.entry,getInflowingStreamNamesFromDB(processId))
+	fillChoice(self.tc6_1.entry,getInflowingStreamNamesFromDB(processId))
 
     def OnButtonHXAdd(self, event):
         self.clearHX()
@@ -1216,14 +1216,14 @@ class PanelQ6(wx.Panel):
 
         fillChoice(self.tc2.entry,Status.TRANS.HXTYPES.values())
 
-        self.sourceList = Status.prj.getEqList("Equipment")
+        self.sourceList = Status.prj.getEquipmentList("Equipment")
         self.sourceList.extend(Status.prj.getPipeList("Pipeduct"))
         self.sourceList.extend(Status.prj.getProcessList("Process"))
         self.sourceList.extend(Status.prj.getWHEEList("WHEEName"))
         
 #        fillChoice(self.tc6.entry,self.sourceList)
 
-        self.sinkList = Status.prj.getEqList("Equipment")
+        self.sinkList = Status.prj.getEquipmentList("Equipment")
         self.sinkList.extend(Status.prj.getPipeList("Pipeduct"))
         self.sinkList.extend(Status.prj.getProcessList("Process"))
         

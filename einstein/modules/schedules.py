@@ -63,9 +63,9 @@ from einstein.GUI.dialogGauge import DialogGauge
 
 ### Constants
 periodReference = date(2007, 1, 1) # year 2007 starts and ends on Monday
-DEFAULTSCHEDULES  = ["operation","batchCharge","batchDischarge"]
+DEFAULTSCHEDULES = ["operation", "batchCharge", "batchDischarge"]
 DEFAULTCHARGETIME = 0.2 #20% of batch duration
-TOLERANCE_GAP     = 0.5
+TOLERANCE_GAP = 0.5
 """Minimum time between consecutive cycles after random tolerance shift (hours)"""
 
 ### Errors
@@ -91,11 +91,11 @@ class Schedule():
 #   class that defines the standard EINSTEIN format for schedules
 #------------------------------------------------------------------------------		
 
-    def __init__(self,name):     #by default assigns a constant profile throughout the year
-        self.daily = [[(0.0,24.0)]]
-        self.weekly = [(0.0,120.0)]
-        self.monthly = [1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0]
-        self.holidays = [(365,365)]
+    def __init__(self, name):     #by default assigns a constant profile throughout the year
+        self.daily = [[(0.0, 24.0)]]
+        self.weekly = [(0.0, 120.0)]
+        self.monthly = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+        self.holidays = [(365, 365)]
         self.NHolidays = 1
         self.NDays = 260
         self.HPerDay = 24.      #operating period for the present schedule
@@ -104,7 +104,7 @@ class Schedule():
         self.PartLoad = 1.0     # for effective hour scaling in detailed schedules
         self.ScheduleType = "operation"
         self.name = name
-        self.HPerYear = self.NDays*self.HPerDay
+        self.HPerYear = self.NDays * self.HPerDay
         self.hop = 1.0          #yearly operation hours from normalisation calculations
                                 #should be finally identical with self.HPerYear
 
@@ -112,59 +112,59 @@ class Schedule():
                                 #quite time-consuming (-> calc_fav) 
                                 
 #------------------------------------------------------------------------------		
-    def setPars(self,ScheduleType,NDays,HPerDay,NBatch,HBatch):
+    def setPars(self, ScheduleType, NDays, HPerDay, NBatch, HBatch):
 #------------------------------------------------------------------------------		
 #   sets the global parameters of this schedule
 #------------------------------------------------------------------------------		
         if ScheduleType in DEFAULTSCHEDULES: self.ScheduleType = ScheduleType
         else: ScheduleType = DEFAULTSCHEDULES[0]
         
-        self.NDays  = int(checkLimits(NDays,0,365,default=260))
-        self.NBatch = int(checkLimits(NBatch,1,100,default=1))
-        self.HBatch = checkLimits(HBatch,0.0,24.0/self.NBatch,default=Status.HPerDayInd/self.NBatch)
-      # self.HPerDay and self.HPerYear are calculated in setDefault
+        self.NDays = int(checkLimits(NDays, 0, 365, default=260))
+        self.NBatch = int(checkLimits(NBatch, 1, 100, default=1))
+        self.HBatch = checkLimits(HBatch, 0.0, 24.0 / self.NBatch, default=Status.HPerDayInd / self.NBatch)
+        # self.HPerDay and self.HPerYear are calculated in setDefault
 
         self.setDefault(ScheduleType)
         self.build_fav()
         
 #------------------------------------------------------------------------------		
-    def f(self,time):
+    def f(self, time):
 #------------------------------------------------------------------------------		
 #   calculates the instantaneous value of the schedule at time 
 #------------------------------------------------------------------------------		
         if time < 0.0 or time > YEAR: return 0.
-        day = int(floor(time/DAY)) + 1
+        day = int(floor(time / DAY)) + 1
 
         if self.isHoliday(day):return 0.
 
-        weekTime = time%WEEK
+        weekTime = time % WEEK
         fweek = 0.0
         for period in self.weekly:
-            start,stop = period
+            start, stop = period
             if weekTime >= start and weekTime <= stop:
                 fweek = 1.
                 break
             
-        month = findFirstGE(day,MONTHSTARTDAY)
-        fmonth =  self.monthly[month-1]
+        month = findFirstGE(day, MONTHSTARTDAY)
+        fmonth = self.monthly[month - 1]
         
-        return fweek*fmonth
+        return fweek * fmonth
 
 #------------------------------------------------------------------------------		
-    def calc_fav(self,time):
+    def calc_fav(self, time):
 #------------------------------------------------------------------------------		
 #   calculates the average value within the interval [time,time+Dt] 
 #------------------------------------------------------------------------------		
         if time < 0.0 or time >= YEAR: return 0.
-        day = int(floor(time/DAY)) + 1
+        day = int(floor(time / DAY)) + 1
 
         if self.isHoliday(day):return 0.
 
-        weekTime = time%WEEK
+        weekTime = time % WEEK
         fweek = 0.0
 
         for period in self.weekly:
-            start,stop = period
+            start, stop = period
             if weekTime < stop:
                 weekTime1 = weekTime + Status.TimeStep
                 if weekTime1 > start:
@@ -172,24 +172,24 @@ class Schedule():
                         fweek += 1.
                         break
                     elif weekTime >= start and weekTime1 > stop:    #time interval starts within period, but ends afterwards
-                        fweek += (stop - weekTime)/Status.TimeStep
+                        fweek += (stop - weekTime) / Status.TimeStep
                     elif weekTime < start and weekTime1 <= stop:    #time interval starts before period, but ends within
-                        fweek += (weekTime1 - start)/Status.TimeStep
+                        fweek += (weekTime1 - start) / Status.TimeStep
                     elif weekTime < start and weekTime1 > stop:
-                        fweek += (stop - start)/Status.TimeStep
+                        fweek += (stop - start) / Status.TimeStep
                 else:
                     break
             
-        month = findFirstGE(day,MONTHSTARTDAY)
-        fmonth =  self.monthly[month-1]
+        month = findFirstGE(day, MONTHSTARTDAY)
+        fmonth = self.monthly[month - 1]
 
-        return fweek*fmonth
+        return fweek * fmonth
         
 #------------------------------------------------------------------------------		
-    def isHoliday(self,day):
+    def isHoliday(self, day):
 #------------------------------------------------------------------------------		
         for period in self.holidays:
-            start,stop = period
+            start, stop = period
             if day <= stop and day >= start: return True
             
         return False
@@ -203,7 +203,7 @@ class Schedule():
             fsum += self.fav[it]
             ftot += Status.TimeStep
 
-        fsum *= YEAR/ftot
+        fsum *= YEAR / ftot
         self.hop = fsum
 
         if fsum > 0:
@@ -212,9 +212,9 @@ class Schedule():
         else:
             logDebug("Schedule (normalize): WARNING - schedule is 0 in all time steps")
 
-        if fabs(self.hop-self.HPerYear) > 1.0:
+        if fabs(self.hop - self.HPerYear) > 1.0:
             logDebug("Schedule (normalize): WARNING - normalized operating hours (%s) different from specified in HPerYear (%s)"\
-                     %(self.hop,self.HPerYear))
+                     % (self.hop, self.HPerYear))
 
         return fsum
 
@@ -226,16 +226,14 @@ class Schedule():
 #------------------------------------------------------------------------------		
         self.fav = []
         for it in range(Status.Nt):
-            time = Status.TimeStep*it
+            time = Status.TimeStep * it
             self.fav.append(self.calc_fav(time))
-
-	self.favTemp = self.fav[:]
-			
+        self.favTemp = self.fav[:]
         self.normalize()
 
 
 #------------------------------------------------------------------------------		
-    def setDefault(self,scheduleType):
+    def setDefault(self, scheduleType):
 #------------------------------------------------------------------------------		
 #   based on the basic schedule parameters (basic Q) assigns a detailed
 #   default schedule
@@ -243,90 +241,90 @@ class Schedule():
 
         if scheduleType == "operation":
 
-            if self.NBatch > 0 and self.HBatch*self.NBatch <= Status.HPerDayInd:
+            if self.NBatch > 0 and self.HBatch * self.NBatch <= Status.HPerDayInd:
                 TPeriod = Status.HPerDayInd / self.NBatch
                 tStartDay = 12.0 - 0.5 * Status.HPerDayInd
             else:
-                TPeriod = 24./self.NBatch
+                TPeriod = 24. / self.NBatch
                 tStartDay = 0
                 logWarning("WARNING: batch duration larger than industry operating time")
 
 
             self.daily = [[]]
             for i in range(self.NBatch):
-                start = tStartDay + TPeriod*i
+                start = tStartDay + TPeriod * i
                 stop = start + self.HBatch
-                self.daily[0].append((start,stop))
+                self.daily[0].append((start, stop))
 
-            self.HPerDay = self.NBatch*self.HBatch
+            self.HPerDay = self.NBatch * self.HBatch
         
 #..............................................................................		
 # Charge of batch process: first DEFAULTCHARGETIME % of process duration
 
         elif scheduleType == "batchCharge":
-            if self.NBatch > 0 and self.HBatch*self.NBatch <= Status.HPerDayInd:
+            if self.NBatch > 0 and self.HBatch * self.NBatch <= Status.HPerDayInd:
                 TPeriod = Status.HPerDayInd / self.NBatch
                 tStartDay = 12.0 - 0.5 * Status.HPerDayInd
             else:
-                TPeriod = 24./self.NBatch
+                TPeriod = 24. / self.NBatch
                 tStartDay = 0
                 logWarning("WARNING: batch duration larger than industry operating time")
 
             self.daily = [[]]
             for i in range(self.NBatch):
-                start = tStartDay + TPeriod*i
-                stop = start + DEFAULTCHARGETIME*self.HBatch
-                self.daily[0].append((start,stop))
+                start = tStartDay + TPeriod * i
+                stop = start + DEFAULTCHARGETIME * self.HBatch
+                self.daily[0].append((start, stop))
 
-            self.HPerDay = self.NBatch*self.HBatch*DEFAULTCHARGETIME
+            self.HPerDay = self.NBatch * self.HBatch * DEFAULTCHARGETIME
 
 #..............................................................................		
 # Charge of batch process: first DEFAULTCHARGETIME % of process duration after process stop
 
         elif scheduleType == "batchDischarge":
-            if self.NBatch > 0 and self.HBatch*self.NBatch <= Status.HPerDayInd:
+            if self.NBatch > 0 and self.HBatch * self.NBatch <= Status.HPerDayInd:
                 TPeriod = Status.HPerDayInd / self.NBatch
                 tStartDay = 12.0 - 0.5 * Status.HPerDayInd
             else:
-                TPeriod = 24./self.NBatch
+                TPeriod = 24. / self.NBatch
                 tStartDay = 0
                 logWarning("WARNING: batch duration larger than industry operating time")
 
             self.daily = [[]]
             for i in range(self.NBatch):
-                start = (tStartDay + TPeriod*i + self.HBatch)%DAY
-                stop = (start + DEFAULTCHARGETIME*self.HBatch)%DAY
+                start = (tStartDay + TPeriod * i + self.HBatch) % DAY
+                stop = (start + DEFAULTCHARGETIME * self.HBatch) % DAY
 
 #### take care: the %DAY controls to avoid that processes discharge AFTER 24:00 h of a day
 #### this works well only for 7 days operation without holidays
 #### as this is a quite strange special case, should not give problems for the moment
 #### but should be improved !!!
                 
-                self.daily[0].append((start,stop))
+                self.daily[0].append((start, stop))
 
-            self.HPerDay = self.NBatch*self.HBatch*DEFAULTCHARGETIME
+            self.HPerDay = self.NBatch * self.HBatch * DEFAULTCHARGETIME
 
 #..............................................................................		
 # Now extend daily to weekly profile
 
-        self.NDaysPerWeek = (self.NDays + self.NHolidays - 1.0)/52.0
-        self.HPerYear = self.HPerDay*self.NDays
+        self.NDaysPerWeek = (self.NDays + self.NHolidays - 1.0) / 52.0
+        self.HPerYear = self.HPerDay * self.NDays
 
         self.weekly = []
         for i in range(7):
             tmax = self.NDaysPerWeek * 24.0
             
             for dayinterval in self.daily[0]:
-                (start,stop) = dayinterval
-                start += 24.0*i
-                stop += 24.0*i
+                (start, stop) = dayinterval
+                start += 24.0 * i
+                stop += 24.0 * i
                 if start < tmax:
-                    stop = min(stop,tmax)
-                    self.weekly.append((start,stop))
+                    stop = min(stop, tmax)
+                    self.weekly.append((start, stop))
                 else:
                     break
 
-        logTrack("Schedule (setDefault): weekly profile created: %s"%self.weekly)
+        logTrack("Schedule (setDefault): weekly profile created: %s" % self.weekly)
         
 #------------------------------------------------------------------------------		
 class Schedules(object):
@@ -344,13 +342,13 @@ class Schedules(object):
     def create(self):
 #------------------------------------------------------------------------------		
 
-        (projectData,generalData) = Status.prj.getProjectData()
+        (projectData, generalData) = Status.prj.getProjectData()
         Status.HPerDayInd = projectData.HPerDayInd
         if Status.HPerDayInd is None:
             logWarning(_("Industry operating hours are not defined !\n12 hours per day assumed"))
             Status.HPerDayInd = 12.0
 
-        dlg = DialogGauge(Status.main,_("Schedules of operation"),_("generating schedules"))
+        dlg = DialogGauge(Status.main, _("Schedules of operation"), _("generating schedules"))
 
         self.calculateProcessSchedules()
         dlg.update(40)
@@ -387,57 +385,60 @@ class Schedules(object):
                 pass
             else: # wrap detailed schedule into old simple schedule class interface
                 #daily   = [[(0.0,24.0)]]
-                monthly = [1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0]
+                monthly = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
                 #holidays = [(365,365)]
                 #NHolidays = 1
-                NDays    = periodSchedule.getNumberOfOperationDays()
-                HPerDay  = periodSchedule.getOperationHoursPerDay()
-                NBatch   = periodSchedule.getNumberOfBatchesPerDay()
-                HBatch   = periodSchedule.getDurationHoursPerBatch()
+                NDays = periodSchedule.getNumberOfOperationDays()
+                HPerDay = periodSchedule.getOperationHoursPerDay()
+                NBatch = periodSchedule.getNumberOfBatchesPerDay()
+                HBatch = periodSchedule.getDurationHoursPerBatch()
                 PartLoad = periodSchedule.getDailyPartLoad()
                 HPerYear = Status.TimeStep * periodSchedule.getOperationHoursPerYear()
-                hop      = HPerYear
-                operationSchedule = Schedule("Process No.%s (%s): Detailed Operation"%(process.ProcNo,process.Process))
-                startupSchedule   = Schedule("Process No.%s (%s): Detailed Start-Up"%(process.ProcNo,process.Process))
-                inflowSchedule    = Schedule("Process No.%s (%s): Detailed InFlow 1"%(process.ProcNo,process.Process))
-                outflowSchedule   = Schedule("Process No.%s (%s): Detailed OutFlow 1"%(process.ProcNo,process.Process))
+                hop = HPerYear
+                operationSchedule = Schedule("Process No.%s (%s): Detailed Operation" % (process.ProcNo, process.Process))
+                startupSchedule = Schedule("Process No.%s (%s): Detailed Start-Up" % (process.ProcNo, process.Process))
+                inflowSchedule = Schedule("Process No.%s (%s): Detailed InFlow 1" % (process.ProcNo, process.Process))
+                outflowSchedule = Schedule("Process No.%s (%s): Detailed OutFlow 1" % (process.ProcNo, process.Process))
                 periodSchedule.dbId = process.QProcessData_ID
                 operationSchedule.detailedSchedule = startupSchedule.detailedSchedule = inflowSchedule.detailedSchedule = outflowSchedule.detailedSchedule = periodSchedule    
-                operationSchedule.NDays    = startupSchedule.NDays    = inflowSchedule.NDays    = outflowSchedule.NDays    = NDays
-                operationSchedule.HPerDay  = startupSchedule.HPerDay  = inflowSchedule.HPerDay  = outflowSchedule.HPerDay  = HPerDay
-                operationSchedule.NBatch   = startupSchedule.NBatch   = inflowSchedule.NBatch   = outflowSchedule.NBatch   = NBatch
-                operationSchedule.HBatch   = startupSchedule.HBatch   = inflowSchedule.HBatch   = outflowSchedule.HBatch   = HBatch
+                operationSchedule.NDays = startupSchedule.NDays = inflowSchedule.NDays = outflowSchedule.NDays = NDays
+                operationSchedule.HPerDay = startupSchedule.HPerDay = inflowSchedule.HPerDay = outflowSchedule.HPerDay = HPerDay
+                operationSchedule.NBatch = startupSchedule.NBatch = inflowSchedule.NBatch = outflowSchedule.NBatch = NBatch
+                operationSchedule.HBatch = startupSchedule.HBatch = inflowSchedule.HBatch = outflowSchedule.HBatch = HBatch
                 operationSchedule.PartLoad = startupSchedule.PartLoad = inflowSchedule.PartLoad = outflowSchedule.PartLoad = PartLoad
                 operationSchedule.HPerYear = startupSchedule.HPerYear = inflowSchedule.HPerYear = outflowSchedule.HPerYear = HPerYear
-                operationSchedule.hop      = startupSchedule.hop      = inflowSchedule.hop      = outflowSchedule.hop      = hop
-                operationSchedule.NDays    = startupSchedule.NDays    = inflowSchedule.NDays    = outflowSchedule.NDays    = NDays
-                operationSchedule.monthly  = startupSchedule.monthly  = inflowSchedule.monthly  = outflowSchedule.monthly  = monthly
+                operationSchedule.hop = startupSchedule.hop = inflowSchedule.hop = outflowSchedule.hop = hop
+                operationSchedule.NDays = startupSchedule.NDays = inflowSchedule.NDays = outflowSchedule.NDays = NDays
+                operationSchedule.monthly = startupSchedule.monthly = inflowSchedule.monthly = outflowSchedule.monthly = monthly
                 if process.ProcType == "batch":
                     operationSchedule.ScheduleType = "operation"
-                    operationSchedule.fav    = periodSchedule.getYearlyBatchOperationProfile(withHolidays=True, withTolerance=True)
+                    operationSchedule.fav = periodSchedule.getYearlyBatchOperationProfile(withHolidays=True, withTolerance=True)
                     operationSchedule.weekly = periodSchedule.getMeanWeeklyBatchOperationTimePeriods()
-                    startupSchedule.ScheduleType   = "batchCharge"
-                    startupSchedule.fav    = periodSchedule.getYearlyBatchStartupProfile(withHolidays=True, withTolerance=True)
+                    startupSchedule.ScheduleType = "batchCharge"
+                    startupSchedule.fav = periodSchedule.getYearlyBatchStartupProfile(withHolidays=True, withTolerance=True)
                     startupSchedule.weekly = periodSchedule.getMeanWeeklyBatchStartupTimePeriods() 
-                    inflowSchedule.ScheduleType    = "batchCharge"
-                    inflowSchedule.fav    = periodSchedule.getYearlyBatchInflowProfile(withHolidays=True, withTolerance=True)
+                    inflowSchedule.ScheduleType = "batchCharge"
+                    inflowSchedule.fav = periodSchedule.getYearlyBatchInflowProfile(withHolidays=True, withTolerance=True)
                     inflowSchedule.weekly = periodSchedule.getMeanWeeklyBatchInflowTimePeriods()
-                    outflowSchedule.ScheduleType   = "batchDischarge"
-                    outflowSchedule.fav    = periodSchedule.getYearlyBatchOutflowProfile(withHolidays=True, withTolerance=True)
-                    outlfowSchedule.weekly = periodSchedule.getMeanWeeklyBatchOutflowTimePeriods() 
+                    outflowSchedule.ScheduleType = "batchDischarge"
+                    outflowSchedule.fav = periodSchedule.getYearlyBatchOutflowProfile(withHolidays=True, withTolerance=True)
+                    outflowSchedule.weekly = periodSchedule.getMeanWeeklyBatchOutflowTimePeriods() 
                 else: # assume continuous process
                     operationSchedule.ScheduleType = "operation"
-                    operationSchedule.fav    = periodSchedule.getYearlyContinuousOperationProfile(withHolidays=True, withTolerance=True)
+                    operationSchedule.fav = periodSchedule.getYearlyContinuousOperationProfile(withHolidays=True, withTolerance=True)
                     operationSchedule.weekly = periodSchedule.getMeanWeeklyContinuousOperationTimePeriods()
-                    startupSchedule.ScheduleType   = "batchCharge"
-                    startupSchedule.fav    = periodSchedule.getYearlyContinuousStartupProfile(withHolidays=True, withTolerance=True)
+                    startupSchedule.ScheduleType = "batchCharge"
+                    startupSchedule.fav = periodSchedule.getYearlyContinuousStartupProfile(withHolidays=True, withTolerance=True)
                     startupSchedule.weekly = periodSchedule.getMeanWeeklyContinuousStartupTimePeriods() 
-                    inflowSchedule.ScheduleType    = "operation"
-                    inflowSchedule.fav    = periodSchedule.getYearlyContinuousInflowProfile(withHolidays=True, withTolerance=True)
+                    inflowSchedule.ScheduleType = "operation"
+                    inflowSchedule.fav = periodSchedule.getYearlyContinuousInflowProfile(withHolidays=True, withTolerance=True)
                     inflowSchedule.weekly = periodSchedule.getMeanWeeklyContinuousInflowTimePeriods()
-                    outflowSchedule.ScheduleType   = "operation"
-                    outflowSchedule.fav    = periodSchedule.getYearlyContinuousOutflowProfile(withHolidays=True, withTolerance=True)
+                    inflowSchedule.hop = inflowSchedule.HPerYear
+                    outflowSchedule.ScheduleType = "operation"
+                    outflowSchedule.fav = periodSchedule.getYearlyContinuousOutflowProfile(withHolidays=True, withTolerance=True)
                     outflowSchedule.weekly = periodSchedule.getMeanWeeklyContinuousOutflowTimePeriods() 
+                    outflowSchedule.HPerYear = Status.TimeStep * periodSchedule.getOperationHoursPerYear(withHolidays=True, withTolerance=True)
+                    outflowSchedule.hop = outflowSchedule.HPerYear 
                 self.procOpSchedules.append(operationSchedule)
                 self.procStartUpSchedules.append(startupSchedule)
                 self.procInFlowSchedules.append(inflowSchedule)
@@ -454,11 +455,11 @@ class Schedules(object):
                     process.NBatch = 1
                     Status.SQL.commit()
 
-            logDebug("Process No.%s (%s):"%(process.ProcNo,process.Process))
+            logDebug("Process No.%s (%s):" % (process.ProcNo, process.Process))
 #..............................................................................
 # schedule for process operation
                     
-            newSchedule = Schedule("Process No.%s (%s): Operation"%(process.ProcNo,process.Process))
+            newSchedule = Schedule("Process No.%s (%s): Operation" % (process.ProcNo, process.Process))
 
             if process.ProcType == "continuous":
                 scheduleType = "operation"
@@ -474,7 +475,7 @@ class Schedules(object):
 #..............................................................................
 # schedule for process start-up
 
-            newSchedule = Schedule("Process No.%s (%s): Start-Up"%(process.ProcNo,process.Process))
+            newSchedule = Schedule("Process No.%s (%s): Start-Up" % (process.ProcNo, process.Process))
             
             if process.ProcType == "continuous":
                 scheduleType = "batchCharge"
@@ -491,7 +492,7 @@ class Schedules(object):
 #..............................................................................
 # schedule for process in-flows (for the moment only ONE !!!)
 
-            newSchedule = Schedule("Process No.%s (%s): InFlow 1"%(process.ProcNo,process.Process))
+            newSchedule = Schedule("Process No.%s (%s): InFlow 1" % (process.ProcNo, process.Process))
             
             if process.ProcType == "continuous":
                 scheduleType = "operation"
@@ -505,7 +506,7 @@ class Schedules(object):
                                    process.HBatch)
             self.procInFlowSchedules.append(newSchedule)
 
-            newSchedule = Schedule("Process No.%s (%s): OutFlow 1"%(process.ProcNo,process.Process))
+            newSchedule = Schedule("Process No.%s (%s): OutFlow 1" % (process.ProcNo, process.Process))
             if process.ProcType == "continuous":
                 scheduleType = "operation"
             else:
@@ -535,7 +536,7 @@ class Schedules(object):
 #..............................................................................
 # schedule for equipment operation
                     
-            newSchedule = Schedule("Equipe No.%s (%s)"%(equipe.EqNo,equipe.Equipment))
+            newSchedule = Schedule("Equipe No.%s (%s)" % (equipe.EqNo, equipe.Equipment))
 
             newSchedule.setPars("operation",
                                 equipe.NDaysEq,
@@ -562,7 +563,7 @@ class Schedules(object):
 #..............................................................................
 # schedule for equipment operation
                     
-            newSchedule = Schedule("WHEE No.%s (%s)"%(whee.WHEENo,whee.WHEEName))
+            newSchedule = Schedule("WHEE No.%s (%s)" % (whee.WHEENo, whee.WHEEName))
 
             newSchedule.setPars("operation",
                                 whee.NDaysWHEE,
@@ -577,7 +578,7 @@ def dateToFirstYearHourOfDay(d):
     return (date(periodReference.year, d.month, d.day) - periodReference).days * int(DAY)
 
 def dateToLastYearHourOfDay(d):
-    return (((date(periodReference.year,  d.month , d.day) - periodReference).days + 1) * int(DAY) - 1)
+    return (((date(periodReference.year, d.month , d.day) - periodReference).days + 1) * int(DAY) - 1)
 
 def intervalsOnOffUnit(profile):
         """Retrieve on/off intervals from load profile.
@@ -588,17 +589,17 @@ def intervalsOnOffUnit(profile):
         :rtype:   List of 3-Tuples
         """
         profileOnOffIntervals = []
-        off       = True
-        start     = None
+        off = True
+        start = None
         for (hour, scale) in enumerate(profile):
             if off and (scale > 0.):
-                start    = hour
+                start = hour
                 scaleSum = scale
-                off      = False
+                off = False
             elif not(off) and (scale == 0.):
                 profileOnOffIntervals.append((start, hour - 1, 1.0))
-                off      = True
-                start    = None
+                off = True
+                start = None
             elif not(off) and scale > 0.:
                 scaleSum += scale
         if (start != None) and not(off):
@@ -679,10 +680,10 @@ def exportProcessPeriodsFromDB(processId):
             processPeriodProfileNames.append(Status.DB.profiles.id[processPeriodProfile.profiles_id].name.column()[0])
         startDate = Status.DB.periods.id[processPeriod.periods_id].start.column()[0]
         startHour = round(dateToFirstYearHourOfDay(startDate), 2)
-        stopDate  = Status.DB.periods.id[processPeriod.periods_id].stop.column()[0]
-        stopHour  = round(dateToLastYearHourOfDay(stopDate) + 1, 2) # stopHour is point in time 
-        step      = float(processPeriod.step)  * DAY
-        scale     = float(processPeriod.scale) * .01
+        stopDate = Status.DB.periods.id[processPeriod.periods_id].stop.column()[0]
+        stopHour = round(dateToLastYearHourOfDay(stopDate) + 1, 2) # stopHour is point in time 
+        step = float(processPeriod.step) * DAY
+        scale = float(processPeriod.scale) * .01
         processPeriods.append({"start"    : startHour,
                                "stop"     : stopHour,
                                "step"     : step,
@@ -704,26 +705,26 @@ def exportHolidayIntervalsFromDB(questionnaireId):
     
     # first holiday period
     startDate = Status.DB.questionnaire.Questionnaire_ID[questionnaireId].NoProdStart_1.column().pop()
-    stopDate  = Status.DB.questionnaire.Questionnaire_ID[questionnaireId].NoProdStop_1.column().pop()
+    stopDate = Status.DB.questionnaire.Questionnaire_ID[questionnaireId].NoProdStop_1.column().pop()
     if startDate and stopDate:
         startHour = dateToFirstYearHourOfDay(startDate)
-        stopHour  = dateToLastYearHourOfDay(stopDate) + 1 # stopHour is point in time
+        stopHour = dateToLastYearHourOfDay(stopDate) + 1 # stopHour is point in time
         industryHolidays.append({"start" : float(startHour), "stop"  : float(stopHour)})
     
     # second holiday period
     startDate = Status.DB.questionnaire.Questionnaire_ID[questionnaireId].NoProdStart_2.column().pop()
-    stopDate  = Status.DB.questionnaire.Questionnaire_ID[questionnaireId].NoProdStop_2.column().pop()
+    stopDate = Status.DB.questionnaire.Questionnaire_ID[questionnaireId].NoProdStop_2.column().pop()
     if startDate and stopDate:
         startHour = dateToFirstYearHourOfDay(startDate)
-        stopHour  = dateToLastYearHourOfDay(stopDate) + 1 # stopHour is point in time
+        stopHour = dateToLastYearHourOfDay(stopDate) + 1 # stopHour is point in time
         industryHolidays.append({"start" : float(startHour), "stop"  : float(stopHour)})
     
     # third holiday period
     startDate = Status.DB.questionnaire.Questionnaire_ID[questionnaireId].NoProdStart_3.column().pop()
-    stopDate  = Status.DB.questionnaire.Questionnaire_ID[questionnaireId].NoProdStop_3.column().pop()
+    stopDate = Status.DB.questionnaire.Questionnaire_ID[questionnaireId].NoProdStop_3.column().pop()
     if startDate and stopDate:
         startHour = dateToFirstYearHourOfDay(startDate)
-        stopHour  = dateToLastYearHourOfDay(stopDate) + 1 # stopHour is point in time
+        stopHour = dateToLastYearHourOfDay(stopDate) + 1 # stopHour is point in time
     
     return industryHolidays
 
@@ -752,10 +753,10 @@ class PeriodSchedule(object):
     """
 
     def __init__(self, name, startup=None, inflow=None, outflow=None, tolerance=None, holidayScale=None, holidays=None, schedule=None):
-        self.name      = name
-        self.startup   = startup
-        self.inflow    = inflow
-        self.outflow   = outflow
+        self.name = name
+        self.startup = startup
+        self.inflow = inflow
+        self.outflow = outflow
         if tolerance != None:
             self.tolerance = tolerance
         else:
@@ -809,7 +810,7 @@ class PeriodSchedule(object):
         :returns: nothing
         """
         holidayStartHour = dateToFirstYearHourOfDay(start)
-        holidayStopHour  = dateToLastYearHourOfDay(stop)
+        holidayStopHour = dateToLastYearHourOfDay(stop)
         self.holidays.append((holidayStartHour, holidayStopHour))
         
     def isHolidays(self, hour):
@@ -852,15 +853,15 @@ class PeriodSchedule(object):
         :returns: nothing
         """
         periodStartHour = dateToFirstYearHourOfDay(start)
-        periodStopHour  = dateToLastYearHourOfDay(stop)
-        profileWeekday  = profile.getWeekdays()
+        periodStopHour = dateToLastYearHourOfDay(stop)
+        profileWeekday = profile.getWeekdays()
         for yearHour in range(periodStartHour, periodStopHour + 1):
             for (intervalStartTime, intervalStopTime, intervalScale) in profile.getProfile():
-                intervalStartDayTime  = timedelta(hours=intervalStartTime.hour, minutes=intervalStartTime.minute).seconds / 3600.0
-                intervalStartDayHour  = int(intervalStartDayTime)
-                intervalStopDayTime   = timedelta(hours=intervalStopTime.hour, minutes=intervalStopTime.minute).seconds / 3600.0
-                intervalStopDayHour   = int(intervalStopDayTime)
-                yearDayHour           = yearHour % int(DAY)
+                intervalStartDayTime = timedelta(hours=intervalStartTime.hour, minutes=intervalStartTime.minute).seconds / 3600.0
+                intervalStartDayHour = int(intervalStartDayTime)
+                intervalStopDayTime = timedelta(hours=intervalStopTime.hour, minutes=intervalStopTime.minute).seconds / 3600.0
+                intervalStopDayHour = int(intervalStopDayTime)
+                yearDayHour = yearHour % int(DAY)
                 if intervalStartDayHour >= intervalStopDayHour: # wrap around start of next day
                     if not ((intervalStartDayHour <= yearDayHour)  or (yearDayHour <= intervalStopDayHour)): continue
                 else:
@@ -895,27 +896,27 @@ class PeriodSchedule(object):
         """
         if withTolerance:
             schedule = [0.] * int(YEAR)
-            lastStop   = -TOLERANCE_GAP
+            lastStop = -TOLERANCE_GAP
             for (cycle, (start, stop, scale)) in enumerate(self.getYearlyProfileOnOffMeanIntervals(withHolidays, withTolerance=False)):
                 newStart = (start + self.toleranceOffset[cycle])    # fractional start time point
                 if newStart < lastStop + TOLERANCE_GAP: # minimal gap between cycles
                     newStart = lastStop + TOLERANCE_GAP
                     self.toleranceOffset[cycle] = newStart - start
-                newStop  = (stop + 1 + self.toleranceOffset[cycle]) # fractional stop time point
+                newStop = (stop + 1 + self.toleranceOffset[cycle]) # fractional stop time point
                 lastStop = newStop
                 newStartHour = int(ceil(newStart)) # integer inclusive start hour
-                newStopHour  = int(floor(newStop)) # integer exclusive stop  hour
+                newStopHour = int(floor(newStop)) # integer exclusive stop  hour
                 for hour in range(newStartHour, newStopHour): # shift hour load to new integer inclusive hours
                     schedule[hour % int(YEAR)] = self.schedule[hour + (start - newStartHour)]
                 startFracHour = int(floor(newStart - 1e-10)) # integer hour containing fractional load
-                stopFracHour  = int(floor(newStop))          # integer hour containing fractional load
-                newFrac       = fmod(self.toleranceOffset[cycle], 1)
+                stopFracHour = int(floor(newStop))          # integer hour containing fractional load
+                newFrac = fmod(self.toleranceOffset[cycle], 1)
                 if newFrac < 0: # shift left
-                    schedule[startFracHour % int(YEAR)] += abs(newFrac)   * self.schedule[start]
-                    schedule[stopFracHour  % int(YEAR)]  += (1. + newFrac) * self.schedule[stop]
+                    schedule[startFracHour % int(YEAR)] += abs(newFrac) * self.schedule[start]
+                    schedule[stopFracHour % int(YEAR)] += (1. + newFrac) * self.schedule[stop]
                 elif newFrac > 0.: # shift right
                     schedule[startFracHour % int(YEAR)] += (1. - newFrac) * self.schedule[start]
-                    schedule[stopFracHour  % int(YEAR)]  += newFrac        * self.schedule[stop]
+                    schedule[stopFracHour % int(YEAR)] += newFrac * self.schedule[stop]
         else:
             schedule = self.schedule
         if withHolidays:
@@ -936,7 +937,7 @@ class PeriodSchedule(object):
         """
         yearlyProfileIntervals = []
         lastScale = 0.
-        start     = None
+        start = None
         for (hour, scale) in enumerate(self.getYearlyProfile(withHolidays, withTolerance)):
             if scale != lastScale:
                 if start == None:
@@ -964,21 +965,21 @@ class PeriodSchedule(object):
         :rtype:   List of 3-Tuples
         """
         yearlyProfileOnOffIntervals = []
-        off       = True
-        start     = None
+        off = True
+        start = None
         for (hour, scale) in enumerate(self.getYearlyProfile(withHolidays, withTolerance)):
             if off and (scale > 0.):
-                start    = hour
+                start = hour
                 scaleSum = scale
-                off      = False
+                off = False
             elif not(off) and (scale == 0.):
-                yearlyProfileOnOffIntervals.append((start, hour - 1, scaleSum/(hour - start)))
-                off      = True
-                start    = None
+                yearlyProfileOnOffIntervals.append((start, hour - 1, scaleSum / (hour - start)))
+                off = True
+                start = None
             elif not(off) and scale > 0.:
                 scaleSum += scale
         if (start != None) and not(off):
-            yearlyProfileOnOffIntervals.append((start, int(YEAR) - 1, scaleSum/(int(YEAR) - start))) 
+            yearlyProfileOnOffIntervals.append((start, int(YEAR) - 1, scaleSum / (int(YEAR) - start))) 
         return yearlyProfileOnOffIntervals
     
     def getYearlyProfileOnOffUnitIntervals(self, withHolidays=True, withTolerance=False):
@@ -1005,18 +1006,18 @@ class PeriodSchedule(object):
         yearlyProfile = [0.] * int(YEAR)
         try:
             startupHours = int(self.startup)
-            startupFrac  = fmod(self.startup, 1)
+            startupFrac = fmod(self.startup, 1)
         except TypeError: # use DEFAULTCHARGETIME for each cycle
             for (start, stop, scale) in self.getYearlyProfileOnOffMeanIntervals(withHolidays, withTolerance):
                 cycleStartup = DEFAULTCHARGETIME * (stop - start + 1) 
                 startupHours = int(cycleStartup)
-                startupFrac  = fmod(cycleStartup, 1)
-                yearlyProfile[start:start+startupHours] = [scale] * startupHours
-                yearlyProfile[start+startupHours:start+startupHours+1] = [startupFrac * scale]
+                startupFrac = fmod(cycleStartup, 1)
+                yearlyProfile[start:start + startupHours] = [scale] * startupHours
+                yearlyProfile[start + startupHours:start + startupHours + 1] = [startupFrac * scale]
         else:
             for (start, stop, scale) in self.getYearlyProfileOnOffMeanIntervals(withHolidays, withTolerance):
-                yearlyProfile[start:start+startupHours] = [scale] * startupHours
-                yearlyProfile[start+startupHours:start+startupHours+1] = [startupFrac * scale]
+                yearlyProfile[start:start + startupHours] = [scale] * startupHours
+                yearlyProfile[start + startupHours:start + startupHours + 1] = [startupFrac * scale]
         return yearlyProfile
     
     def getYearlyInflowProfile(self, withHolidays=True, withTolerance=False):
@@ -1031,18 +1032,18 @@ class PeriodSchedule(object):
         yearlyProfile = [0.] * int(YEAR)
         try:
             inflowHours = int(self.inflow)
-            inflowFrac  = fmod(self.inflow, 1)
+            inflowFrac = fmod(self.inflow, 1)
         except TypeError: # use DEFAULTCHARGETIME for each cycle
             for (start, stop, scale) in self.getYearlyProfileOnOffMeanIntervals(withHolidays, withTolerance):
                 cycleInflow = DEFAULTCHARGETIME * (stop - start + 1) 
                 inflowHours = int(cycleInflow)
-                inflowFrac  = fmod(cycleInflow, 1)
-                yearlyProfile[start:start+inflowHours] = [scale] * inflowHours
-                yearlyProfile[start+inflowHours:start+inflowHours+1] = [inflowFrac * scale]
+                inflowFrac = fmod(cycleInflow, 1)
+                yearlyProfile[start:start + inflowHours] = [scale] * inflowHours
+                yearlyProfile[start + inflowHours:start + inflowHours + 1] = [inflowFrac * scale]
         else:
             for (start, stop, scale) in self.getYearlyProfileOnOffMeanIntervals(withHolidays, withTolerance):
-                yearlyProfile[start:start+inflowHours] = [scale] * inflowHours
-                yearlyProfile[start+inflowHours:start+inflowHours+1] = [inflowFrac * scale]
+                yearlyProfile[start:start + inflowHours] = [scale] * inflowHours
+                yearlyProfile[start + inflowHours:start + inflowHours + 1] = [inflowFrac * scale]
         return yearlyProfile
     
     def getYearlyOutflowProfile(self, withHolidays=True, withTolerance=False):
@@ -1057,18 +1058,18 @@ class PeriodSchedule(object):
         yearlyProfile = [0.] * int(YEAR)
         try:
             outflowHours = int(self.outflow)
-            outflowFrac  = fmod(self.outflow, 1)
+            outflowFrac = fmod(self.outflow, 1)
         except TypeError: # use DEFAULTCHARGETIME for each cycle
             for (start, stop, scale) in self.getYearlyProfileOnOffMeanIntervals(withHolidays, withTolerance):
                 cycleOutflow = DEFAULTCHARGETIME * (stop - start + 1) 
                 outflowHours = int(cycleOutflow)
-                outflowFrac  = fmod(cycleOutflow, 1)
-                yearlyProfile[stop+1:stop+1+outflowHours] = [scale] * outflowHours
-                yearlyProfile[stop+1+outflowHours:stop+1+outflowHours+1] = [outflowFrac * scale]
+                outflowFrac = fmod(cycleOutflow, 1)
+                yearlyProfile[stop + 1:stop + 1 + outflowHours] = [scale] * outflowHours
+                yearlyProfile[stop + 1 + outflowHours:stop + 1 + outflowHours + 1] = [outflowFrac * scale]
         else:
             for (start, stop, scale) in self.getYearlyProfileOnOffMeanIntervals(withHolidays, withTolerance):
-                yearlyProfile[stop+1:stop+1+outflowHours] = [scale] * outflowHours
-                yearlyProfile[stop+1+outflowHours:stop+1+outflowHours+1] = [outflowFrac * scale]
+                yearlyProfile[stop + 1:stop + 1 + outflowHours] = [scale] * outflowHours
+                yearlyProfile[stop + 1 + outflowHours:stop + 1 + outflowHours + 1] = [outflowFrac * scale]
         return yearlyProfile
     
     def getWeeklyProfile(self, start):
@@ -1084,7 +1085,7 @@ class PeriodSchedule(object):
         if start.weekday() != 0: # start weekly profile on Monday
             start = start + timedelta(days=abs(start.weekday() - 7))
         startYearHour = dateToFirstYearHourOfDay(start)
-        return self.schedule[startYearHour:startYearHour+int(WEEK)]
+        return self.schedule[startYearHour:startYearHour + int(WEEK)]
     
     def getYearlyContinuousOperationProfile(self, withHolidays=True, withTolerance=False):
         """Retrieve the normalized yearly operation load profile for continuous processes optionally with industry holidays.
@@ -1180,7 +1181,7 @@ class PeriodSchedule(object):
         :returns: Weekly starting and stopping hours
         :rtype:   List of (Float,Float)
         """
-        return [(float(start), end+1.0) for (start, end, load) in intervalsOnOffUnit(weeklyMeanOfYearlyProfile(self.getYearlyProfile(withHolidays=False, withTolerance=False)))]
+        return [(float(start), end + 1.0) for (start, end, load) in intervalsOnOffUnit(weeklyMeanOfYearlyProfile(self.getYearlyProfile(withHolidays=False, withTolerance=False)))]
                                   
     def getMeanWeeklyContinuousStartupTimePeriods(self):
         """Retrieve the mean weekly start-up time periods for continuous processes.
@@ -1188,7 +1189,7 @@ class PeriodSchedule(object):
         :returns: Weekly starting and stopping hours
         :rtype:   List of (Float,Float)
         """
-        return [(float(start), end+1.0) for (start, end, load) in intervalsOnOffUnit(weeklyMeanOfYearlyProfile(self.getYearlyStartupProfile(withHolidays=False, withTolerance=False)))]
+        return [(float(start), end + 1.0) for (start, end, load) in intervalsOnOffUnit(weeklyMeanOfYearlyProfile(self.getYearlyStartupProfile(withHolidays=False, withTolerance=False)))]
 
     def getMeanWeeklyContinuousInflowTimePeriods(self):
         """Retrieve the mean weekly in-flow time periods for continuous processes.
@@ -1228,7 +1229,7 @@ class PeriodSchedule(object):
         :returns: Weekly starting and stopping hours
         :rtype:   List of (Float,Float)
         """
-        return [(float(start), end+1.0) for (start, end, load) in intervalsOnOffUnit(weeklyMeanOfYearlyProfile(self.getYearlyInflowProfile(withHolidays=False, withTolerance=False)))]
+        return [(float(start), end + 1.0) for (start, end, load) in intervalsOnOffUnit(weeklyMeanOfYearlyProfile(self.getYearlyInflowProfile(withHolidays=False, withTolerance=False)))]
     
     def getMeanWeeklyBatchOutflowTimePeriods(self):
         """Retrieve the mean weekly out-flow time periods for batch processes.
@@ -1236,7 +1237,7 @@ class PeriodSchedule(object):
         :returns: Weekly starting and stopping hours
         :rtype:   List of (Float,Float)
         """
-        return [(float(start), end+1.0) for (start, end, float) in intervalsOnOffUnit(weeklyMeanOfYearlyProfile(self.getYearlyOutflowProfile(withHolidays=False, withTolerance=False)))]
+        return [(float(start), end + 1.0) for (start, end, float) in intervalsOnOffUnit(weeklyMeanOfYearlyProfile(self.getYearlyOutflowProfile(withHolidays=False, withTolerance=False)))]
 
     def getNumberOfOperationDays(self, withHolidays=True, withTolerance=False):
         """Calculate the number of days with non-zero load optionally with industry holidays.
@@ -1247,11 +1248,11 @@ class PeriodSchedule(object):
         :returns: The number of operation days during the year
         :rtype:   Integer
         """
-        nDays   = 0
+        nDays = 0
         lastDay = -1
         for (start, stop, scale) in self.getYearlyProfileIntervals(withHolidays, withTolerance):
             startDay = (start / int(DAY))
-            stopDay  = (stop  / int(DAY))
+            stopDay = (stop / int(DAY))
             if startDay > lastDay:
                 nDays += stopDay - startDay + 1
                 lastDay = stopDay
@@ -1289,7 +1290,7 @@ class PeriodSchedule(object):
             (start, stop, scale) = batches[0]
         except IndexError:
             return 0
-        if start == 0 and stop == int(YEAR) -1:
+        if start == 0 and stop == int(YEAR) - 1:
             return 0
         else:
             return len(batches)
@@ -1359,7 +1360,7 @@ class PeriodSchedule(object):
         :rtype:   Float
         """
         yearlyIntervals = self.getYearlyProfileOnOffMeanIntervals(withHolidays, withTolerance)
-        yearlyDuration  = 0.
+        yearlyDuration = 0.
         for (start, stop, scale) in yearlyIntervals:
             yearlyDuration += stop - start + 1
         try:
@@ -1396,7 +1397,7 @@ class PeriodSchedule(object):
         except IndexError:
             raise ProcessDataNotFoundError
         processDataRow.update({"StartUpDuration"   : self.startup != None and self.startup or 'NULL'})
-        processDataRow.update({"InFlowDuration"    : self.inflow  != None and self.inflow  or 'NULL'})
+        processDataRow.update({"InFlowDuration"    : self.inflow != None and self.inflow  or 'NULL'})
         processDataRow.update({"OutFlowDuration"   : self.outflow != None and self.outflow or 'NULL'})
         processDataRow.update({"ScheduleTolerance" : self.tolerance})
         processDataRow.update({"HolidayScale"      : self.holidayScale})
@@ -1439,7 +1440,7 @@ class PeriodSchedule(object):
         except IndexError:
             raise ProcessDataNotFoundError
         self.startup = processDataRow.StartUpDuration
-        self.inflow  = processDataRow.InFlowDuration
+        self.inflow = processDataRow.InFlowDuration
         self.outflow = processDataRow.OutFlowDuration
         if processDataRow.ScheduleTolerance != None:
             self.tolerance = processDataRow.ScheduleTolerance
@@ -1449,21 +1450,224 @@ class PeriodSchedule(object):
         # set process holidays to industry holidays
         try: # first industry holiday period
             holidayStart = Status.DB.questionnaire.Questionnaire_ID[processDataRow.Questionnaire_id].NoProdStart_1.column().pop()
-            holidayStop  = Status.DB.questionnaire.Questionnaire_ID[processDataRow.Questionnaire_id].NoProdStop_1.column().pop()
+            holidayStop = Status.DB.questionnaire.Questionnaire_ID[processDataRow.Questionnaire_id].NoProdStop_1.column().pop()
         except IndexError:
             raise InconsistentDataBaseError
         if holidayStart and holidayStop:
             self.addHolidays(holidayStart, holidayStop)
         try: # second industry holiday period
             holidayStart = Status.DB.questionnaire.Questionnaire_ID[processDataRow.Questionnaire_id].NoProdStart_2.column().pop()
-            holidayStop  = Status.DB.questionnaire.Questionnaire_ID[processDataRow.Questionnaire_id].NoProdStop_2.column().pop()
+            holidayStop = Status.DB.questionnaire.Questionnaire_ID[processDataRow.Questionnaire_id].NoProdStop_2.column().pop()
         except IndexError:
             raise InconsistentDataBaseError
         if holidayStart and holidayStop:
             self.addHolidays(holidayStart, holidayStop)
         try: # third industry holiday period
             holidayStart = Status.DB.questionnaire.Questionnaire_ID[processDataRow.Questionnaire_id].NoProdStart_3.column().pop()
-            holidayStop  = Status.DB.questionnaire.Questionnaire_ID[processDataRow.Questionnaire_id].NoProdStop_3.column().pop()
+            holidayStop = Status.DB.questionnaire.Questionnaire_ID[processDataRow.Questionnaire_id].NoProdStop_3.column().pop()
+        except IndexError:
+            raise InconsistentDataBaseError
+        if holidayStart and holidayStop:
+            self.addHolidays(holidayStart, holidayStop)
+
+        # set schedule 
+        self.clearSchedule()
+        scheduleIntervalRows = Status.DB.process_schedules.qprocessdata_QProcessData_ID[processId]
+        if not scheduleIntervalRows:
+            raise ScheduleNotFoundError
+        for scheduleInterval in scheduleIntervalRows:
+            self.schedule[scheduleInterval['startHour']:scheduleInterval['stopHour'] + 1] = [scheduleInterval['scale']] * (scheduleInterval['stopHour'] - scheduleInterval['startHour'] + 1)
+
+        # set tolerance offsets
+        scheduleToleranceOffsetRows = Status.DB.process_schedules_tolerance_offsets.sql_select('qprocessdata_QProcessData_ID = %d ORDER BY cycle' % processId)
+        self.updateToleranceOffset([row['offset'] for row in scheduleToleranceOffsetRows])
+        
+        return sum(self.getYearlyStartupProfile(withHolidays, withTolerance))
+    
+    def getOperationHoursPerBatch(self, withHolidays=True, withTolerance=False):
+        """Calculate the mean effective operation hours of a single batch optionally with holidays.
+        
+        :returns: Mean operation hours of one batch
+        :rtype:   Float
+        """
+        try:
+            result = self.getOperationHoursPerYear(withHolidays, withTolerance) / float(self.getNumberOfBatchesPerYear(withHolidays, withTolerance))
+        except ZeroDivisionError:
+            return 0.
+        if isnan(result) or isinf(result):
+            return 0.
+        return result
+        
+    def getOperationHoursPerInterval(self, withHolidays=True):
+        """Calculate the mean effective operation hours of a single interval optionally with holidays.
+        
+        :returns: Mean operation hours of one batch
+        :rtype:   Float
+        """
+        try:
+            result = self.getOperationHoursPerYear(withHolidays) / float(self.getNumberOfIntervalsPerYear(withHolidays))
+        except ZeroDivisionError:
+            return 0.
+        if isnan(result) or isinf(result):
+            return 0.
+        return result
+
+        
+    def getDurationHoursPerBatch(self, withHolidays=True, withTolerance=False):
+        """Calulcate the mean nominal duration hours of a single batch optionally with holidays.
+        
+        :returns: Mean duration hours of one batch
+        :rtype:   Float
+        """
+        yearlyIntervals = self.getYearlyProfileOnOffMeanIntervals(withHolidays, withTolerance)
+        yearlyDuration = 0.
+        for (start, stop, scale) in yearlyIntervals:
+            yearlyDuration += stop - start + 1
+        try:
+            result = yearlyDuration / float(self.getNumberOfBatchesPerYear(withHolidays, withTolerance))
+        except ZeroDivisionError:
+            return 0.
+        if isnan(result) or isinf(result):
+            return 0.
+        return result        
+    
+    def getDurationHoursPerInterval(self, withHolidays=True):
+        """Calulcate the mean nominal duration hours of a single interval optionally with holidays.
+        
+        :returns: Mean duration hours of one batch
+        :rtype:   Float
+        """
+        intervals = self.getYearlyIntervals(withHolidays)
+        yearlyDuration = 0.
+        for day in range(NDAYS):
+            for (start, stop, scale) in intervals[day]:
+                yearlyDuration += (timedelta(hours=stop.hour, minutes=stop.minute) - timedelta(hours=start.hour, minutes=start.minute)).seconds / 3600.
+        try:
+            result = yearlyDuration / float(self.getNumberOfIntervalsPerYear(withHolidays))
+        except ZeroDivisionError:
+            return 0.
+        if isnan(result) or isinf(result):
+            return 0.
+        return result
+    
+    def getDailyPartLoad(self, withHolidays=True, withTolerance=False):
+        """Calulcate the mean part load factor between nominal and effective hours of a single batch optionally with holidays.
+        
+        :returns: Mean part load factor
+        :rtype:   Float
+        """
+        try:
+            result = self.getOperationHoursPerBatch(withHolidays, withTolerance) / self.getDurationHoursPerBatch(withHolidays, withTolerance)
+        except ZeroDivisionError:
+            return 0.
+        if isnan(result) or isinf(result):
+            return 0.
+        return result
+        
+    def getDailyIntervalPartLoad(self, withHolidays=True, withTolerance=False):
+        """Calulcate the mean part load factor between nominal and effective hours of a single interval optionally with holidays.
+        
+        :returns: Mean part load factor
+        :rtype:   Float
+        """
+        try:
+            result = self.getOperationHoursPerInterval(withHolidays) / self.getDurationHoursPerInterval(withHolidays)
+        except ZeroDivisionError:
+            return 0.
+        if isnan(result) or isinf(result):
+            return 0.
+        return result
+            
+    def saveToDB(self, processId, withHolidays=True):
+        """Store yearly load profile intervals and process schedule parameters (startup, inflow, outflow, tolerance, and holiday scale) to data base for a given process.
+        
+        Also stores process effective operation hour parameters and tolerance offsets. 
+        
+        Does not store the holidays, since they are global to the industry.
+        
+        :param processId: Data base ID of process to store the schedule for
+        :type  processId: Integer
+        :param withHolidays: Whether holiday periods are honored, only for operation hour parameters. Intervals are always stored ignoring holidays. 
+        :type  withHolidays: Boolean
+        
+        :returns: nothing
+        :exception einstein.modules.schedules.ProcessDataNotFoundError: No data on process found in DB (table qprocessdata).
+        """
+        # store process schedule parameters
+        try:
+            processDataRow = Status.DB.qprocessdata.QProcessData_ID[processId][0]
+        except IndexError:
+            raise ProcessDataNotFoundError
+        processDataRow.update({"StartUpDuration"   : self.startup != None and self.startup or 'NULL',
+                               "InFlowDuration"    : self.inflow != None and self.inflow  or 'NULL',
+                               "OutFlowDuration"   : self.outflow != None and self.outflow or 'NULL',
+                               "ScheduleTolerance" : self.tolerance,
+                               "HolidayScale"      : self.holidayScale,
+                               "HPerYearInFlow"    : processDataRow.ProcType == 'batch' and self.getInflowHoursPerYear(withHolidays)  or self.getOperationHoursPerYear(withHolidays),
+                               "HPerYearOutFlow"   : processDataRow.ProcType == 'batch' and self.getOutflowHoursPerYear(withHolidays) or self.getOperationHoursPerYear(withHolidays),
+                               "HPerDayProc"       : self.getIntervalOperationHoursPerDay(withHolidays),
+                               "HBatch"            : self.getDurationHoursPerInterval(withHolidays),
+                               "NDaysProc"         : self.getNumberOfIntervalOperationDays(withHolidays),
+                               "PartLoad"          : self.getDailyIntervalPartLoad(withHolidays)})
+
+        # delete previously saved schedule intervals and tolerance offsets for given process
+        deleteProcessScheduleFromDB(processId)
+                
+        # store schedule intervals without holidays and tolerance for given process
+        sql = Status.SQL.cursor()
+        valueString = ','.join(['(%d, %d, %f, %d)' % (start, stop, scale, processId) for (start, stop, scale) in self.getYearlyProfileIntervals(withHolidays=False, withTolerance=False)])
+        if valueString:
+            sqlString = 'INSERT DELAYED INTO process_schedules (startHour, stopHour, scale, qprocessdata_QProcessData_ID) VALUES %s' % valueString
+            sql.execute(sqlString)
+            
+        # store schedule tolerance offsets for given process
+        valueString = ','.join(['(%d, %d, %f)' % (processId, cycle, offset) for (cycle, offset) in enumerate(self.toleranceOffset)])
+        if valueString:
+            sqlString = 'INSERT DELAYED INTO process_schedules_tolerance_offsets (qprocessdata_QProcessData_ID, cycle, offset) VALUES %s' % valueString
+            sql.execute(sqlString)
+        sql.close()
+             
+    def loadFromDB(self, processId):
+        """Retrieve yearly profile, process schedule parameters, tolerance offsets, and industry holidays from data base for a given process.
+        
+        To load a detailed schedule for a process from the DB, construct an empty period schedule instance first.
+        
+        :returns: nothing
+        :exception einstein.modules.schedules.ProcessDataNotFoundError: No data on process found in DB (table qprocessdata).
+        :exception einstein.modules.schedules.InconsistentDataBaseError: Data base structure is inconsistent. This would be a bug.
+        :exception einstein.modules.schedules.ScheduleNotFoundError: No detailed schedule for process found in DB.
+        """
+        # set process schedule parameters
+        try:
+            processDataRow = Status.DB.qprocessdata.QProcessData_ID[processId][0]
+        except IndexError:
+            raise ProcessDataNotFoundError
+        self.startup = processDataRow.StartUpDuration
+        self.inflow = processDataRow.InFlowDuration
+        self.outflow = processDataRow.OutFlowDuration
+        if processDataRow.ScheduleTolerance != None:
+            self.tolerance = processDataRow.ScheduleTolerance
+        if processDataRow.HolidayScale != None:
+            self.holidayScale = processDataRow.HolidayScale
+            
+        # set process holidays to industry holidays
+        try: # first industry holiday period
+            holidayStart = Status.DB.questionnaire.Questionnaire_ID[processDataRow.Questionnaire_id].NoProdStart_1.column().pop()
+            holidayStop = Status.DB.questionnaire.Questionnaire_ID[processDataRow.Questionnaire_id].NoProdStop_1.column().pop()
+        except IndexError:
+            raise InconsistentDataBaseError
+        if holidayStart and holidayStop:
+            self.addHolidays(holidayStart, holidayStop)
+        try: # second industry holiday period
+            holidayStart = Status.DB.questionnaire.Questionnaire_ID[processDataRow.Questionnaire_id].NoProdStart_2.column().pop()
+            holidayStop = Status.DB.questionnaire.Questionnaire_ID[processDataRow.Questionnaire_id].NoProdStop_2.column().pop()
+        except IndexError:
+            raise InconsistentDataBaseError
+        if holidayStart and holidayStop:
+            self.addHolidays(holidayStart, holidayStop)
+        try: # third industry holiday period
+            holidayStart = Status.DB.questionnaire.Questionnaire_ID[processDataRow.Questionnaire_id].NoProdStart_3.column().pop()
+            holidayStop = Status.DB.questionnaire.Questionnaire_ID[processDataRow.Questionnaire_id].NoProdStop_3.column().pop()
         except IndexError:
             raise InconsistentDataBaseError
         if holidayStart and holidayStop:

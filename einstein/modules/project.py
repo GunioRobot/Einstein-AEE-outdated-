@@ -59,13 +59,21 @@ from messageLogger import *
 from einstein.GUI.GUITools import check
 
 def _U(text):
-    return unicode(_(text),"utf-8")
+    return unicode(_(text), "utf-8")
 
 #------------------------------------------------------------------------------		
-def copySQLRows(table,query,keyID,keyPar,valPar):
-#------------------------------------------------------------------------------		
-#       auxiliary function for copying full rows in SQL Tables
-#------------------------------------------------------------------------------		
+def copySQLRows(table, query, keyID, keyPar=None, valPar=None):
+    """
+    auxiliary function for copying full rows in SQL Tables
+    
+    :param table: name of the table
+    :param query: the part after the WHERE in the SQL clause
+    :param keyID: name of the primary key in the table
+    :param keyPar: name of a column with entries that are to be changed in the
+    copy
+    :param valPar: new value for column keyPar
+    :returns: A dict with oldId: newID pairs
+    """
     rows = table.sql_select(query)
 
     IDDict = {}
@@ -89,7 +97,7 @@ def copySQLRows(table,query,keyID,keyPar,valPar):
 # changes one parameter within the row (usually AlternativeNo or ProjectID
 
         if valPar is not None:
-            mydict.update([(keyPar,valPar)])
+            mydict.update([(keyPar, valPar)])
 
 #..............................................................................
 # eliminates the None's from the dictionary (would otherwise be substituted by
@@ -111,7 +119,7 @@ def copySQLRows(table,query,keyID,keyPar,valPar):
 
     return IDDict
 #------------------------------------------------------------------------------		
-def deleteSQLRows(table,query):
+def deleteSQLRows(table, query):
 #------------------------------------------------------------------------------		
 #       auxiliary function for copying full rows in SQL Tables
 #------------------------------------------------------------------------------		
@@ -126,7 +134,7 @@ def deleteSQLRows(table,query):
            
 
 #------------------------------------------------------------------------------		
-def cleanUpSQLRows(table,query,maxANo = None,mainField = None):
+def cleanUpSQLRows(table, query, maxANo=None, mainField=None):
 #------------------------------------------------------------------------------		
 #       auxiliary function for copying full rows in SQL Tables
 #       eliminates rows with erroneous ANO
@@ -138,10 +146,10 @@ def cleanUpSQLRows(table,query,maxANo = None,mainField = None):
     maxCtr = len(rows)
         
 
-    while (checked ==False and ctr < maxCtr):
-        ctr +=1
+    while (checked == False and ctr < maxCtr):
+        ctr += 1
         
-        checked == True
+        checked = True
         
         rows = table.sql_select(query)
         
@@ -151,10 +159,10 @@ def cleanUpSQLRows(table,query,maxANo = None,mainField = None):
 # check here if there are rows with an AlternativeProposalNo out of range [-1:maxANo]
             if maxANo is not None:
                 if rows[i].AlternativeProposalNo > maxANo or rows[i].AlternativeProposalNo < -1:
-                    logDebug(_("Project (cleanUpSQLRows): entry with ANo %s > maxANo %s deleted -> \n%s")%\
-                             (rows[i].AlternativeProposalNo,maxANo,rows[i]))
+                    logDebug(_("Project (cleanUpSQLRows): entry with ANo %s > maxANo %s deleted -> \n%s") % \
+                             (rows[i].AlternativeProposalNo, maxANo, rows[i]))
                     rows[i].delete()    #delete from 0 and update rows -> strange solution. see comment in deleteSQLRows
-                    checked == False
+                    checked = False
                     Status.SQL.commit()
                     break
                 
@@ -164,15 +172,15 @@ def cleanUpSQLRows(table,query,maxANo = None,mainField = None):
 
                 if rows[i][mainField] is None:
                 
-                    logDebug(_("Project (cleanUpSQLRows): corrupt entry with ANo %s deleted\n%s")% \
-                             (rows[i].AlternativeProposalNo,rows[i]))
+                    logDebug(_("Project (cleanUpSQLRows): corrupt entry with ANo %s deleted\n%s") % \
+                             (rows[i].AlternativeProposalNo, rows[i]))
                     rows[i].delete()    #delete from 0 and update rows -> strange solution. see comment in deleteSQLRows
-                    checked == False
+                    checked = False
                     Status.SQL.commit()
                     break                    
 
 #------------------------------------------------------------------------------		
-def shiftANoInSQLRows(table,query, shift):
+def shiftANoInSQLRows(table, query, shift):
 #------------------------------------------------------------------------------		
 #       auxiliary function for changing a value in rows
 #------------------------------------------------------------------------------		
@@ -219,7 +227,7 @@ class Project(object):
 #------------------------------------------------------------------------------		
 
 #------------------------------------------------------------------------------
-    def createNewAlternative(self,originalANo,shortName,description):
+    def createNewAlternative(self, originalANo, shortName, description):
 #------------------------------------------------------------------------------
 #   creates a new alternative copying all entries for the original ANo
 #------------------------------------------------------------------------------
@@ -234,40 +242,54 @@ class Project(object):
         sproject = Status.DB.sproject.ProjectID[Status.PId][0]
         sproject.NoOfAlternatives = Status.NoOfAlternatives
 
-        logTrack("Project (createNewAlternative) - project %s, copying from %s %s"%(Status.PId,originalANo,ANo))
+        logTrack("Project (createNewAlternative) - project %s, copying from %s %s" % (Status.PId, originalANo, ANo))
 
 #..............................................................................
 # copying Q- and corresponding C-Tables
 
-        sqlQuery = "ProjectID = '%s' AND AlternativeProposalNo = '%s'"%(Status.PId,originalANo)
+        sqlQuery = "ProjectID = '%s' AND AlternativeProposalNo = '%s'" % (Status.PId, originalANo)
 
         #additional query necessary for old tables who still have Questionnaire_id instead of ProjectID
-        sqlQueryQ = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'"%(Status.PId,originalANo)
+        sqlQueryQ = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'" % (Status.PId, originalANo)
 
-        copySQLRows(DB.salternatives,sqlQuery,"SAlternative_ID","AlternativeProposalNo",ANo)
-        copySQLRows(DB.cgeneraldata,sqlQueryQ,"CGeneralData_ID","AlternativeProposalNo",ANo)
+        copySQLRows(DB.salternatives, sqlQuery, "SAlternative_ID", "AlternativeProposalNo", ANo)
+        copySQLRows(DB.cgeneraldata, sqlQueryQ, "CGeneralData_ID", "AlternativeProposalNo", ANo)
 
-        copySQLRows(DB.qbuildings,sqlQueryQ,"QBuildings_ID","AlternativeProposalNo",ANo)
-        copyPipeDict = copySQLRows(DB.qdistributionhc,sqlQueryQ,"QDistributionHC_ID","AlternativeProposalNo",ANo)
-        copySQLRows(DB.qelectricity,sqlQueryQ,"QElectricity_ID","AlternativeProposalNo",ANo)
-        copySQLRows(DB.qfuel,sqlQueryQ,"QFuel_ID","AlternativeProposalNo",ANo)
-        copyEqDict = copySQLRows(DB.qgenerationhc,sqlQueryQ,"QGenerationHC_ID","AlternativeProposalNo",ANo)
-        copySQLRows(DB.qheatexchanger,sqlQuery,"QHeatExchanger_ID","AlternativeProposalNo",ANo)
-        copySQLRows(DB.qprocessdata,sqlQueryQ,"QProcessData_ID","AlternativeProposalNo",ANo)
-        copySQLRows(DB.qproduct,sqlQueryQ,"QProduct_ID","AlternativeProposalNo",ANo)
+        copySQLRows(DB.qbuildings, sqlQueryQ, "QBuildings_ID", "AlternativeProposalNo", ANo)
+        copyPipeDict = copySQLRows(DB.qdistributionhc, sqlQueryQ, "QDistributionHC_ID", "AlternativeProposalNo", ANo)
+        copySQLRows(DB.qelectricity, sqlQueryQ, "QElectricity_ID", "AlternativeProposalNo", ANo)
+        copySQLRows(DB.qfuel, sqlQueryQ, "QFuel_ID", "AlternativeProposalNo", ANo)
+        copyEqDict = copySQLRows(DB.qgenerationhc, sqlQueryQ, "QGenerationHC_ID", "AlternativeProposalNo", ANo)
+        copySQLRows(DB.qheatexchanger, sqlQuery, "QHeatExchanger_ID", "AlternativeProposalNo", ANo)
+        copyProcessesDict = copySQLRows(DB.qprocessdata, sqlQueryQ, "QProcessData_ID", "AlternativeProposalNo", ANo)
+        copySQLRows(DB.qproduct, sqlQueryQ, "QProduct_ID", "AlternativeProposalNo", ANo)
 #        copySQLRows(DB.qrenewables,sqlQueryQ,"QRenewables_ID","AlternativeProposalNo",ANo)
-        copySQLRows(DB.qwasteheatelequip,sqlQuery,"QWasteHeatElEquip_ID","AlternativeProposalNo",ANo)
-        copySQLRows(DB.uheatpump,sqlQueryQ,"UHeatPump_ID","AlternativeProposalNo",ANo)
-
+        copySQLRows(DB.qwasteheatelequip, sqlQuery, "QWasteHeatElEquip_ID", "AlternativeProposalNo", ANo)
+        copySQLRows(DB.uheatpump, sqlQueryQ, "UHeatPump_ID", "AlternativeProposalNo", ANo)
+        inStreamIds = self._getStreamsForProcesses(DB.process_streams_in,
+                                                   copyProcessesDict.keys(),
+                                                   "streams_in_id")
+        self._copyStreams(inStreamIds, copyProcessesDict,
+                                             DB.process_streams_in,
+                                             "streams_in_id",
+                                             DB.streams_in, ANo)
+        outStreamIds = self._getStreamsForProcesses(DB.process_streams_out,
+                                                    copyProcessesDict.keys(),
+                                                    "streams_out_id")
+        self._copyStreams(outStreamIds, copyProcessesDict,
+                                              DB.process_streams_out,
+                                              "streams_out_id",
+                                              DB.streams_out, ANo)
+        
 #..............................................................................
 # re-establish links
 
-        self.reconnectEquipesToPipes(copyEqDict,copyPipeDict)
-
+        self.reconnectEquipesToPipes(copyEqDict, copyPipeDict)
+        
 #..............................................................................
 # rename alternative
 
-        sqlQuery = "ProjectID = '%s' AND AlternativeProposalNo = '%s'"%(Status.PId,ANo)
+        sqlQuery = "ProjectID = '%s' AND AlternativeProposalNo = '%s'" % (Status.PId, ANo)
         aa = DB.salternatives.sql_select(sqlQuery)
         if len(aa) > 0:
             a = aa[0]
@@ -279,20 +301,20 @@ class Project(object):
             Status.SQL.commit()
             self.setActiveAlternative(ANo)
         else:
-            logError(_("ERROR: possibly corrupt project data\n cannot copy alternative (PId: %s ANo: %s)")%(Status.PId,ANo))
+            logError(_("ERROR: possibly corrupt project data\n cannot copy alternative (PId: %s ANo: %s)") % (Status.PId, ANo))
                         
 #------------------------------------------------------------------------------
         
 #------------------------------------------------------------------------------
-    def deleteAlternative(self,ANo):
+    def deleteAlternative(self, ANo):
 #------------------------------------------------------------------------------
 #   deletes all entries for the original ANo
 #------------------------------------------------------------------------------
 
         if ANo > Status.NoOfAlternatives or ANo == -1:
             
-            logWarning(_("Project (deleteAlternative) - project %s, cannot delete alternative %s")%(Status.PId,ANo))
-            return -1
+            logWarning(_("Project (deleteAlternative) - project %s, cannot delete alternative %s") % (Status.PId, ANo))
+            return - 1
         
         finalAlternative = Status.FinalAlternative
         if finalAlternative is not None:
@@ -302,56 +324,64 @@ class Project(object):
                 finalAlternative = None
         self.setFinalAlternative(finalAlternative)
         
-        logTrack("Project (deleteAlternative) - project %s, deleting alternative %s"%(Status.PId,ANo))
+        logTrack("Project (deleteAlternative) - project %s, deleting alternative %s" % (Status.PId, ANo))
 
 #..............................................................................
 # deleting Q- and corresponding C-Tables
 
         DB = Status.DB
-        sqlQuery = "ProjectID = '%s' AND AlternativeProposalNo = '%s'"%(Status.PId,ANo)
+        sqlQuery = "ProjectID = '%s' AND AlternativeProposalNo = '%s'" % (Status.PId, ANo)
 
         #additional query necessary for old tables who still have Questionnaire_id instead of ProjectID
-        sqlQueryQ = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'"%(Status.PId,ANo)
+        sqlQueryQ = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'" % (Status.PId, ANo)
+        
+        processes = DB.qprocessdata.sql_select(sqlQueryQ)
+        processes = [p.QProcessData_ID for p in processes]
+        for pId in processes:
+            self.deleteProcess(pId)
+        deleteSQLRows(DB.salternatives, sqlQuery)
+        deleteSQLRows(DB.cgeneraldata, sqlQueryQ)
 
-        deleteSQLRows(DB.salternatives,sqlQuery)
-        deleteSQLRows(DB.cgeneraldata,sqlQueryQ)
-
-        deleteSQLRows(DB.qbuildings,sqlQueryQ)
-        deleteSQLRows(DB.qdistributionhc,sqlQueryQ)
-        deleteSQLRows(DB.qelectricity,sqlQueryQ)
-        deleteSQLRows(DB.qfuel,sqlQueryQ)
-        deleteSQLRows(DB.qgenerationhc,sqlQueryQ)
-        deleteSQLRows(DB.qheatexchanger,sqlQuery)
-        deleteSQLRows(DB.qprocessdata,sqlQueryQ)
-        deleteSQLRows(DB.qproduct,sqlQueryQ)
+        deleteSQLRows(DB.qbuildings, sqlQueryQ)
+        deleteSQLRows(DB.qdistributionhc, sqlQueryQ)
+        deleteSQLRows(DB.qelectricity, sqlQueryQ)
+        deleteSQLRows(DB.qfuel, sqlQueryQ)
+        deleteSQLRows(DB.qgenerationhc, sqlQueryQ)
+        deleteSQLRows(DB.qheatexchanger, sqlQuery)
+        deleteSQLRows(DB.qprocessdata, sqlQueryQ)
+        deleteSQLRows(DB.streams_in, sqlQuery)
+        deleteSQLRows(DB.streams_out, sqlQuery)
+        deleteSQLRows(DB.process_streams_in, sqlQuery)
+        deleteSQLRows(DB.process_streams_out, sqlQuery)
+        deleteSQLRows(DB.qproduct, sqlQueryQ)
 #        deleteSQLRows(DB.qrenewables,sqlQueryQ)
-        deleteSQLRows(DB.qwasteheatelequip,sqlQuery)
-        deleteSQLRows(DB.uheatpump,sqlQueryQ)
+        deleteSQLRows(DB.qwasteheatelequip, sqlQuery)
+        deleteSQLRows(DB.uheatpump, sqlQueryQ)
 
 
 #..............................................................................
 # changing ANos in all rows with ANo higher than the deleted one
 
-        for i in range(ANo+1,Status.NoOfAlternatives+1):
-            sqlQuery = "ProjectID = '%s' AND AlternativeProposalNo = '%s'"%(Status.PId,i)
+        for i in range(ANo + 1, Status.NoOfAlternatives + 1):
+            sqlQuery = "ProjectID = '%s' AND AlternativeProposalNo = '%s'" % (Status.PId, i)
 
         #additional query necessary for old tables who still have Questionnaire_id instead of ProjectID
-            sqlQueryQ = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'"%(Status.PId,i)
+            sqlQueryQ = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'" % (Status.PId, i)
 
-            shiftANoInSQLRows(DB.salternatives,sqlQuery,-1)
-            shiftANoInSQLRows(DB.cgeneraldata,sqlQueryQ,-1)
+            shiftANoInSQLRows(DB.salternatives, sqlQuery, -1)
+            shiftANoInSQLRows(DB.cgeneraldata, sqlQueryQ, -1)
 
-            shiftANoInSQLRows(DB.qbuildings,sqlQueryQ,-1)
-            shiftANoInSQLRows(DB.qdistributionhc,sqlQueryQ,-1)
-            shiftANoInSQLRows(DB.qelectricity,sqlQueryQ,-1)
-            shiftANoInSQLRows(DB.qfuel,sqlQueryQ,-1)
-            shiftANoInSQLRows(DB.qgenerationhc,sqlQueryQ,-1)
-            shiftANoInSQLRows(DB.qheatexchanger,sqlQuery,-1)
-            shiftANoInSQLRows(DB.qprocessdata,sqlQueryQ,-1)
-            shiftANoInSQLRows(DB.qproduct,sqlQueryQ,-1)
+            shiftANoInSQLRows(DB.qbuildings, sqlQueryQ, -1)
+            shiftANoInSQLRows(DB.qdistributionhc, sqlQueryQ, -1)
+            shiftANoInSQLRows(DB.qelectricity, sqlQueryQ, -1)
+            shiftANoInSQLRows(DB.qfuel, sqlQueryQ, -1)
+            shiftANoInSQLRows(DB.qgenerationhc, sqlQueryQ, -1)
+            shiftANoInSQLRows(DB.qheatexchanger, sqlQuery, -1)
+            shiftANoInSQLRows(DB.qprocessdata, sqlQueryQ, -1)
+            shiftANoInSQLRows(DB.qproduct, sqlQueryQ, -1)
 #            shiftANoInSQLRows(DB.qrenewables,sqlQueryQ,-1)
-            shiftANoInSQLRows(DB.qwasteheatelequip,sqlQuery,-1)
-            shiftANoInSQLRows(DB.uheatpump,sqlQueryQ,-1)
+            shiftANoInSQLRows(DB.qwasteheatelequip, sqlQuery, -1)
+            shiftANoInSQLRows(DB.uheatpump, sqlQueryQ, -1)
 
 
 #..............................................................................
@@ -373,16 +403,16 @@ class Project(object):
 
         defaultList = [[-1, _("Present State (original)"),
                             _("original data as delivered in questionnaire"),
-                            "-","---","---","---"],
-                            [0,_("Present State (checked)"),
+                            "-", "---", "---", "---"],
+                            [0, _("Present State (checked)"),
                             _("complete data set for present state after\ncross-checking and data estimation"),
-                            "-","---","---","---"]]
+                            "-", "---", "---", "---"]]
 
         alternativeList = []
         if Status.PId is None or Status.PId <= 0:
             return alternativeList
         
-        for ANo in range(-1,Status.NoOfAlternatives+1):
+        for ANo in range(-1, Status.NoOfAlternatives + 1):
             aa = Status.DB.salternatives.ProjectID[Status.PId].AlternativeProposalNo[ANo]
             if len(aa) > 0:
                 a = aa[0]
@@ -401,43 +431,43 @@ class Project(object):
                     cc = Status.DB.cgeneraldata.Questionnaire_id[Status.PId].AlternativeProposalNo[ANo]
                     if len(cc) > 0:
                         cgeneraldata = cc[0]
-                        try: PEC = float(cgeneraldata.PEC)/1000.0   #conversion to MWh
+                        try: PEC = float(cgeneraldata.PEC) / 1000.0   #conversion to MWh
                         except:
                             logTrack("Project (getAlternativeList): no PEC available")
                             PEC = 0.0
 
-                        try: EnergyCost = float(cgeneralData.EnergyCost)
+                        try: EnergyCost = float(cgeneraldata.EnergyCost)
                         except:
                             logTrack("Project (getAlternativeList): no EnergyCost available")
                             EnergyCost = 0.0
                         
                         if a.Description is None: a.Description = "---"
                         alternativeList.append([a.AlternativeProposalNo,
-                                                unicode(a.ShortName,"utf-8"),
-                                                unicode(a.Description,"utf-8"),
-                                                stat,PEC,EnergyCost])
+                                                unicode(a.ShortName, "utf-8"),
+                                                unicode(a.Description, "utf-8"),
+                                                stat, PEC, EnergyCost])
                     else:
-                        logError(_("Corrupt data in data base. no entry in cgeneraldata for ANo = %s")%ANo)
-                        if ANo in [-1,0]:
-                            alternativeList.append(defaultList[ANo+1])
+                        logError(_("Corrupt data in data base. no entry in cgeneraldata for ANo = %s") % ANo)
+                        if ANo in [-1, 0]:
+                            alternativeList.append(defaultList[ANo + 1])
                 else:
                     if a.Description is None: a.Description = "---"
                     alternativeList.append([a.AlternativeProposalNo,
-                                            unicode(a.ShortName,"utf-8"),
-                                            unicode(a.Description,"utf-8"),
-                                            stat,'---','---'])
+                                            unicode(a.ShortName, "utf-8"),
+                                            unicode(a.Description, "utf-8"),
+                                            stat, '---', '---'])
             else:
-                logError(_("Corrupt data in data base. no entry in salternative for ANo = %s")%ANo)
-                if ANo in [-1,0]:
-                    alternativeList.append(defaultList[ANo+1])
+                logError(_("Corrupt data in data base. no entry in salternative for ANo = %s") % ANo)
+                if ANo in [-1, 0]:
+                    alternativeList.append(defaultList[ANo + 1])
 
         return alternativeList
             
 #------------------------------------------------------------------------------
-    def setActiveAlternative(self,n,checked = False):
+    def setActiveAlternative(self, n, checked=False):
 #------------------------------------------------------------------------------
 
-        if (n>=-1) and n <= Status.NoOfAlternatives:
+        if (n >= -1) and n <= Status.NoOfAlternatives:
 
             sprojects = Status.DB.sproject.ProjectID[Status.PId]
             if len(sprojects) > 0:
@@ -445,15 +475,15 @@ class Project(object):
                 Status.SQL.commit()
                 Status.ANo = n
             else:
-                logTrack("Project (setActiveAlternative): error writing active alternative no. to project table PId %s"%\
+                logTrack("Project (setActiveAlternative): error writing active alternative no. to project table PId %s" % \
                          Status.PId)
 
             salternatives = Status.DB.salternatives.ProjectID[Status.PId].AlternativeProposalNo[n]
             if len(salternatives) > 0:
-                Status.ActiveAlternativeName = unicode(salternatives[0].ShortName,"utf-8")
+                Status.ActiveAlternativeName = unicode(salternatives[0].ShortName, "utf-8")
                 self.getStatus()
-                logTrack("Project (setActiveAlternative): PId = %s ANo = %s StatusCC = %s"%\
-                  (Status.PId,Status.ANo,Status.StatusCC))
+                logTrack("Project (setActiveAlternative): PId = %s ANo = %s StatusCC = %s" % \
+                  (Status.PId, Status.ANo, Status.StatusCC))
 
                 if checked == True:
                     Status.prj.setStatus("CC")
@@ -461,8 +491,8 @@ class Project(object):
                 if Status.StatusCC > 0:
                     Status.processData.createYearlyDemand()
                 
-                Status.schedules.outOfDate=True
-                Status.processData.outOfDate=True
+                Status.schedules.outOfDate = True
+                Status.processData.outOfDate = True
                 Status.int.changeInCascade(0)
 
                 try:
@@ -475,12 +505,12 @@ class Project(object):
                 except:
                     logDebug("problems updating main menu alternatives")
             else:
-                logTrack("Project (setActiveAlternative): error trying to set alternative to %s"%n)
+                logTrack("Project (setActiveAlternative): error trying to set alternative to %s" % n)
                 Status.StatusCC = None
                 Status.StatusQ = None
 
         else:
-            logTrack("Project (setActiveAlternative): alternative number out of range [%s,%s]"%(-1,Status.NoOfAlternatives))
+            logTrack("Project (setActiveAlternative): alternative number out of range [%s,%s]" % (-1, Status.NoOfAlternatives))
             
 #------------------------------------------------------------------------------
     def copyQuestionnaire(self):
@@ -493,27 +523,27 @@ class Project(object):
         self.cleanUpProject(Status.PId) #use the opportunity to clean-up erroneous entries with ANo > NoOfAlternatives
         
         n = Status.NoOfAlternatives
-        for ANo in range(n,-1,-1):
+        for ANo in range(n, -1, -1):
             self.deleteAlternative(ANo)
-        self.createNewAlternative(-1,_U("Present State (checked)"),\
+        self.createNewAlternative(-1, _U("Present State (checked)"), \
                                 _U("complete data set for present state after\n cross-checking and data estimation"))
         self.setActiveAlternative(-1)
         self.setStatus("Q")
-        self.setStatus("CC",0)
+        self.setStatus("CC", 0)
 
 #------------------------------------------------------------------------------		
 #------------------------------------------------------------------------------
-    def setFinalAlternative(self,ANo):
+    def setFinalAlternative(self, ANo):
 #------------------------------------------------------------------------------
         finalANo = ANo
         if finalANo is None:
-            self.setStatus("CS",0)
+            self.setStatus("CS", 0)
             Status.FinalAlternativeName = "---"
         else:
             if ANo < 0:
                 finalANo = 0     
             elif finalANo > Status.NoOfAlternatives:
-                logDebug("Project (setFinalAlternative): error in no. of selected alternative [%s]"%finalANo)
+                logDebug("Project (setFinalAlternative): error in no. of selected alternative [%s]" % finalANo)
                 return
 
             Status.FinalAlternativeName = "---"
@@ -524,12 +554,12 @@ class Project(object):
             if len(aa) > 0:
                 name = aa[0].ShortName
                 if name is not None:
-                    Status.FinalAlternativeName = unicode(name,"utf-8")
+                    Status.FinalAlternativeName = unicode(name, "utf-8")
                 else:
-                    logDebug("Project (setFinalAlternative): no name specified for alternative no. [%s]"%finalANo)
+                    logDebug("Project (setFinalAlternative): no name specified for alternative no. [%s]" % finalANo)
                     Status.FinalAlternativeName = "---"
             else:
-                logDebug("Project (setFinalAlternative): no entry in table salternative for ANo [%s]"%finalANo)
+                logDebug("Project (setFinalAlternative): no entry in table salternative for ANo [%s]" % finalANo)
                 Status.FinalAlternativeName = "---"
 
         sprojects = Status.DB.sproject.ProjectID[Status.PId]
@@ -553,7 +583,7 @@ class Project(object):
 #------------------------------------------------------------------------------
         projectList = []
         for n in Status.DB.questionnaire.Name["%"]:
-            projectList.append(unicode(n.Name,"utf-8"))
+            projectList.append(unicode(n.Name, "utf-8"))
         return projectList
 
 #------------------------------------------------------------------------------
@@ -562,22 +592,23 @@ class Project(object):
 #   returns the data in tables questionnaire and cgenerationhc
 #   for given ANo and PId
 #------------------------------------------------------------------------------
-
-        sqlQuery = "Questionnaire_id = '%s'"%(Status.PId)
+        # TODO: check whether this self.projectData and self.generalData serves 
+        # any global initialisation and should be documented/changed or can be dropped. 
+        sqlQuery = "Questionnaire_id = '%s'" % (Status.PId)
         projects = Status.DB.questionnaire.sql_select(sqlQuery)
-        if len(projects)>0: self.projectData = projects[0]
+        if len(projects) > 0: self.projectData = projects[0]
         else: self.projectData = None
 
-        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'"%(Status.PId,Status.ANo)
+        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'" % (Status.PId, Status.ANo)
         generaldatasets = Status.DB.cgeneraldata.sql_select(sqlQuery)
         if len(generaldatasets) > 0:self.generalData = generaldatasets[0]
         else: self.generalData = None
 
-        return (self.projectData,self.generalData)
+        return (self.projectData, self.generalData)
 
 
 #------------------------------------------------------------------------------
-    def getProjectID(self,name):
+    def getProjectID(self, name):
 #------------------------------------------------------------------------------
 #   returns the ID of a project as a function of the name
 #------------------------------------------------------------------------------
@@ -588,11 +619,11 @@ class Project(object):
             return projects[0].Questionnaire_ID
         
         else:
-            logTrack("Project (getProjectID): project name %s unknown"%name)
+            logTrack("Project (getProjectID): project name %s unknown" % name)
             return None
 
 #------------------------------------------------------------------------------
-    def setActiveProject(self,PId,name=None):
+    def setActiveProject(self, PId, name=None):
 #------------------------------------------------------------------------------
 #   sets the presently active project no.
 #   If PId <= 0 and no name is given, then all projects are deselected
@@ -613,11 +644,11 @@ class Project(object):
         else:
 
             try:
-                Status.ActiveProjectName = unicode(Status.DB.questionnaire.Questionnaire_ID[PId][0].Name,"utf-8")
+                Status.ActiveProjectName = unicode(Status.DB.questionnaire.Questionnaire_ID[PId][0].Name, "utf-8")
 
                 if Status.DB.questionnaire.Questionnaire_ID[PId][0].DescripIndustry is not None:
                     Status.ActiveProjectDescription = unicode(Status.DB.questionnaire.Questionnaire_ID[PId][0].\
-                                                              DescripIndustry,"utf-8")
+                                                              DescripIndustry, "utf-8")
                 else:
                     Status.ActiveProjectDescription = ""
 
@@ -635,20 +666,20 @@ class Project(object):
                 Status.ANo = sproject.ActiveAlternative
                 Status.FinalAlternative = sproject.FinalAlternative
                 
-                logTrack("Project (setActiveProject): number of alternatives in the project %s"%Status.NoOfAlternatives)
-                logTrack("Project (setActiveProject): active alternative %s"%Status.ANo)
+                logTrack("Project (setActiveProject): number of alternatives in the project %s" % Status.NoOfAlternatives)
+                logTrack("Project (setActiveProject): active alternative %s" % Status.ANo)
             except:
                 Status.NoOfAlternatives = -1
                 Status.ANo = -1
                 Status.FinalAlternative = None
-                logTrack("Project (setActiveProject): could not open project no. %s"%PId)
+                logTrack("Project (setActiveProject): could not open project no. %s" % PId)
                 
             Status.PId = PId
 
 
             try:
                 Status.DB.stool.STool_ID[1][0].ActiveProject = PId
-                logTrack("Project (setActiveProject): active project set to %s"%PId)
+                logTrack("Project (setActiveProject): active project set to %s" % PId)
             except:
                 logTrack("Project (setActiveProject): error writing new active project ID to stool")                
 
@@ -663,7 +694,7 @@ class Project(object):
             pass
 
 #------------------------------------------------------------------------------
-    def createNewProject(self,originalPId,shortName,description,originalName=None):
+    def createNewProject(self, originalPId, shortName, description, originalName=None):
 #------------------------------------------------------------------------------
 
         DB = Status.DB
@@ -680,10 +711,10 @@ class Project(object):
 #..............................................................................
 # start a new project from scratch (creates basic project tables)
 
-            newProject = {"Name": check(shortName),"DescripIndustry":check(description)}
+            newProject = {"Name": check(shortName), "DescripIndustry":check(description)}
 
             newID = questionnaires.insert(newProject)
-            logTrack("Project (createNewProject): new project inserted with ID %s "%newID)
+            logTrack("Project (createNewProject): new project inserted with ID %s " % newID)
 
             newSProject = {"ProjectID":newID,
                            "NoOfAlternatives":-1,
@@ -757,45 +788,60 @@ class Project(object):
                 originalPId = self.getProjectID(originalName)
                 self.cleanUpProject(originalPId)
 
-            logTrack("Project (createNewProject): copying from %s [%r]"%(originalPId,originalName))
+            logTrack("Project (createNewProject): copying from %s [%r]" % (originalPId, originalName))
 
 #..............................................................................
 # copy a project
 # 1. create a copy of the entry in the main table (questionnaire) with different ID and get the new ID
 
-            sqlQuery = "ProjectID = '%s'"%originalPId
+            sqlQuery = "ProjectID = '%s'" % originalPId
             #additional query necessary for old tables who still have Questionnaire_id instead of ProjectID
-            sqlQueryQ = "Questionnaire_id = '%s'"%originalPId
-            sqlQueryQ_ID = "Questionnaire_ID = '%s'"%originalPId
+            sqlQueryQ = "Questionnaire_id = '%s'" % originalPId
+            sqlQueryQ_ID = "Questionnaire_ID = '%s'" % originalPId
 
             Status.SQL.commit()
             
-            newIDdict = copySQLRows(DB.questionnaire,sqlQueryQ_ID,"Questionnaire_ID",None,None)
+            newIDdict = copySQLRows(DB.questionnaire, sqlQueryQ_ID, "Questionnaire_ID", None, None)
             newID = newIDdict[originalPId]
 #..............................................................................
 # copying project data tables
 
-            copySQLRows(DB.sproject,sqlQuery,"SProject_ID","ProjectID",newID)
-            copySQLRows(DB.salternatives,sqlQuery,"SAlternative_ID","ProjectID",newID)
+            copySQLRows(DB.sproject, sqlQuery, "SProject_ID", "ProjectID", newID)
+            copySQLRows(DB.salternatives, sqlQuery, "SAlternative_ID", "ProjectID", newID)
             
-            copySQLRows(DB.cgeneraldata,sqlQueryQ,"CGeneralData_ID","Questionnaire_id",newID)
-            copySQLRows(DB.qelectricity,sqlQueryQ,"QElectricity_ID","Questionnaire_id",newID)
+            copySQLRows(DB.cgeneraldata, sqlQueryQ, "CGeneralData_ID", "Questionnaire_id", newID)
+            copySQLRows(DB.qelectricity, sqlQueryQ, "QElectricity_ID", "Questionnaire_id", newID)
 
-            copySQLRows(DB.qbuildings,sqlQueryQ,"QBuildings_ID","Questionnaire_id",newID)
-            copyPipeDict = copySQLRows(DB.qdistributionhc,sqlQueryQ,"QDistributionHC_ID","Questionnaire_id",newID)
-            copySQLRows(DB.qfuel,sqlQueryQ,"QFuel_ID","Questionnaire_id",newID)
-            copyEqDict = copySQLRows(DB.qgenerationhc,sqlQueryQ,"QGenerationHC_ID","Questionnaire_id",newID)
-            copySQLRows(DB.qheatexchanger,sqlQuery,"QHeatExchanger_ID","ProjectID",newID)
-            copiedQProcessdata = copySQLRows(DB.qprocessdata,sqlQueryQ,"QProcessData_ID","Questionnaire_id",newID)
-            copySQLRows(DB.qproduct,sqlQueryQ,"QProduct_ID","Questionnaire_id",newID)
-            copySQLRows(DB.qrenewables,sqlQueryQ,"QRenewables_ID","Questionnaire_id",newID)
-            copySQLRows(DB.qsurfarea,sqlQuery,"id","ProjectID",newID)
-            copySQLRows(DB.qwasteheatelequip,sqlQuery,"QWasteHeatElEquip_ID","ProjectID",newID)
-            copySQLRows(DB.uheatpump,sqlQueryQ,"UHeatPump_ID","Questionnaire_id",newID)
-
+            copySQLRows(DB.qbuildings, sqlQueryQ, "QBuildings_ID", "Questionnaire_id", newID)
+            copyPipeDict = copySQLRows(DB.qdistributionhc, sqlQueryQ, "QDistributionHC_ID", "Questionnaire_id", newID)
+            copySQLRows(DB.qfuel, sqlQueryQ, "QFuel_ID", "Questionnaire_id", newID)
+            copyEqDict = copySQLRows(DB.qgenerationhc, sqlQueryQ, "QGenerationHC_ID", "Questionnaire_id", newID)
+            copySQLRows(DB.qheatexchanger, sqlQuery, "QHeatExchanger_ID", "ProjectID", newID)
+            copyProcessesDict = copySQLRows(DB.qprocessdata, sqlQueryQ, "QProcessData_ID", "Questionnaire_id", newID)
+            copySQLRows(DB.qproduct, sqlQueryQ, "QProduct_ID", "Questionnaire_id", newID)
+            copySQLRows(DB.qrenewables, sqlQueryQ, "QRenewables_ID", "Questionnaire_id", newID)
+            copySQLRows(DB.qsurfarea, sqlQuery, "id", "ProjectID", newID)
+            copySQLRows(DB.qwasteheatelequip, sqlQuery, "QWasteHeatElEquip_ID", "ProjectID", newID)
+            copySQLRows(DB.uheatpump, sqlQueryQ, "UHeatPump_ID", "Questionnaire_id", newID)
+            newProcessIds = copyProcessesDict.keys()
+            sqlQuery = ("qprocessdata_QProcessData_Id in (" + 
+                        ", ".join([str(item) for item in newProcessIds]) + ")")
+            inStreamIds = self._getStreamsForProcesses(DB.process_streams_in,
+                                                   copyProcessesDict.keys(),
+                                                   "streams_in_id")
+            self._copyStreams(inStreamIds, copyProcessesDict,
+                              DB.process_streams_in, "streams_in_id",
+                              DB.streams_in)
+            outStreamIds = self._getStreamsForProcesses(DB.process_streams_out,
+                                                    copyProcessesDict.keys(),
+                                                    "streams_out_id")
+            self._copyStreams(outStreamIds, copyProcessesDict,
+                              DB.process_streams_out, "streams_out_id",
+                              DB.streams_out)
+        
 #..............................................................................
 # copying project detailed schedule tables
-            for (oldQProcessdataId, newQProcessdataId) in copiedQProcessdata.items():
+            for (oldQProcessdataId, newQProcessdataId) in copyProcessesDict.items():
                 copiedProcessPeriods = copySQLRows(DB.process_periods, "qprocessdata_QProcessData_ID = %d" % oldQProcessdataId, "id", "qprocessdata_QProcessData_ID", newQProcessdataId)
                 for (oldProcessPeriodsId, newProcessPeriodsId) in copiedProcessPeriods.items():
                     copySQLRows(DB.process_period_profiles, "process_periods_id = %d" % oldProcessPeriodsId, "id", "process_periods_id", newProcessPeriodsId)
@@ -805,8 +851,8 @@ class Project(object):
 #..............................................................................
 # re-establish links
 
-            self.reconnectEquipesToPipes(copyEqDict,copyPipeDict)
-
+            self.reconnectEquipesToPipes(copyEqDict, copyPipeDict)
+            
 #..............................................................................
 # rename project
 
@@ -820,24 +866,69 @@ class Project(object):
         self.setActiveProject(newID)
 
         if isNewProject == True:
-            self.setStatus("Q",0)
+            self.setStatus("Q", 0)
             self.getDefaultSetUp()
 
+    def _copyStreams(self, streamIds, processIDsDict, connectionTable,
+                     streamIdColumn, streamTable, ANo=None):
+        """
+        Copy all streams in streamTable that are referred to by Ids in 
+        streamIDs. Create a corresponding entry in connectionTable.
+        
+        :param streamIds: a dict of IDs of streams: process IDs.
+        :param processIDsDict: a dict with oldid: newid of copied processdata.
+        :param connectionTable: usually process_streams_in or ...out.
+        :param streamIdColumn: a String that is the name of the column that holds
+        the stream IDs to set. 
+        :param streamTable: the source and target table for the stream copies.
+        :param ANo: the number of the target alternative proposal if a new
+        alternative is created
+        :returns: a dict with oldid: newid of the copied rows
+        """
+        result = {}
+        for sId, pId in streamIds.items():
+            streamIdsDict = copySQLRows(streamTable, "id = %s" % (sId,) , "id")
+            oldId, newId = streamIdsDict.items()[0]
+            stream = streamTable.id[newId][0]
+            if ANo is None:
+                ANo = stream.AlternativeProposalNo
+            newEntry = {"qprocessdata_QProcessData_Id"  : processIDsDict[pId],
+                        streamIdColumn                  : newId,
+                        "ProjectID"                     : stream.ProjectID,
+                        "AlternativeProposalNo"         : ANo 
+                        }
+            connectionTable.insert(newEntry)
+            result[oldId] = newId
+        return result
+            
+    def _getStreamsForProcesses(self, connectiontable, processIds, keycolumn):
+        """Return a dict of IDs of streams that belong to the processesIds 
+        :param connectiontable: usually process_streams_in or ...out.
+        :param processIds: a list of IDs of processes.
+        :param keycolumn: a String that is the name of the column that holds
+        the stream IDs that are searched for.
+        :returns: a dict of stream IDs: process IDs.
+        """
+        result = {}
+        for pId in processIds:
+            streams = connectiontable.qprocessdata_QProcessData_Id[pId]
+            sIds = [stream[keycolumn] for stream in streams]
+            for sId in sIds:
+                result[sId] = pId
+        return result
 #------------------------------------------------------------------------------
-
-#------------------------------------------------------------------------------
-    def cleanUpProject(self,PId):
+    def cleanUpProject(self, PId):
 #------------------------------------------------------------------------------
 #   deletes all tables for a given project with AlternativeProposalNo different
 #   than ActiveAlternatives in sproject
 #------------------------------------------------------------------------------
 
-        logTrack("Project (cleanUpProject): cleaning project no. %s"%PId)
+        logTrack("Project (cleanUpProject): cleaning project no. %s" % PId)
 #..............................................................................
         DB = Status.DB
 
-        sqlQuery = "ProjectID = '%s'"%PId
-        sqlQueryQ = "Questionnaire_id = '%s'"%PId
+        sqlQuery = "ProjectID = '%s'" % PId
+        sqlQueryQ = "Questionnaire_id = '%s'" % PId
 
         sprojects = Status.DB.sproject.sql_select(sqlQuery)
         if len(sprojects) > 0:
@@ -847,22 +938,22 @@ class Project(object):
 #..............................................................................
 # cleanUp of project data tables: checks ANo and Nones in main entry field (name)
 
-            cleanUpSQLRows(DB.salternatives,sqlQuery,maxANo,"ShortName")
+            cleanUpSQLRows(DB.salternatives, sqlQuery, maxANo, "ShortName")
         
-            cleanUpSQLRows(DB.cgeneraldata,sqlQueryQ,maxANo)
+            cleanUpSQLRows(DB.cgeneraldata, sqlQueryQ, maxANo)
 
-            cleanUpSQLRows(DB.qbuildings,sqlQueryQ,maxANo,"BuildName")
-            cleanUpSQLRows(DB.qdistributionhc,sqlQueryQ,maxANo,"Pipeduct")
-            cleanUpSQLRows(DB.qelectricity,sqlQueryQ,maxANo)
-            cleanUpSQLRows(DB.qfuel,sqlQueryQ,maxANo,"FuelNo")
-            cleanUpSQLRows(DB.qgenerationhc,sqlQueryQ,maxANo,"Equipment")
-            cleanUpSQLRows(DB.qheatexchanger,sqlQuery,maxANo,"HXName")
-            cleanUpSQLRows(DB.qprocessdata,sqlQueryQ,maxANo,"Process")
-            cleanUpSQLRows(DB.qproduct,sqlQueryQ,maxANo,"Product")
+            cleanUpSQLRows(DB.qbuildings, sqlQueryQ, maxANo, "BuildName")
+            cleanUpSQLRows(DB.qdistributionhc, sqlQueryQ, maxANo, "Pipeduct")
+            cleanUpSQLRows(DB.qelectricity, sqlQueryQ, maxANo)
+            cleanUpSQLRows(DB.qfuel, sqlQueryQ, maxANo, "FuelNo")
+            cleanUpSQLRows(DB.qgenerationhc, sqlQueryQ, maxANo, "Equipment")
+            cleanUpSQLRows(DB.qheatexchanger, sqlQuery, maxANo, "HXName")
+            cleanUpSQLRows(DB.qprocessdata, sqlQueryQ, maxANo, "Process")
+            cleanUpSQLRows(DB.qproduct, sqlQueryQ, maxANo, "Product")
 #            cleanUpSQLRows(DB.qrenewables,sqlQueryQ,maxANo)
-            cleanUpSQLRows(DB.qsurfarea,sqlQuery,mainField="SurfAreaName")  #surface areas have no ANo. fixed for the project !!!!
-            cleanUpSQLRows(DB.qwasteheatelequip,sqlQuery,maxANo,"WHEEName")
-            cleanUpSQLRows(DB.uheatpump,sqlQueryQ,maxANo)
+            cleanUpSQLRows(DB.qsurfarea, sqlQuery, mainField="SurfAreaName")  #surface areas have no ANo. fixed for the project !!!!
+            cleanUpSQLRows(DB.qwasteheatelequip, sqlQuery, maxANo, "WHEEName")
+            cleanUpSQLRows(DB.uheatpump, sqlQueryQ, maxANo)
 
 
 #------------------------------------------------------------------------------
@@ -871,7 +962,7 @@ class Project(object):
 #   charges the default set-up parameters for a NEW project
 #------------------------------------------------------------------------------
 
-        (projectData,generalData) = self.getProjectData()
+        (projectData, generalData) = self.getProjectData()
         setups = Status.DB.psetupdata.PSetUpData_ID['%']
         if (len(setups) > 0):
             setup = setups[0]
@@ -879,7 +970,7 @@ class Project(object):
 
         else:
             logTrack("Project (getDefaultSetUp): no setup table found in DB. Default mix ID = 1")
-            setups.insert({ElectricityMix:1})
+            setups.insert({"ElectricityMix": 1})
             eMixID = 1
 
         emixes = Status.DB.dbelectricitymix.id[eMixID]
@@ -891,14 +982,14 @@ class Project(object):
             generalData.NoNukesConvEl = emix.NoNukesConvEl
 
         else:
-            generalData.PEConvEl = 1./0.34
+            generalData.PEConvEl = 1. / 0.34
             generalData.CO2ConvEl = 0.5
             generalData.NoNukesConvEl = 99.99
-            logTrack("Project (getDefaultSetUp) Electricity Mix %s specified in Set-Up was not found"%eMixID)
+            logTrack("Project (getDefaultSetUp) Electricity Mix %s specified in Set-Up was not found" % eMixID)
            
                      
 #------------------------------------------------------------------------------
-    def deleteProject(self,PId,name=None):
+    def deleteProject(self, PId, name=None):
 #------------------------------------------------------------------------------
 #   deletes all entries for a given project
 #------------------------------------------------------------------------------
@@ -906,35 +997,39 @@ class Project(object):
         if name is not None:    #if a name is given, overwrite ID
             PId = self.getProjectID(name)
 
-        logMessage(_("Project (deleteProject) -deleting project %r (%r)")%(PId,name))
+        logMessage(_("Project (deleteProject) -deleting project %r (%r)") % (PId, name))
 
 #..............................................................................
 # deleting Q- and corresponding C-Tables
 
         DB = Status.DB
-        sqlQuery = "ProjectID = '%s'"%PId
+        sqlQuery = "ProjectID = '%s'" % PId
 
         #additional query necessary for old tables who still have Questionnaire_id instead of ProjectID
-        sqlQueryQ = "Questionnaire_id = '%s'"%PId
+        sqlQueryQ = "Questionnaire_id = '%s'" % PId
 
-        deleteSQLRows(DB.questionnaire,sqlQueryQ)
-        deleteSQLRows(DB.sproject,sqlQuery)
-        deleteSQLRows(DB.salternatives,sqlQuery)
+        deleteSQLRows(DB.questionnaire, sqlQueryQ)
+        deleteSQLRows(DB.sproject, sqlQuery)
+        deleteSQLRows(DB.salternatives, sqlQuery)
                    
-        deleteSQLRows(DB.cgeneraldata,sqlQueryQ)
+        deleteSQLRows(DB.cgeneraldata, sqlQueryQ)
 
-        deleteSQLRows(DB.qbuildings,sqlQueryQ)
-        deleteSQLRows(DB.qdistributionhc,sqlQueryQ)
-        deleteSQLRows(DB.qelectricity,sqlQueryQ)
-        deleteSQLRows(DB.qfuel,sqlQueryQ)
-        deleteSQLRows(DB.qgenerationhc,sqlQueryQ)
-        deleteSQLRows(DB.qheatexchanger,sqlQuery)
-        deleteSQLRows(DB.qprocessdata,sqlQueryQ)
-        deleteSQLRows(DB.qproduct,sqlQueryQ)
-        deleteSQLRows(DB.qrenewables,sqlQueryQ)
-        deleteSQLRows(DB.qsurfarea,sqlQuery)
-        deleteSQLRows(DB.qwasteheatelequip,sqlQuery)
-        deleteSQLRows(DB.uheatpump,sqlQueryQ)
+        deleteSQLRows(DB.qbuildings, sqlQueryQ)
+        deleteSQLRows(DB.qdistributionhc, sqlQueryQ)
+        deleteSQLRows(DB.qelectricity, sqlQueryQ)
+        deleteSQLRows(DB.qfuel, sqlQueryQ)
+        deleteSQLRows(DB.qgenerationhc, sqlQueryQ)
+        deleteSQLRows(DB.qheatexchanger, sqlQuery)
+        deleteSQLRows(DB.qprocessdata, sqlQueryQ)
+        deleteSQLRows(DB.streams_in, sqlQuery)
+        deleteSQLRows(DB.streams_out, sqlQuery)
+        deleteSQLRows(DB.process_streams_in, sqlQuery)
+        deleteSQLRows(DB.process_streams_out, sqlQuery)
+        deleteSQLRows(DB.qproduct, sqlQueryQ)
+        deleteSQLRows(DB.qrenewables, sqlQueryQ)
+        deleteSQLRows(DB.qsurfarea, sqlQuery)
+        deleteSQLRows(DB.qwasteheatelequip, sqlQuery)
+        deleteSQLRows(DB.uheatpump, sqlQueryQ)
 
 #..............................................................................
 # book-keeping: reduce number of alernatives in the system
@@ -951,7 +1046,7 @@ class Project(object):
 #------------------------------------------------------------------------------		
 
 #------------------------------------------------------------------------------
-    def reconnectEquipesToPipes(self,equipeIDDict,pipeIDDict):
+    def reconnectEquipesToPipes(self, equipeIDDict, pipeIDDict):
 #------------------------------------------------------------------------------
 
         for equipeID in equipeIDDict.values():
@@ -974,19 +1069,18 @@ class Project(object):
                 newPipeIDs = []
                 for pipeID in pipeIDs:
                     if pipeID in pipeIDDict:
-                        newPipeIDs.append("%d"%pipeIDDict[pipeID])
+                        newPipeIDs.append("%d" % pipeIDDict[pipeID])
                     else:
-                        logDebug(_("Project (reconnect equipes): pipe ID %s was not in old pipe table")%pipeID)
+                        logDebug(_("Project (reconnect equipes): pipe ID %s was not in old pipe table") % pipeID)
 #                print "Project (reconnectEquipesToPipes): pipeIDs ",newPipeIDs
        
                 pipeLink = ';'.join(newPipeIDs)
 #                print "Project (reconnectEquipesToPipes): new pipeLink ",pipeLink
                 equipe["PipeDuctEquip"] = pipeLink
-                logTrack("Project (reconnect...): link of equipe %s updated from %s to %s"%(equipeID,oldPipeLink,pipeLink))
+                logTrack("Project (reconnect...): link of equipe %s updated from %s to %s" % (equipeID, oldPipeLink, pipeLink))
                 
         Status.SQL.commit()
                                     
-        
 #------------------------------------------------------------------------------		
 # OTHER SET-UP FUNCTIONS
 #------------------------------------------------------------------------------		
@@ -997,7 +1091,7 @@ class Project(object):
 
         stool = Status.DB.stool.STool_ID[1][0]
         Status.PId = stool.ActiveProject
-        logTrack(_("New session of tool starting with ProjectID %s")%Status.PId)
+        logTrack(_("New session of tool starting with ProjectID %s") % Status.PId)
 
         Status.UserType = stool.UserType
         Status.Auditor_ID = stool.Auditor_ID
@@ -1006,43 +1100,43 @@ class Project(object):
         Status.UnitsTool = stool.UnitsTool
         
 #------------------------------------------------------------------------------
-    def setUserInteractionLevel(self,level):
+    def setUserInteractionLevel(self, level):
 #------------------------------------------------------------------------------
         
         if level in INTERACTIONLEVELS:
             Status.UserInteractionLevel = level
             Status.DB.stool.STool_ID[1][0].UserInteractionLevel = level
-            logTrack("Project (setUserInteractionLevel): %s"%level)
+            logTrack("Project (setUserInteractionLevel): %s" % level)
         else:
-            logDebug("Project (setUserInteractionLevel): ERROR in level %s"%level)
+            logDebug("Project (setUserInteractionLevel): ERROR in level %s" % level)
 
 #------------------------------------------------------------------------------
-    def setStatus(self,key,value=1):
+    def setStatus(self, key, value=1):
 #------------------------------------------------------------------------------
 #   sets a status flag
 #------------------------------------------------------------------------------
 
-        sqlQuery = "ProjectID = '%s'"%(Status.PId)
+        sqlQuery = "ProjectID = '%s'" % (Status.PId)
         sprojects = Status.DB.sproject.sql_select(sqlQuery)
 
-        sqlQuery = "ProjectID = '%s' AND AlternativeProposalNo = '%s'"%(Status.PId,Status.ANo)
+        sqlQuery = "ProjectID = '%s' AND AlternativeProposalNo = '%s'" % (Status.PId, Status.ANo)
         salternatives = Status.DB.salternatives.sql_select(sqlQuery)
 
-        if key=="Q":
+        if key == "Q":
             Status.StatusQ = value
             if len(sprojects) > 0: sprojects[0].StatusQ = value
-        elif key=="CC":
+        elif key == "CC":
             Status.StatusCC = value
             if len(sprojects) > 0: sprojects[0].StatusCC = value
-        elif key=="CS":
+        elif key == "CS":
             Status.StatusCS = value
 #XXXXXXXX here name confusion between CA and CS -> to be unified to CS once SQL is changed !!!
             if len(sprojects) > 0: sprojects[0].StatusCA = value
-        elif key=="Energy":
+        elif key == "Energy":
             Status.StatusEnergy = value
             if len(salternatives) > 0: salternatives[0].StatusEnergy = value
         else:
-            logDebug("Project (setStatus): status key %s unknown"%key)
+            logDebug("Project (setStatus): status key %s unknown" % key)
 
         self.setTreePermissions()
 
@@ -1053,7 +1147,7 @@ class Project(object):
 #------------------------------------------------------------------------------
 
         tmp = {}
-        allow = (True,0,"")
+        allow = (True, 0, "")
         
         tmp.update({_("Edit Industry Data"):allow})   #access to this window is always allowed
 
@@ -1062,11 +1156,11 @@ class Project(object):
 
         if (Status.PId > 0):
             if (Status.ANo <= 0 and Status.StatusCC > 0):
-                permit = (False,0,_("Data have already been confirmed as consistent. First unblock before modifying"))
+                permit = (False, 0, _("Data have already been confirmed as consistent. First unblock before modifying"))
             else:
                 permit = allow           
         else:
-            permit = (False,0,_("Cannot access this function. First select a project"))
+            permit = (False, 0, _("Cannot access this function. First select a project"))
 
         tmp.update({_("General data"):permit})
         
@@ -1078,11 +1172,11 @@ class Project(object):
 
         if (Status.StatusQ > 0):
             if (Status.ANo <= 0 and Status.StatusCC > 0):
-                permit = (False,0,_("Data have already been confirmed as consistent. First unblock before modifying data of present state"))
+                permit = (False, 0, _("Data have already been confirmed as consistent. First unblock before modifying data of present state"))
             else:
                 permit = allow           
         else:
-            permit = (False,0,_("Cannot access this function. First open or define a new project and enter general data"))
+            permit = (False, 0, _("Cannot access this function. First open or define a new project and enter general data"))
 
         tmp.update({_("Energy consumption"):permit})
         tmp.update({_("Processes data"):permit})
@@ -1098,7 +1192,7 @@ class Project(object):
         if (Status.StatusQ > 0):
             permit = allow
         else:
-            permit = (False,0,_("Cannot access this function. First open or define a new project"))
+            permit = (False, 0, _("Cannot access this function. First open or define a new project"))
 
         tmp.update({_("Consistency Check"):permit})
         
@@ -1109,9 +1203,9 @@ class Project(object):
             if Status.ANo > -1:
                 permit = allow
             else:
-                permit = (False,0,_("Cannot display statistics for raw data. change view to checked version"))
+                permit = (False, 0, _("Cannot display statistics for raw data. change view to checked version"))
         else:
-            permit = (False,0,_("Cannot access this function. First check the data for consistency"))
+            permit = (False, 0, _("Cannot access this function. First check the data for consistency"))
                                       
         tmp.update({_("Energy statistics"):permit})
         tmp.update({_("Annual data"):permit})
@@ -1145,7 +1239,7 @@ class Project(object):
         if (Status.ANo > 0):
             permit = allow
         else:
-            permit = (False,0,_("Cannot access this function for the present state of the industry.\nFirst define a new alternative !"))
+            permit = (False, 0, _("Cannot access this function for the present state of the industry.\nFirst define a new alternative !"))
                           
         tmp.update({_("Design"):permit})
 
@@ -1180,7 +1274,7 @@ class Project(object):
         if (Status.StatusCC > 0):
             permit = allow
         else:
-            permit = (False,0,_("Cannot access this function. First check the data for consistency"))
+            permit = (False, 0, _("Cannot access this function. First check the data for consistency"))
             
         tmp.update({_("Comparative study"):permit})
 
@@ -1195,7 +1289,7 @@ class Project(object):
 #   sets a status flag
 #------------------------------------------------------------------------------
 
-        sqlQuery = "ProjectID = '%s'"%(Status.PId)
+        sqlQuery = "ProjectID = '%s'" % (Status.PId)
         sprojects = Status.DB.sproject.sql_select(sqlQuery)
 
         if len(sprojects) > 0:
@@ -1220,7 +1314,7 @@ class Project(object):
             Status.StatusQ = EINSTEIN_NOTOK
 
 
-        sqlQuery = "ProjectID = '%s' AND AlternativeProposalNo = '%s'"%(Status.PId,Status.ANo)
+        sqlQuery = "ProjectID = '%s' AND AlternativeProposalNo = '%s'" % (Status.PId, Status.ANo)
         salternatives = Status.DB.salternatives.sql_select(sqlQuery)
 
         if len(salternatives) > 0:
@@ -1233,40 +1327,40 @@ class Project(object):
         self.setTreePermissions()
 
 #------------------------------------------------------------------------------
-    def deleteProduct(self,productName):
+    def deleteProduct(self, productName):
 #------------------------------------------------------------------------------
 #   deletes all entries for the original ANo
 #------------------------------------------------------------------------------
 
-        logTrack("Project (deleteProduct) - project %s, alternative %s, deleting product %s "%\
-                 (Status.PId,Status.ANo,productName))
+        logTrack("Project (deleteProduct) - project %s, alternative %s, deleting product %s " % \
+                 (Status.PId, Status.ANo, productName))
 
 #..............................................................................
 # deleting Q- and corresponding C-Tables
 
         DB = Status.DB
         sqlQueryQ = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s' AND Product = '%s'"\
-                    %(Status.PId,Status.ANo,check(productName))
+                    % (Status.PId, Status.ANo, check(productName))
 
-        deleteSQLRows(DB.qproduct,sqlQueryQ)
+        deleteSQLRows(DB.qproduct, sqlQueryQ)
 
 #------------------------------------------------------------------------------
-    def getProducts(self,PId = None):
+    def getProducts(self, PId=None):
 #------------------------------------------------------------------------------
 #   returns a table of existing equipment
 #------------------------------------------------------------------------------
 
         if PId is None:
-            sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'"%(Status.PId,Status.ANo)
+            sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'" % (Status.PId, Status.ANo)
         else:
-            sqlQuery = "Questionnaire_id = '%s'"%(PId)
+            sqlQuery = "Questionnaire_id = '%s'" % (PId)
             
         products = Status.DB.qproduct.sql_select(sqlQuery)
         
         return products
 
 #------------------------------------------------------------------------------
-    def getProductList(self,key,PId = None):
+    def getProductList(self, key, PId=None):
 #------------------------------------------------------------------------------
 #   returns a table of existing equipment
 #------------------------------------------------------------------------------
@@ -1275,8 +1369,8 @@ class Project(object):
         
         productList = []
         for product in products:
-            if isinstance(product[key],str) or isinstance(product[key],unicode):
-                productList.append(unicode(product[key],"utf-8"))
+            if isinstance(product[key], str) or isinstance(product[key], unicode):
+                productList.append(unicode(product[key], "utf-8"))
             else:
                 productList.append(product[key])
 
@@ -1291,14 +1385,14 @@ class Project(object):
 #..............................................................................
 # deleting Q- and corresponding C-Tables
 
-        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'"%(Status.PId,Status.ANo)
+        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'" % (Status.PId, Status.ANo)
         equipments = Status.DB.qgenerationhc.sql_select(sqlQuery)
         NEquipe = len(equipments)
         tmp = {
             "Questionnaire_id":Status.PId,
             "AlternativeProposalNo":Status.ANo,
-            "EqNo": NEquipe+1,
-            "CascadeIndex": NEquipe+1,
+            "EqNo": NEquipe + 1,
+            "CascadeIndex": NEquipe + 1,
             "Equipment":"dummy"
             }          
         newID = Status.DB.qgenerationhc.insert(tmp)
@@ -1317,7 +1411,7 @@ class Project(object):
         return newEquipe
 
 #------------------------------------------------------------------------------
-    def deleteEquipment(self,eqID):
+    def deleteEquipment(self, eqID):
 #------------------------------------------------------------------------------
 #   deletes all entries for a given equipment
 #------------------------------------------------------------------------------
@@ -1325,39 +1419,39 @@ class Project(object):
 #..............................................................................
 # deleting Q- and corresponding C-Tables
 
-        print "Project (deleteEquipment)",eqID
+        print "Project (deleteEquipment)", eqID
         
         DB = Status.DB
         sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s' AND QGenerationHC_ID = '%s'"\
-                    %(Status.PId,Status.ANo,eqID)  #query is redundant, but maintained as is for security
+                    % (Status.PId, Status.ANo, eqID)  #query is redundant, but maintained as is for security
 
         equipes = Status.DB.qgenerationhc.sql_select(sqlQuery)
         if len(equipes) > 0:
             equipmentName = equipes[0].Equipment
             deletedIndex = equipes[0].CascadeIndex
-            deleteSQLRows(DB.qgenerationhc,sqlQuery)
+            deleteSQLRows(DB.qgenerationhc, sqlQuery)
         else:
             equipmentName = None
-            logDebug("Project (deleteEquipment): cannont delete equipment with ID %s. No corresponding entry in database"%eqID)
+            logDebug("Project (deleteEquipment): cannont delete equipment with ID %s. No corresponding entry in database" % eqID)
             return
 
-        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s' ORDER BY EqNo ASC"%(Status.PId,Status.ANo)
+        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s' ORDER BY EqNo ASC" % (Status.PId, Status.ANo)
         equipes = Status.DB.qgenerationhc.sql_select(sqlQuery)
 
         for i in range(len(equipes)): #assign new EqNo in QGenerationHC table
-            equipes[i].EqNo = i+1
+            equipes[i].EqNo = i + 1
 
         Status.SQL.commit()
 
-        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s' ORDER BY CascadeIndex ASC"%(Status.PId,Status.ANo)
+        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s' ORDER BY CascadeIndex ASC" % (Status.PId, Status.ANo)
         equipes = Status.DB.qgenerationhc.sql_select(sqlQuery)
 
         for i in range(len(equipes)): #assign new Cascade Index in QGenerationHC table
-            equipes[i].CascadeIndex = i+1
+            equipes[i].CascadeIndex = i + 1
 
-        Status.int.cascadeUpdateLevel = min(Status.int.cascadeUpdateLevel,deletedIndex-1)
+        Status.int.cascadeUpdateLevel = min(Status.int.cascadeUpdateLevel, deletedIndex - 1)
         
-        sqlQueryQ = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'"%(Status.PId,Status.ANo)  
+        sqlQueryQ = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'" % (Status.PId, Status.ANo)  
         cgeneraldata = Status.DB.cgeneraldata.sql_select(sqlQueryQ)
         cgeneraldata[0].NEquipe = len(equipes)
         Status.NEquipe = len(equipes)
@@ -1384,21 +1478,27 @@ class Project(object):
             self.deleteHX(i)
 
 #------------------------------------------------------------------------------
-    def getEquipments(self,PId = None,cascade=False):
-#------------------------------------------------------------------------------
-#   returns a table of existing equipment
-#------------------------------------------------------------------------------
-
+    def getEquipments(self, PId=None, cascade=False):
+        """
+        Return a pSQL.Result of all equipment used in the current industry.
+        
+        If the PId is given all equipment of all alternative proposals is
+        returned, otherwise only of the current one.
+        @param PId: Which Questinonnaire_id is requested if not the current one
+        which is the default.
+        @param cascade: FIXME: what is that for?
+        
+        """
         if PId is None:
             if cascade == False:
-                sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s' ORDER BY EqNo ASC"%(Status.PId,Status.ANo)
+                sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s' ORDER BY EqNo ASC" % (Status.PId, Status.ANo)
             else:
-                sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s' ORDER BY CascadeIndex ASC"%(Status.PId,Status.ANo)
+                sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s' ORDER BY CascadeIndex ASC" % (Status.PId, Status.ANo)
         else:
             if cascade == False:
-                sqlQuery = "Questionnaire_id = '%s' ORDER BY EqNo ASC"%(PId)
+                sqlQuery = "Questionnaire_id = '%s' ORDER BY EqNo ASC" % (PId)
             else:
-                sqlQuery = "Questionnaire_id = '%s' ORDER BY CascadeIndex ASC"%(PId)
+                sqlQuery = "Questionnaire_id = '%s' ORDER BY CascadeIndex ASC" % (PId)
                 
 
         equipments = Status.DB.qgenerationhc.sql_select(sqlQuery)
@@ -1409,7 +1509,7 @@ class Project(object):
         return equipments
 
 #------------------------------------------------------------------------------
-    def getEquipe(self,id):
+    def getEquipe(self, id):
 #------------------------------------------------------------------------------
 #   returns the equipment with id 
 #------------------------------------------------------------------------------
@@ -1421,26 +1521,42 @@ class Project(object):
             return None
         
 #------------------------------------------------------------------------------
-    def getEquipmentList(self,key,PId = None,cascade=False):
+    def getEquipmentList(self, key, PId=None, cascade=False):
 #------------------------------------------------------------------------------
 #   returns a list of existing equipment
 #------------------------------------------------------------------------------
 
-        eqs = self.getEquipments(PId,cascade)
+        eqs = self.getEquipments(PId, cascade)
         
         eqList = []
         for eq in eqs:
-            if isinstance(eq[key],str) or isinstance(eq[key],unicode):
-                eqList.append(unicode(eq[key],"utf-8"))
+            if isinstance(eq[key], str) or isinstance(eq[key], unicode):
+                eqList.append(unicode(eq[key], "utf-8"))
             else:
                 eqList.append(eq[key])
 
         return eqList
 
-#getEqList maintained for backward compatibility. can be eliminated once being sure that not used any more.
-    def getEqList(self,key):
-        return self.getEquipmentList(key)
-
+    def getStreams(self, qProcessData_ID):
+        """
+        Return a 2-tuple of all streams associated with the given 
+        qProcessData_ID.
+        
+        :param qProcessData_ID: Numeric database ID of the process for which
+        the streams are requested
+        :returns: A tuple of lists (inStreams, outStreams).
+        """
+        sqlQuery = "qprocessdata_QProcessData_ID= '%s' " % (qProcessData_ID,)
+        inStreamsTable = Status.DB.process_streams_in
+        inStreamsTable.x_ref(Status.DB.streams_in, "streams_in_id", "id")
+        outStreamsTable = Status.DB.process_streams_out
+        outStreamsTable.x_ref(Status.DB.streams_out, "streams_out_id", "id")
+        inStreams = inStreamsTable.sql_select(sqlQuery)
+        outStreams = outStreamsTable.sql_select(sqlQuery)
+        inStreams = [stream.streams_in for stream in inStreams]
+        outStreams = [stream.streams_out for stream in outStreams]
+        return (inStreams, outStreams)
+        
 #------------------------------------------------------------------------------
     def addFuelDummy(self):
 #------------------------------------------------------------------------------
@@ -1450,13 +1566,13 @@ class Project(object):
 #..............................................................................
 # deleting Q- and corresponding C-Tables
 
-        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'"%(Status.PId,Status.ANo)
+        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'" % (Status.PId, Status.ANo)
         fuels = Status.DB.qfuel.sql_select(sqlQuery)
         NFuels = len(fuels)
         tmp = {
             "Questionnaire_id":Status.PId,
             "AlternativeProposalNo":Status.ANo,
-            "FuelNo": NFuels+1
+            "FuelNo": NFuels + 1
             }          
         newID = Status.DB.qfuel.insert(tmp)
 
@@ -1470,7 +1586,7 @@ class Project(object):
         return newID
 
 #------------------------------------------------------------------------------
-    def deleteFuel(self,DBFuel_id):
+    def deleteFuel(self, DBFuel_id):
 #------------------------------------------------------------------------------
 #   deletes all entries for a given fuel type
 #------------------------------------------------------------------------------
@@ -1480,18 +1596,18 @@ class Project(object):
 
         DB = Status.DB
         sqlQueryQ = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s' AND DBFuel_id = '%s'"\
-                    %(Status.PId,Status.ANo,DBFuel_id)
+                    % (Status.PId, Status.ANo, DBFuel_id)
 
-        deleteSQLRows(DB.qfuel,sqlQueryQ)
+        deleteSQLRows(DB.qfuel, sqlQueryQ)
 
-        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s' ORDER BY FuelNo ASC"%(Status.PId,Status.ANo)
+        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s' ORDER BY FuelNo ASC" % (Status.PId, Status.ANo)
         fuels = Status.DB.qfuel.sql_select(sqlQuery)
 
         for i in range(len(fuels)): #assign new EqNo in QGenerationHC table
-            fuels[i].FuelNo = i+1
+            fuels[i].FuelNo = i + 1
 
         
-        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'"%(Status.PId,Status.ANo)
+        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'" % (Status.PId, Status.ANo)
         generaldata = Status.DB.cgeneraldata.sql_select(sqlQuery)
         generaldata[0].NFuels = len(fuels)
 
@@ -1506,14 +1622,14 @@ class Project(object):
 #..............................................................................
 # deleting Q- and corresponding C-Tables
 
-        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'"%(Status.PId,Status.ANo)
+        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'" % (Status.PId, Status.ANo)
 
         processes = Status.DB.qprocessdata.sql_select(sqlQuery)
         NThProc = len(processes)
         tmp = {
             "Questionnaire_id":Status.PId,
             "AlternativeProposalNo":Status.ANo,
-            "ProcNo": NThProc+1
+            "ProcNo": NThProc + 1
             }          
         newID = Status.DB.qprocessdata.insert(tmp)
         newProcess = Status.DB.qprocessdata.QProcessData_ID[newID][0]
@@ -1528,7 +1644,7 @@ class Project(object):
         return newProcess
 
 #------------------------------------------------------------------------------
-    def deleteProcess(self,processID):
+    def deleteProcess(self, processID):
 #------------------------------------------------------------------------------
 #   deletes all entries for a given fuel type
 #------------------------------------------------------------------------------
@@ -1538,22 +1654,49 @@ class Project(object):
 
         DB = Status.DB
         sqlQueryQ = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s' AND QProcessData_ID = '%s'"\
-                    %(Status.PId,Status.ANo,processID)  #query is redundant, but maintained as is for security
+                    % (Status.PId, Status.ANo, processID)  #query is redundant, but maintained as is for security
+        deleteSQLRows(DB.qprocessdata, sqlQueryQ)
 
-        deleteSQLRows(DB.qprocessdata,sqlQueryQ)
-
-        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s' ORDER BY ProcNo ASC"%(Status.PId,Status.ANo)
+        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s' ORDER BY ProcNo ASC" % (Status.PId, Status.ANo)
         processes = Status.DB.qprocessdata.sql_select(sqlQuery)
 
         for i in range(len(processes)): #assign new EqNo in QGenerationHC table
-            processes[i].ProcNo = i+1
+            processes[i].ProcNo = i + 1
 
         
-        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'"%(Status.PId,Status.ANo)
+        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'" % (Status.PId, Status.ANo)
         generaldata = Status.DB.cgeneraldata.sql_select(sqlQuery)
         generaldata[0].NThProc = len(processes)
-
+        
+        inStreamIds = self._getStreamsForProcesses(DB.process_streams_in,
+                                                   [processID],
+                                                   "streams_in_id")
+        outStreamIds = self._getStreamsForProcesses(DB.process_streams_out,
+                                                   [processID],
+                                                   "streams_out_id")
+        for id in inStreamIds:
+            self.deleteStream(id, Status.DB.streams_in,
+                              Status.DB.process_streams_in, "streams_in_id")
+        for id in outStreamIds:
+            self.deleteStream(id, Status.DB.streams_out,
+                              Status.DB.process_streams_out, "streams_out_id")
+        
         Status.SQL.commit()
+
+    def deleteStream(self, id, streamTable, connectionTable, referenceColumn):
+        """
+        Delete the stream with ID id from table streamTable, and remove the
+        corresponding entry from the connectionTable.
+        :param id: stream id in streamTable
+        :param streamTable: usually streams_in or ...out.
+        :param connectionTable: usually process_streams_in or ...out. 
+        :param referenceColumn: a String, usually "streams_in_id" or 
+        "streams_out_id"
+        """
+        sqlQueryQ = "id = '%s' " % (id,)
+        deleteSQLRows(streamTable, sqlQueryQ)
+        sqlQueryQ = "%s = '%s' " % (referenceColumn, id)
+        deleteSQLRows(connectionTable, sqlQueryQ)
 
 #------------------------------------------------------------------------------
     def addPipeDummy(self):
@@ -1569,14 +1712,14 @@ class Project(object):
         tmp = {
             "Questionnaire_id":Status.PId,
             "AlternativeProposalNo":Status.ANo,
-            "PipeDuctNo": NPipes+1
+            "PipeDuctNo": NPipes + 1
             }          
         newID = Status.DB.qdistributionhc.insert(tmp)
         newPipe = Status.DB.qdistributionhc.QDistributionHC_ID[newID][0]
 
         NPipes += 1
 
-        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'"%(Status.PId,Status.ANo)
+        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'" % (Status.PId, Status.ANo)
         cgeneraldata = Status.DB.cgeneraldata.sql_select(sqlQuery)
         cgeneraldata[0].NPipeDuct = NPipes
 
@@ -1585,7 +1728,7 @@ class Project(object):
         return newPipe
 
 #------------------------------------------------------------------------------
-    def deletePipe(self,pipeID):
+    def deletePipe(self, pipeID):
 #------------------------------------------------------------------------------
 #   deletes all entries for a given fuel type
 #------------------------------------------------------------------------------
@@ -1595,40 +1738,40 @@ class Project(object):
 
         DB = Status.DB
         sqlQueryQ = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s' AND QDistributionHC_ID = '%s'"\
-                    %(Status.PId,Status.ANo,pipeID)  #query is redundant, but maintained as is for security
+                    % (Status.PId, Status.ANo, pipeID)  #query is redundant, but maintained as is for security
 
-        deleteSQLRows(DB.qdistributionhc,sqlQueryQ)
+        deleteSQLRows(DB.qdistributionhc, sqlQueryQ)
 
-        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s' ORDER BY PipeDuctNo ASC"%(Status.PId,Status.ANo)
+        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s' ORDER BY PipeDuctNo ASC" % (Status.PId, Status.ANo)
         pipes = Status.DB.qdistributionhc.sql_select(sqlQuery)
 
         for i in range(len(pipes)): #assign new EqNo in QGenerationHC table
-            pipes[i].PipeDuctNo = i+1
+            pipes[i].PipeDuctNo = i + 1
             pass
 
         
-        sqlQueryQ = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'"%(Status.PId,Status.ANo)  
+        sqlQueryQ = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'" % (Status.PId, Status.ANo)  
         cgeneraldata = Status.DB.cgeneraldata.sql_select(sqlQueryQ)
         cgeneraldata[0].NPipeDuct = len(pipes)
 
         Status.SQL.commit()
 
 #------------------------------------------------------------------------------
-    def getPipes(self,PId = None):
+    def getPipes(self, PId=None):
 #------------------------------------------------------------------------------
 #   returns a list of existing heat exchangers
 #------------------------------------------------------------------------------
 
         if PId is None:
-            sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s' ORDER BY PipeDuctNo ASC"%(Status.PId,Status.ANo)
+            sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s' ORDER BY PipeDuctNo ASC" % (Status.PId, Status.ANo)
         else:
-            sqlQuery = "Questionnaire_id = '%s' ORDER BY PipeDuctNo ASC"%(PId)
+            sqlQuery = "Questionnaire_id = '%s' ORDER BY PipeDuctNo ASC" % (PId)
             
         pipes = Status.DB.qdistributionhc.sql_select(sqlQuery)
         
         return pipes
 #------------------------------------------------------------------------------
-    def getPipeList(self,key,PId = None):
+    def getPipeList(self, key, PId=None):
 #------------------------------------------------------------------------------
 #   returns a list of existing heat exchangers
 #------------------------------------------------------------------------------
@@ -1637,8 +1780,8 @@ class Project(object):
         
         pipeList = []
         for pipe in pipes:
-            if isinstance(pipe[key],str) or isinstance(pipe[key],unicode):
-                pipeList.append(unicode(pipe[key],"utf-8"))
+            if isinstance(pipe[key], str) or isinstance(pipe[key], unicode):
+                pipeList.append(unicode(pipe[key], "utf-8"))
             else:
                 pipeList.append(pipe[key])
 
@@ -1653,7 +1796,7 @@ class Project(object):
         pipes = self.getPipes()     
         pipeDict = {}
         for pipe in pipes:
-            pipeName = unicode(pipe["Pipeduct"],"utf-8")
+            pipeName = unicode(pipe["Pipeduct"], "utf-8")
             pipeID = pipe["QDistributionHC_ID"]
             pipeDict.update({pipeID:pipeName})
 
@@ -1669,7 +1812,7 @@ class Project(object):
 #..............................................................................
 # deleting Q- and corresponding C-Tables
 
-        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'"%(Status.PId,Status.ANo)
+        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'" % (Status.PId, Status.ANo)
 
         buildings = Status.DB.qbuildings.sql_select(sqlQuery)
         NBuildings = len(buildings)
@@ -1682,7 +1825,7 @@ class Project(object):
 
         NBuildings += 1
 
-        sqlQuery = "Questionnaire_id = '%s'"%(Status.PId)
+        sqlQuery = "Questionnaire_id = '%s'" % (Status.PId)
         questionnaire = Status.DB.questionnaire.sql_select(sqlQuery)
         questionnaire[0].NBuild = NBuildings
 
@@ -1691,7 +1834,7 @@ class Project(object):
         return newID
 
 #------------------------------------------------------------------------------
-    def deleteBuilding(self,buildingID):
+    def deleteBuilding(self, buildingID):
 #------------------------------------------------------------------------------
 #   deletes all entries for a given fuel type
 #------------------------------------------------------------------------------
@@ -1701,15 +1844,15 @@ class Project(object):
 
         DB = Status.DB
         sqlQueryQ = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s' AND QBuildings_ID = '%s'"\
-                    %(Status.PId,Status.ANo,buildingID)  #query is redundant, but maintained as is for security
+                    % (Status.PId, Status.ANo, buildingID)  #query is redundant, but maintained as is for security
 
 #        print "Project (deleteBuilding): query"
 #        print sqlQueryQ
         
-        deleteSQLRows(DB.qbuildings,sqlQueryQ)
+        deleteSQLRows(DB.qbuildings, sqlQueryQ)
 
 #        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s' ORDER BY BuildingNo ASC"%(Status.PId,Status.ANo)
-        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'"%(Status.PId,Status.ANo)
+        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'" % (Status.PId, Status.ANo)
         buildings = Status.DB.qbuildings.sql_select(sqlQuery)
 
         for i in range(len(buildings)): #assign new EqNo in QGenerationHC table
@@ -1717,7 +1860,7 @@ class Project(object):
             pass
 
         
-        sqlQuery = "Questionnaire_id = '%s'"%(Status.PId)
+        sqlQuery = "Questionnaire_id = '%s'" % (Status.PId)
         questionnaire = Status.DB.questionnaire.sql_select(sqlQuery)
         questionnaire[0].NBuild = len(buildings)
 
@@ -1732,15 +1875,15 @@ class Project(object):
 #..............................................................................
 # deleting Q- and corresponding C-Tables
 
-        sqlQuery = "ProjectID = '%s' AND AlternativeProposalNo = '%s'"%(Status.PId,Status.ANo)
-        sqlQueryQ = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'"%(Status.PId,Status.ANo)
+        sqlQuery = "ProjectID = '%s' AND AlternativeProposalNo = '%s'" % (Status.PId, Status.ANo)
+        sqlQueryQ = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'" % (Status.PId, Status.ANo)
 
         hxes = Status.DB.qheatexchanger.sql_select(sqlQuery)
         NHX = len(hxes)
         tmp = {
             "ProjectID":Status.PId,
             "AlternativeProposalNo":Status.ANo,
-            "HXNo": NHX+1
+            "HXNo": NHX + 1
             }          
         newID = Status.DB.qheatexchanger.insert(tmp)
         newhx = Status.DB.qheatexchanger.QHeatExchanger_ID[newID][0]
@@ -1755,7 +1898,7 @@ class Project(object):
         return newhx
 
 #------------------------------------------------------------------------------
-    def deleteHX(self,HXID):
+    def deleteHX(self, HXID):
 #------------------------------------------------------------------------------
 #   deletes all entries for a given heat exchanger
 #------------------------------------------------------------------------------
@@ -1765,19 +1908,19 @@ class Project(object):
 
         DB = Status.DB
         sqlQuery = "ProjectID = '%s' AND AlternativeProposalNo = '%s' AND QHeatExchanger_ID = '%s'"\
-                    %(Status.PId,Status.ANo,HXID)  #query is redundant, but maintained as is for security
+                    % (Status.PId, Status.ANo, HXID)  #query is redundant, but maintained as is for security
 
-        deleteSQLRows(DB.qheatexchanger,sqlQuery)
+        deleteSQLRows(DB.qheatexchanger, sqlQuery)
 
-        sqlQuery = "ProjectID = '%s' AND AlternativeProposalNo = '%s' ORDER BY HXNo ASC"%(Status.PId,Status.ANo)
+        sqlQuery = "ProjectID = '%s' AND AlternativeProposalNo = '%s' ORDER BY HXNo ASC" % (Status.PId, Status.ANo)
         hxes = Status.DB.qheatexchanger.sql_select(sqlQuery)
 
         for i in range(len(hxes)): #assign new EqNo in QGenerationHC table
-            hxes[i].HXNo = i+1
+            hxes[i].HXNo = i + 1
             pass
 
         
-        sqlQueryQ = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'"%(Status.PId,Status.ANo)  
+        sqlQueryQ = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'" % (Status.PId, Status.ANo)  
         cgeneraldata = Status.DB.cgeneraldata.sql_select(sqlQueryQ)
         cgeneraldata[0].NHX = len(hxes)
 
@@ -1789,13 +1932,13 @@ class Project(object):
 #   returns a list of existing heat exchangers
 #------------------------------------------------------------------------------
 
-        sqlQuery = "ProjectID = '%s' AND AlternativeProposalNo = '%s' ORDER BY HXNo ASC"%(Status.PId,Status.ANo)
+        sqlQuery = "ProjectID = '%s' AND AlternativeProposalNo = '%s' ORDER BY HXNo ASC" % (Status.PId, Status.ANo)
         hxes = Status.DB.qheatexchanger.sql_select(sqlQuery)
         
         return hxes
 
 #------------------------------------------------------------------------------
-    def getHXList(self,key):
+    def getHXList(self, key):
 #------------------------------------------------------------------------------
 #   returns a list of existing heat exchangers
 #------------------------------------------------------------------------------
@@ -1805,8 +1948,8 @@ class Project(object):
         HXList = []
         for hx in hxes:
             
-            if isinstance(hx[key],str) or isinstance(hx[key],unicode):
-                HXList.append(unicode(hx[key],"utf-8"))
+            if isinstance(hx[key], str) or isinstance(hx[key], unicode):
+                HXList.append(unicode(hx[key], "utf-8"))
             else:
                 HXList.append(hx[key])
 
@@ -1826,14 +1969,14 @@ class Project(object):
         tmp = {
             "ProjectID":Status.PId,
             "AlternativeProposalNo":Status.ANo,
-            "WHEENo": NWHEE+1
+            "WHEENo": NWHEE + 1
             }          
         newID = Status.DB.qwasteheatelequip.insert(tmp)
         newwhee = Status.DB.qwasteheatelequip.QWasteHeatElEquip_ID[newID][0]
 
         NWHEE += 1
 
-        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'"%(Status.PId,Status.ANo)
+        sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'" % (Status.PId, Status.ANo)
         cgeneraldata = Status.DB.cgeneraldata.sql_select(sqlQuery)
         cgeneraldata[0].NWHEE = NWHEE
 
@@ -1842,7 +1985,7 @@ class Project(object):
         return newwhee
 
 #------------------------------------------------------------------------------
-    def deleteWHEE(self,WHEEID):
+    def deleteWHEE(self, WHEEID):
 #------------------------------------------------------------------------------
 #   deletes all entries for a given heat exchanger
 #------------------------------------------------------------------------------
@@ -1852,41 +1995,41 @@ class Project(object):
 
         DB = Status.DB
         sqlQuery = "ProjectID = '%s' AND AlternativeProposalNo = '%s' AND QWasteHeatElEquip_ID = '%s'"\
-                    %(Status.PId,Status.ANo,WHEEID)  #query is redundant, but maintained as is for security
+                    % (Status.PId, Status.ANo, WHEEID)  #query is redundant, but maintained as is for security
 
-        deleteSQLRows(DB.qwasteheatelequip,sqlQuery)
+        deleteSQLRows(DB.qwasteheatelequip, sqlQuery)
 
-        sqlQuery = "ProjectID = '%s' AND AlternativeProposalNo = '%s' ORDER BY WHEENo ASC"%(Status.PId,Status.ANo)
+        sqlQuery = "ProjectID = '%s' AND AlternativeProposalNo = '%s' ORDER BY WHEENo ASC" % (Status.PId, Status.ANo)
         whees = Status.DB.qwasteheatelequip.sql_select(sqlQuery)
 
         for i in range(len(whees)): #assign new EqNo in QGenerationHC table
-            whees[i].WHEENo = i+1
+            whees[i].WHEENo = i + 1
             pass
 
         
-        sqlQueryQ = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'"%(Status.PId,Status.ANo)  
+        sqlQueryQ = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'" % (Status.PId, Status.ANo)  
         cgeneraldata = Status.DB.cgeneraldata.sql_select(sqlQueryQ)
         cgeneraldata[0].NWHEE = len(whees)
 
         Status.SQL.commit()
 
 #------------------------------------------------------------------------------
-    def getWHEEs(self,PId = None):
+    def getWHEEs(self, PId=None):
 #------------------------------------------------------------------------------
 #   returns a list of existing heat exchangers
 #------------------------------------------------------------------------------
 
         if PId is None:
-            sqlQuery = "ProjectID = '%s' AND AlternativeProposalNo = '%s' ORDER BY WHEENo ASC"%(Status.PId,Status.ANo)
+            sqlQuery = "ProjectID = '%s' AND AlternativeProposalNo = '%s' ORDER BY WHEENo ASC" % (Status.PId, Status.ANo)
         else:
-            sqlQuery = "ProjectID = '%s' ORDER BY WHEENo ASC"%(PId)
+            sqlQuery = "ProjectID = '%s' ORDER BY WHEENo ASC" % (PId)
             
         whees = Status.DB.qwasteheatelequip.sql_select(sqlQuery)
         
         return whees
 
 #------------------------------------------------------------------------------
-    def getWHEEList(self,key,PId = None):
+    def getWHEEList(self, key, PId=None):
 #------------------------------------------------------------------------------
 #   returns a list of existing heat exchangers
 #------------------------------------------------------------------------------
@@ -1895,8 +2038,8 @@ class Project(object):
         
         WHEEList = []
         for whee in whees:
-            if isinstance(whee[key],str) or isinstance(whee[key],unicode):
-                WHEEList.append(unicode(whee[key],"utf-8"))
+            if isinstance(whee[key], str) or isinstance(whee[key], unicode):
+                WHEEList.append(unicode(whee[key], "utf-8"))
             else:
                 WHEEList.append(whee[key])
 
@@ -1915,7 +2058,7 @@ class Project(object):
         NSurfaces = len(surfaces)
         tmp = {
             "ProjectID":Status.PId,
-            "SurfAreaNo":(NSurfaces+1),
+            "SurfAreaNo":(NSurfaces + 1),
             "SurfAreaName":"dummy"
             }          
         newID = Status.DB.qsurfarea.insert(tmp)
@@ -1926,7 +2069,7 @@ class Project(object):
         return newSurface
 
 #------------------------------------------------------------------------------
-    def deleteSurface(self,surfaceID):
+    def deleteSurface(self, surfaceID):
 #------------------------------------------------------------------------------
 #   deletes all entries for a given heat exchanger
 #------------------------------------------------------------------------------
@@ -1936,27 +2079,27 @@ class Project(object):
 
         DB = Status.DB
         sqlQuery = "ProjectID = '%s' AND id = '%s'"\
-                    %(Status.PId,surfaceID)  #query is redundant, but maintained as is for security
+                    % (Status.PId, surfaceID)  #query is redundant, but maintained as is for security
 
-        deleteSQLRows(DB.qsurfarea,sqlQuery)
+        deleteSQLRows(DB.qsurfarea, sqlQuery)
 
         surfaces = self.getSurfaces()
 
         for i in range(len(surfaces)): #assign new EqNo in QGenerationHC table
-            surfaces[i].SurfAreaNo = i+1
+            surfaces[i].SurfAreaNo = i + 1
 
         Status.SQL.commit()
 
 #------------------------------------------------------------------------------
-    def getSurfaces(self,PId = None):
+    def getSurfaces(self, PId=None):
 #------------------------------------------------------------------------------
 #   returns a list of existing heat exchangers
 #------------------------------------------------------------------------------
 
         if PId is None:
-            sqlQuery = "ProjectID = '%s' ORDER BY SurfAreaNo ASC"%(Status.PId)
+            sqlQuery = "ProjectID = '%s' ORDER BY SurfAreaNo ASC" % (Status.PId)
         else:
-            sqlQuery = "ProjectID = '%s' ORDER BY SurfAreaNo ASC"%(PId)
+            sqlQuery = "ProjectID = '%s' ORDER BY SurfAreaNo ASC" % (PId)
             
         surfaces = Status.DB.qsurfarea.sql_select(sqlQuery)
         if PId is None:
@@ -1965,7 +2108,7 @@ class Project(object):
         return surfaces
 
 #------------------------------------------------------------------------------
-    def getSurfaceList(self,key,PId = None):
+    def getSurfaceList(self, key, PId=None):
 #------------------------------------------------------------------------------
 #   returns a list of existing heat exchangers
 #------------------------------------------------------------------------------
@@ -1974,29 +2117,29 @@ class Project(object):
         
         surfaceList = []
         for surface in surfaces:
-            if isinstance(surface[key],str) or isinstance(surface[key],unicode):
-                surfaceList.append(unicode(surface[key],"utf-8"))
+            if isinstance(surface[key], str) or isinstance(surface[key], unicode):
+                surfaceList.append(unicode(surface[key], "utf-8"))
             else:
                 surfaceList.append(surface[key])
 
         return surfaceList
 
 #------------------------------------------------------------------------------
-    def getFuels(self,PId = None):
+    def getFuels(self, PId=None):
 #------------------------------------------------------------------------------
 #   returns a table of existing equipment
 #------------------------------------------------------------------------------
 
         if PId is None:
-            sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s' ORDER BY FuelNo ASC"%(Status.PId,Status.ANo)
+            sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s' ORDER BY FuelNo ASC" % (Status.PId, Status.ANo)
         else:
-            sqlQuery = "Questionnaire_id = '%s' ORDER BY FuelNo ASC"%(PId)
+            sqlQuery = "Questionnaire_id = '%s' ORDER BY FuelNo ASC" % (PId)
         fuels = Status.DB.qfuel.sql_select(sqlQuery)
         
         return fuels
 
 #------------------------------------------------------------------------------
-    def getFuelList(self,key,PId = None):
+    def getFuelList(self, key, PId=None):
 #------------------------------------------------------------------------------
 #   returns a table of existing equipment
 #------------------------------------------------------------------------------
@@ -2005,30 +2148,35 @@ class Project(object):
         
         fuelList = []
         for fuel in fuels:
-            if isinstance(fuel[key],str) or isinstance(fuel[key],unicode):
-                fuelList.append(unicode(fuel[key],"utf-8"))
+            if isinstance(fuel[key], str) or isinstance(fuel[key], unicode):
+                fuelList.append(unicode(fuel[key], "utf-8"))
             else:
                 fuelList.append(fuel[key])
 
         return fuelList
 
 #------------------------------------------------------------------------------
-    def getProcesses(self,PId = None):
-#------------------------------------------------------------------------------
-#   returns a list of existing heat exchangers
-#------------------------------------------------------------------------------
-
+    def getProcesses(self, PId=None):
+        """
+        Return a pSQL.result list of all processes for the current alternative
+        proposal.
+        
+        :param PId: If the Questionaire_id is given explicitly, all processes
+        of all proposals are returned.
+        :returns: A list of pSQL.result objects for all processes of the current
+        alternative proposal.
+        """
         if PId is None:
-            sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s' ORDER BY ProcNo ASC"%(Status.PId,Status.ANo)
+            sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s' ORDER BY ProcNo ASC" % (Status.PId, Status.ANo)
         else:
-            sqlQuery = "Questionnaire_id = '%s' ORDER BY ProcNo ASC"%(PId)
+            sqlQuery = "Questionnaire_id = '%s' ORDER BY ProcNo ASC" % (PId)
 
         self.processes = Status.DB.qprocessdata.sql_select(sqlQuery)
         
         return self.processes
 
 #------------------------------------------------------------------------------
-    def getProcessList(self,key,PId = None):
+    def getProcessList(self, key, PId=None):
 #------------------------------------------------------------------------------
 #   returns a list of existing heat exchangers
 #------------------------------------------------------------------------------
@@ -2037,45 +2185,45 @@ class Project(object):
         
         processList = []
         for process in processes:
-            if isinstance(process[key],str) or isinstance(process[key],unicode):
-                processList.append(unicode(process[key],"utf-8"))
+            if isinstance(process[key], str) or isinstance(process[key], unicode):
+                processList.append(unicode(process[key], "utf-8"))
             else:
                 processList.append(process[key])
 
         return processList
 
 #------------------------------------------------------------------------------
-    def getQFuels(self,PId = None):
+    def getQFuels(self, PId=None):
 #------------------------------------------------------------------------------
 #   returns a list of fluids used in the project
 #------------------------------------------------------------------------------
 
         if PId is None:
-            sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s' ORDER BY FuelNo ASC"%(Status.PId,Status.ANo)
+            sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s' ORDER BY FuelNo ASC" % (Status.PId, Status.ANo)
         else:
-            sqlQuery = "Questionnaire_id = '%s' ORDER BY FuelNo ASC"%(PId)
+            sqlQuery = "Questionnaire_id = '%s' ORDER BY FuelNo ASC" % (PId)
             
         self.qfuel = Status.DB.qfuel.sql_select(sqlQuery)
         
         return self.qfuel
 
 #------------------------------------------------------------------------------
-    def getElectricity(self,PId = None):
+    def getElectricity(self, PId=None):
 #------------------------------------------------------------------------------
 #   returns a list of fluids used in the project
 #------------------------------------------------------------------------------
 
         if PId is None:
-            sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'"%(Status.PId,Status.ANo)
+            sqlQuery = "Questionnaire_id = '%s' AND AlternativeProposalNo = '%s'" % (Status.PId, Status.ANo)
         else:
-            sqlQuery = "Questionnaire_id = '%s'"%(PId)
+            sqlQuery = "Questionnaire_id = '%s'" % (PId)
             
         self.qelectricity = Status.DB.qelectricity.sql_select(sqlQuery)
         
         return self.qelectricity
 
 #------------------------------------------------------------------------------
-    def getQFuelList(self,key,PId = None):
+    def getQFuelList(self, key, PId=None):
 #------------------------------------------------------------------------------
 #   returns a list of existing heat exchangers
 #------------------------------------------------------------------------------
@@ -2084,8 +2232,8 @@ class Project(object):
         
         fuelList = []
         for fuel in fuels:
-            if isinstance(fuel[key],str) or isinstance(fuel[key],unicode):
-                fuelList.append(unicode(fuel[key],"utf-8"))
+            if isinstance(fuel[key], str) or isinstance(fuel[key], unicode):
+                fuelList.append(unicode(fuel[key], "utf-8"))
             else:
                 fuelList.append(fuel[key])
 
@@ -2102,7 +2250,7 @@ class Project(object):
         fluids = Status.DB.dbfluid.FluidName["%"]       
         fluidDict = {}
         for fluid in fluids:
-            fluidName = unicode(fluid["FluidName"],"utf-8")
+            fluidName = unicode(fluid["FluidName"], "utf-8")
             fluidID = fluid["DBFluid_ID"]
             fluidDict.update({fluidID:fluidName})
 
@@ -2119,7 +2267,7 @@ class Project(object):
         fuels = Status.DB.dbfuel.FuelName["%"]       
         fuelDict = {}
         for fuel in fuels:
-            fuelName = unicode(fuel["FuelName"],"utf-8")
+            fuelName = unicode(fuel["FuelName"], "utf-8")
             fuelID = fuel["DBFuel_ID"]
             fuelDict.update({fuelID:fuelName})
 
@@ -2136,14 +2284,14 @@ class Project(object):
         unitOperations = Status.DB.dbunitoperation.UnitOperation["%"]       
         unitOpDict = {}
         for unitOperation in unitOperations:
-            unitOperationName = unicode(unitOperation["UnitOperation"],"utf-8")
+            unitOperationName = unicode(unitOperation["UnitOperation"], "utf-8")
             unitOperationID = unitOperation["DBUnitOperation_ID"]
             unitOpDict.update({unitOperationID:unitOperationName})
 
         return unitOpDict
 
 #------------------------------------------------------------------------------
-    def getNACEDict(self,branch=None):
+    def getNACEDict(self, branch=None):
 #------------------------------------------------------------------------------
 #   returns a list of unit operations in DB
 #------------------------------------------------------------------------------
@@ -2153,9 +2301,9 @@ class Project(object):
         naceSubDict = {}
         for entry in naceTable:
             naceCode = entry.CodeNACE
-            naceSubCode = naceCode+"."+entry.CodeNACEsub
-            naceName = unicode(entry.NameNACE,"utf-8")
-            naceSubName = unicode(entry.NameNACEsub,"utf-8")
+            naceSubCode = naceCode + "." + entry.CodeNACEsub
+            naceName = unicode(entry.NameNACE, "utf-8")
+            naceSubName = unicode(entry.NameNACEsub, "utf-8")
             naceDict.update({naceCode:naceName})
             if branch == naceName:
                 naceSubDict.update({naceSubCode:naceSubName})
@@ -2167,17 +2315,17 @@ class Project(object):
 #        print "naceSubDict = ",naceSubDict
 #        print "------------------------------------------------"
             
-        return (naceDict,naceSubDict)
+        return (naceDict, naceSubDict)
 
 #------------------------------------------------------------------------------
-    def getFluidAndFuelList(self,PId=None):
+    def getFluidAndFuelList(self, PId=None):
 #------------------------------------------------------------------------------
 #   returns a list of all fluids and fuels used in a project
 #   if PId = None: returns for some alternative in the active project
 #   if PId specified: returns for the total project (all alternatives)
 #------------------------------------------------------------------------------
 
-        fuelList = Status.prj.getQFuelList("DBFuel_id",PId)
+        fuelList = Status.prj.getQFuelList("DBFuel_id", PId)
         fuelIDs = []
         for fuelID in fuelList:
             if fuelID is not None:
@@ -2186,12 +2334,12 @@ class Project(object):
                     fuelIDs.append(newID)
 
         fluidList = []
-        fluidList.extend(Status.prj.getEquipmentList("Refrigerant",PId))
-        fluidList.extend(Status.prj.getPipeList("HeatDistMedium",PId))
-        fluidList.extend(Status.prj.getProcessList("ProcMedDBFluid_id",PId))
-        fluidList.extend(Status.prj.getProcessList("ProcMedOut",PId))
-        fluidList.extend(Status.prj.getProcessList("SupplyMedDBFluid_id",PId))
-        fluidList.extend(Status.prj.getWHEEList("WHEEMedium",PId))
+        fluidList.extend(Status.prj.getEquipmentList("Refrigerant", PId))
+        fluidList.extend(Status.prj.getPipeList("HeatDistMedium", PId))
+        fluidList.extend(Status.prj.getProcessList("ProcMedDBFluid_id", PId))
+        fluidList.extend(Status.prj.getProcessList("ProcMedOut", PId))
+        fluidList.extend(Status.prj.getProcessList("SupplyMedDBFluid_id", PId))
+        fluidList.extend(Status.prj.getWHEEList("WHEEMedium", PId))
         
         fluidIDs = []
         for fluidID in fluidList:
@@ -2200,10 +2348,10 @@ class Project(object):
                 if newID not in fluidIDs:    #avoid double counting !!!
                     fluidIDs.append(newID)
            
-        return (fluidIDs,fuelIDs)
+        return (fluidIDs, fuelIDs)
 
 #------------------------------------------------------------------------------
-    def substituteFluidID(self,PId,oldID,newID):
+    def substituteFluidID(self, PId, oldID, newID):
 #------------------------------------------------------------------------------
 #   substitutes the links to fluids in import of project tables
 #------------------------------------------------------------------------------
@@ -2211,55 +2359,55 @@ class Project(object):
         eqs = Status.DB.qgenerationhc.Questionnaire_id[PId].Refrigerant[oldID]
         for eq in eqs:
             eq.Refrigerant = newID
-            logTrack("Project (substituteFluidID): table qgenerationhc - FluidID %s substituted by %s in ID %s"%\
-                     (oldID,newID,eq.QGenerationHC_ID))
+            logTrack("Project (substituteFluidID): table qgenerationhc - FluidID %s substituted by %s in ID %s" % \
+                     (oldID, newID, eq.QGenerationHC_ID))
         
         pipes = Status.DB.qdistributionhc.Questionnaire_id[PId].HeatDistMedium[oldID]
         for pipe in pipes:
             pipe.HeatDistMedium = newID
-            logTrack("Project (substituteFluidID): table qdistributionhc - FluidID %s substituted by %s in ID %s"%\
-                     (oldID,newID,pipe.QDistributionHC_ID))
+            logTrack("Project (substituteFluidID): table qdistributionhc - FluidID %s substituted by %s in ID %s" % \
+                     (oldID, newID, pipe.QDistributionHC_ID))
         
         processes = Status.DB.qprocessdata.Questionnaire_id[PId].ProcMedDBFluid_id[oldID]
         for process in processes:
             process.ProcMedDBFluid_id = newID
-            logTrack("Project (substituteFluidID): table qprocessdata - FluidID %s substituted by %s in ID %s for process medium"%\
-                     (oldID,newID,process.QProcessData_ID))
+            logTrack("Project (substituteFluidID): table qprocessdata - FluidID %s substituted by %s in ID %s for process medium" % \
+                     (oldID, newID, process.QProcessData_ID))
         
         processes = Status.DB.qprocessdata.Questionnaire_id[PId].ProcMedOut[oldID]
         for process in processes:
             process.ProcMedOut = newID
-            logTrack("Project (substituteFluidID): table qprocessdata - FluidID %s substituted by %s in ID %s for ProcMedOut"%\
-                     (oldID,newID,process.QProcessData_ID))
+            logTrack("Project (substituteFluidID): table qprocessdata - FluidID %s substituted by %s in ID %s for ProcMedOut" % \
+                     (oldID, newID, process.QProcessData_ID))
         
         processes = Status.DB.qprocessdata.Questionnaire_id[PId].SupplyMedDBFluid_id[oldID]
         for process in processes:
             process.SupplyMedDBFluid_id = newID
-            logTrack("Project (substituteFluidID): table qprocessdata - FluidID %s substituted by %s in ID %s for supply medium"%\
-                     (oldID,newID,process.QProcessData_ID))
+            logTrack("Project (substituteFluidID): table qprocessdata - FluidID %s substituted by %s in ID %s for supply medium" % \
+                     (oldID, newID, process.QProcessData_ID))
         
         hxes = Status.DB.qheatexchanger.ProjectID[PId].FluidIDSource[oldID]
         for hx in hxes:
             hx.FluidIDSource = newID
-            logTrack("Project (substituteFluidID): table qheatexchanger - FluidID %s substituted by %s in ID %s for source medium"%\
-                     (oldID,newID,hx.FluidIDSource))
+            logTrack("Project (substituteFluidID): table qheatexchanger - FluidID %s substituted by %s in ID %s for source medium" % \
+                     (oldID, newID, hx.FluidIDSource))
         
         hxes = Status.DB.qheatexchanger.ProjectID[PId].FluidIDSink[oldID]
         for hx in hxes:
             hx.FluidIDSink = newID
-            logTrack("Project (substituteFluidID): table qheatexchanger - FluidID %s substituted by %s in ID %s for sink medium"%\
-                     (oldID,newID,hx.FluidIDSink))
+            logTrack("Project (substituteFluidID): table qheatexchanger - FluidID %s substituted by %s in ID %s for sink medium" % \
+                     (oldID, newID, hx.FluidIDSink))
         
         whees = Status.DB.qwasteheatelequip.ProjectID[PId].WHEEMedium[oldID]
         for whee in whees:
             whees.WHEEMedium = newID
-            logTrack("Project (substituteFluidID): table qwasteheatelequip - FluidID %s substituted by %s in ID %s"%\
-                     (oldID,newID,whee.QWasteHeatElEquip_ID))
+            logTrack("Project (substituteFluidID): table qwasteheatelequip - FluidID %s substituted by %s in ID %s" % \
+                     (oldID, newID, whee.QWasteHeatElEquip_ID))
         
         Status.SQL.commit()
 
 #------------------------------------------------------------------------------
-    def substituteFuelID(self,PId,oldID,newID):
+    def substituteFuelID(self, PId, oldID, newID):
 #------------------------------------------------------------------------------
 #   substitutes the links to fluids in import of project tables
 #------------------------------------------------------------------------------
@@ -2267,19 +2415,19 @@ class Project(object):
         fuels = Status.DB.qfuel.Questionnaire_id[PId].DBFuel_id[oldID]
         for fuel in fuels:
             fuel.DBFuel_id = newID
-            logTrack("Project (substituteFuelID): table qfuel - FuelID %s substituted by %s in ID %s"%\
-                     (oldID,newID,fuel.QFuel_ID))
+            logTrack("Project (substituteFuelID): table qfuel - FuelID %s substituted by %s in ID %s" % \
+                     (oldID, newID, fuel.QFuel_ID))
         
         eqs = Status.DB.qgenerationhc.Questionnaire_id[PId].DBFuel_id[oldID]
         for eq in eqs:
-            logTrack("Project (substituteFuelID): table qgenerationhc - FuelID %s substituted by %s in ID %s"%\
-                     (oldID,newID,eq.QGenerationHC_ID))
+            logTrack("Project (substituteFuelID): table qgenerationhc - FuelID %s substituted by %s in ID %s" % \
+                     (oldID, newID, eq.QGenerationHC_ID))
             eq.DBFuel_id = newID
 
         Status.SQL.commit()
         
 #------------------------------------------------------------------------------
-    def substituteAuditorID(self,PId,oldID,newID):
+    def substituteAuditorID(self, PId, oldID, newID):
 #------------------------------------------------------------------------------
 #   substitutes the links to fluids in import of project tables
 #------------------------------------------------------------------------------
@@ -2287,13 +2435,44 @@ class Project(object):
         sprojects = Status.DB.sproject.ProjectID[PId].Auditor_ID[oldID]
         for sproject in sprojects:
             sproject.Auditor_ID = newID
-            logTrack("Project (substituteAuditorID): table sproject - AuditorID %s substituted by %s in SProject_ID %s"%\
-                     (oldID,newID,sproject.SProject_ID))
+            logTrack("Project (substituteAuditorID): table sproject - AuditorID %s substituted by %s in SProject_ID %s" % \
+                     (oldID, newID, sproject.SProject_ID))
                               
         Status.SQL.commit()
         
-#------------------------------------------------------------------------------
-    def substitutePipeID(self,PId,pipeIDdict):
+    def substituteStreamID(self, PId, oldID, newID, connectionTable, columnName):
+        """
+        Substitute the old stream ID in connectionTable with the new one during
+        an import.
+        
+        :param PId: id of the project the connections belong to
+        :param oldID: the old id of the stream
+        :param newID: the new id of the stream
+        :param connectionTable: the table holding the stale connection data
+        :param columnName: a String containg the name of the colum holding the
+        stale stream ID
+        
+        """
+        connection = connectionTable.ProjectID[PId][columnName][oldID]
+        connection[0][columnName] = newID
+    
+    def substituteProcessID(self, PId, oldID, newID):
+        """
+        Substitute the old processdata ID in the process_stream_in/out tables
+        during an import.
+        
+        :param PId: id of the project the connections belong to
+        :param oldID: the old id of the processdata
+        :param newID: the old id of the processdata
+        
+        """
+        DB = Status.DB
+        for table in (DB.process_streams_in, DB.process_streams_out):
+            connections = table.ProjectID[PId].qprocessdata_QProcessData_Id[oldID]
+            for connection in connections:
+                connection.qprocessdata_QProcessData_Id = newID 
+    
+    def substitutePipeID(self, PId, pipeIDdict):
 #------------------------------------------------------------------------------
 #   substitutes the links to fluids in import of project tables
 #------------------------------------------------------------------------------
@@ -2304,20 +2483,15 @@ class Project(object):
             newID = eq.QGenerationHC_ID
             equipeIDdict.update({newID:newID})  #only value of pair is used in function "reconnect"
             
-        self.reconnectEquipesToPipes(equipeIDdict,pipeIDdict)
+        self.reconnectEquipesToPipes(equipeIDdict, pipeIDdict)
 
     def substituteForeignKey(self, table, primaryKey, primaryKeySelection, foreignKey, foreignKeySubstitutions):
         rows = getattr(Status.DB, table).sql_select('%s IN (%s)' % (primaryKey, ','.join([str(id) for id in primaryKeySelection])))
         for row in rows:
             setattr(row, foreignKey, foreignKeySubstitutions[getattr(row, foreignKey)])
         
-        
-#------------------------------------------------------------------------------
-    def restoreLinks(self,PId,projectDict):
-#------------------------------------------------------------------------------
-#   restores the links in an imported project
-#------------------------------------------------------------------------------
-
+    def restoreLinks(self, PId, projectDict):
+        """restores the links in an imported project"""
         if u'process_schedules' in projectDict.keys() and u'qprocessdata' in projectDict.keys():
             newProcessSchedulesIDList = [id[1] for id in projectDict[u'process_schedules']]
             self.substituteForeignKey('process_schedules', 'id', newProcessSchedulesIDList, 'qprocessdata_QProcessData_ID', dict(projectDict['qprocessdata']))
@@ -2353,36 +2527,45 @@ class Project(object):
 
         if u'dbfluid' in projectDict.keys():
             fluidIDList = projectDict[u'dbfluid']
-            for fluidIDs in fluidIDList:
-                (oldID,newID) = fluidIDs
-                self.substituteFluidID(PId,oldID,newID)
+            for oldID, newID in fluidIDList:
+                self.substituteFluidID(PId, oldID, newID)
 
         if u'dbfuel' in projectDict.keys():
             fuelIDList = projectDict[u'dbfuel']
-            for fuelIDs in fuelIDList:
-                (oldID,newID) = fuelIDs
-                self.substituteFuelID(PId,oldID,newID)
+            for oldID, newID in fuelIDList:
+                self.substituteFuelID(PId, oldID, newID)
 
-#        print "Project (restoreLinks): now restoring pipe links"
-#        print "projectDict: ",projectDict
         if u'qdistributionhc' in projectDict.keys():
             pipeIDList = projectDict[u'qdistributionhc']
-#            print "pipeIDList: ",pipeIDList
             pipeIDDict = {}
-            for pipeIDs in pipeIDList:
-                (oldID,newID) = pipeIDs
+            for oldID, newID in pipeIDList:
                 pipeIDDict.update({oldID:newID})
-                
-#            print "pipeIDDict: ",pipeIDDict
-            self.substitutePipeID(PId,pipeIDDict)
+            self.substitutePipeID(PId, pipeIDDict)
             
         if u'auditor' in projectDict.keys():
             auditorIDList = projectDict[u'auditor']
-            for auditorIDs in auditorIDList:
-                (oldID,newID) = auditorIDs
-                self.substituteAuditorID(PId,oldID,newID)
+            for oldID, newID in auditorIDList:
+                self.substituteAuditorID(PId, oldID, newID)
 
- #------------------------------------------------------------------------------
+        if u'streams_in' in projectDict.keys():
+            streamsIDs = projectDict[u'streams_in']
+            for oldID, newID in streamsIDs:
+                self.substituteStreamID(PId, oldID, newID,
+                                        Status.DB.process_streams_in,
+                                        "streams_in_id")
+            
+        if u'streams_out' in projectDict.keys():
+            streamsIDs = projectDict[u'streams_out']
+            for oldID, newID in streamsIDs:
+                self.substituteStreamID(PId, oldID, newID,
+                                        Status.DB.process_streams_out,
+                                        "streams_out_id")
+        
+        if u'qprocessdata' in projectDict.keys():
+            processIDs = projectDict[u'qprocessdata']
+            for oldID, newID in processIDs:
+                self.substituteProcessID(PId, oldID, newID)
+                
     def getAuditorID(self):
 #------------------------------------------------------------------------------
 #   returns the ID of the responsible auditor for the present project
@@ -2392,7 +2575,7 @@ class Project(object):
         if len(projectTable) > 0:
             sproject = projectTable[0]
         else:
-            logWarning(_("Project (getAuditorID): Corrupt entry for project no. %s: table sproject not found")%Status.PId)
+            logWarning(_("Project (getAuditorID): Corrupt entry for project no. %s: table sproject not found") % Status.PId)
 
         return sproject.Auditor_ID
 

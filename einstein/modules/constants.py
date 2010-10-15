@@ -36,10 +36,10 @@
 #	Software Foundation (www.gnu.org).
 #
 #============================================================================== 
-
 import gettext
-gettext.install("einstein", "../GUI/locale", unicode=False)
-
+gettext.install("einstein", "locale", unicode=False)
+language = gettext.translation("einstein", "locale", languages=['%s' % ('en',)], fallback=True)
+language.install()
 #------------------------------------------------------------------------------		
 VERSION         = "1.2"
 RELEASE_VERSION = "1.2 beta 1"
@@ -62,8 +62,8 @@ DEBUGMODES = ["OFF","BASIC","MAIN","ALL"]
 
 INFINITE = 1.e99
 KELVIN = 273.15
-MAXTEMP = 999.9 #maximum allowed temperature in analysis 
-
+MAXTEMP = 999.9 # maximum allowed temperature in analysis 
+MINTEMP = -100 # minimum allowed temperature for cooling streams in analysis
 YEAR = 8760.0
 DAY = 24.0
 WEEK = DAY*7
@@ -81,6 +81,7 @@ MONTHS = [_('January'),
           _('October'),
           _('November'),
           _('December')]
+NDAYS = 365
 
 #------------------------------------------------------------------------------		
 #default values for status variables
@@ -137,7 +138,6 @@ TRANSEQUIPTYPE = {"compression heat pump":_("compression heat pump"),
              "CHP steam turbine":_("CHP steam turbine"),
              "CHP gas turbine":_("CHP gas turbine"),
              "CHP fuel cell":_("CHP fuel cell")}
-
 
 # BBTYPES, STTYPES etc. are the short classifications of the equipment sub-class (usually used within the specific
 # equipment modules
@@ -263,6 +263,8 @@ EQUIPMENT = {"HP":                 # equipment class
                       CHPTYPES[3],TRANSCHPTYPES[CHPTYPES[3]])]
              }
 
+HEATING_EQUIPMENT = ("HP", "BB", "ST", "CHP")
+COOLING_EQUIPMENT = ("CH")
 
 #....................................................................
 
@@ -353,6 +355,7 @@ PRODUCTCODES = {"ZZ999":_("ZZ999: auxiliary services"),
                 "DA100":_("DA100: fish"),
                 "DA110":_("DA110: aroma")}
 
+HEATING_COOLING = [_("heating"), _("cooling")]
 #==============================================================================
 #   auxiliary functions for lookup in default tables and dictionaries
 #==============================================================================
@@ -391,6 +394,19 @@ def getEquipmentSubClass(equipeType):
 #       returns the untranslated subclass of the untranslated equipment as a function of the equipment type
 #------------------------------------------------------------------------------
     return getEquipmentItem(0,equipeType)[2]
+
+def isHeatingEquipment(equipmentType):
+    """Return for the given untranslated equipment type whether it is used for
+    heating (True) or cooling (False). 
+    """
+    eClass = getEquipmentClass(equipmentType)
+    if eClass in HEATING_EQUIPMENT:
+        result = True
+    elif eClass in COOLING_EQUIPMENT:
+        result = False
+    else:
+        raise ValueError("Unknown whether %s is used for heating or cooling." % (eClass, ))
+    return result
 
 #------------------------------------------------------------------------------
 def getEquipmentType(equipeClass,equipeSubClass):

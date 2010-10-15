@@ -295,10 +295,20 @@ class CurveCalculation():
         ccc = Curve()
         hcc = Curve()
         gcc = Curve()
-        
+
+        self.appendCurve(ccc, self.ccc_arrows)
+        self.appendCurve(hcc, self.hcc_arrows)
+        self.appendCurve(gcc, self.gcc_arrows)
         
         data.curves = [ccc, hcc, gcc]
-
+        Status.int.hrdata = data
+        
+    def appendCurve(self, curve, curve_arrows):
+        for elem in curve_arrows:
+            curve.X.append(elem.kw)
+            curve.Y.append(elem.StartTemp)
+            curve.X.append(elem.kw)
+            curve.Y.append(elem.EndTemp)
 
 class ArrowCCCHCC():
     MCP = None

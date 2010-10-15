@@ -47,6 +47,7 @@ from einstein.modules.chp.moduleCHP import ModuleCHP
 from einstein.modules.solar.moduleST import ModuleST
 from einstein.modules.heatPump.moduleHP import ModuleHP
 from einstein.modules.boiler.moduleBB import ModuleBB
+from einstein.modules.chiller.moduleCH import ModuleCH
 from einstein.modules.energyStats.moduleEA import ModuleEA
 from einstein.modules.moduleTCA import ModuleTCA
 from einstein.modules.modulePO import ModulePO
@@ -88,6 +89,9 @@ class Modules(object):
         
         keys = ['BB Table'] 
         self.moduleBB = ModuleBB(keys)
+
+        keys = ['CH Table']
+        self.moduleCH = ModuleCH(keys)
 
         self.moduleEA = ModuleEA()
        

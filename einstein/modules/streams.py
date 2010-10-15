@@ -9,7 +9,7 @@
 from einstein.GUI.status        import Status
 from einstein.GUI.GUITools      import check
 from einstein.modules.constants import findKey
-#from _mysql_exceptions import ProgrammingError
+from _mysql_exceptions import ProgrammingError
 
 class ProcessStreamsNotFoundError(Exception):
     """No streams for process with given id found in DB."""
@@ -62,6 +62,27 @@ def getOutflowingStreamNamesFromDB(processId):
     except ProgrammingError:
         raise InconsistentDataBaseError
 
+def getStreams(processId):
+    """
+    Retrieve all streams associated with the given processId form the
+    data base.
+    
+    :param processId: Id of the process whose streams are to retrieved.
+    :type processId: Integer
+    
+    :returns: A 2-Tuple of lists of InflowingStream and 
+    OutflowingStream objects, (inflowing, outflowing). 
+    """
+    result = ([],[])
+    (instreams, outstreams) = Status.prj.getStreams(processId)
+    for streams, generator, target in ((instreams, InflowingStream, result[0]), 
+                                       (outstreams, OutflowingStream, result[1])):
+        for stream in streams:
+            newstream = generator(stream.Name)
+            newstream.loadFromDB(processId)
+            target.append(newstream)
+    return result
+    
 class InflowingStream(object):
     '''
     classdocs
@@ -75,7 +96,7 @@ class InflowingStream(object):
         self.Name         = Name
         self.Medium       = Medium
         self.PTInFlow     = PTInFlow
-        self.PTInflowRec  = PTInFlowRec
+        self.PTInFlowRec  = PTInFlowRec
         self.VInFlowCycle = VInFlowCycle
         self.mInFlowNom   = mInFlowNom
         self.HeatRecExist = HeatRecExist
@@ -83,6 +104,7 @@ class InflowingStream(object):
         self.XInFlow      = XInFlow
         self.UPHc         = UPHc
         self.QdotProc_c   = QdotProc_c
+        self.QProcessData_ID = None
         
     def deleteFromDB(self, processId):
         """Delete all streams with our name associated with given process"""
@@ -96,7 +118,7 @@ class InflowingStream(object):
                     streamsIn = streamsInRows.pop()
                     streamsIn.delete()
                 except IndexError:
-                        break
+                    break
         if not streamsInIds:
             return
         nameProcessStreamsInRows = Status.DB.process_streams_in.sql_select('streams_in_id IN (%s)' % ', '.join([str(id) for id in streamsInIds]))
@@ -107,33 +129,39 @@ class InflowingStream(object):
             except IndexError:
                 break
     
-    def saveToDB(self, processId):
+    def saveToDB(self, processId, ANo=None):
+        if ANo is None:
+            ANo = Status.ANo
         dbFluidId = findKey(Status.prj.getFluidDict(), self.Medium)
         if self.HeatRecExist is None:
             dbHeatRec = None
         else:
             dbHeatRec = self.HeatRecExist and 1 or 0
-        dbStream  = {'Name'         : check(self.Name),
-                     'dbfluid_id'   : check(dbFluidId),
-                     'PTInFlow'     : check(self.PTInFlow),
-                     'PTInFlowRec'  : check(self.PTInflowRec),
-                     'VInFlowCycle' : check(self.VInFlowCycle),
-                     'mInFlowNom'   : check(self.mInFlowNom),
-                     'HeatRecExist' : check(dbHeatRec),
-                     'HInFlow'      : check(self.HInFlow),
-                     'XInFlow'      : check(self.XInFlow),
-                     'UPHc'         : check(self.UPHc),
-                     'QdotProc_c'   : check(self.QdotProc_c)}
+        dbStream  = {'Name'                 : check(self.Name),
+                     'dbfluid_id'           : check(dbFluidId),
+                     'PTInFlow'             : check(self.PTInFlow),
+                     'PTInFlowRec'          : check(self.PTInFlowRec),
+                     'VInFlowCycle'         : check(self.VInFlowCycle),
+                     'mInFlowNom'           : check(self.mInFlowNom),
+                     'HeatRecExist'         : check(dbHeatRec),
+                     'HInFlow'              : check(self.HInFlow),
+                     'XInFlow'              : check(self.XInFlow),
+                     'UPHc'                 : check(self.UPHc),
+                     'QdotProc_c'           : check(self.QdotProc_c),
+                     'ProjectID'            : Status.PId,
+                     'AlternativeProposalNo': ANo}
         
         try:
             streamsIds = Status.DB.process_streams_in.qprocessdata_QProcessData_Id[processId].streams_in_id.column()
             streamRow  = Status.DB.streams_in.sql_select('id IN (%s) AND Name = "%s"' % (', '.join(str(id) for id in streamsIds), self.Name))[0]
         except ProgrammingError:
             raise InconsistentDataBaseError
-        except LookupError, IndexError: # no input stream with our name found for given processId
+        except (LookupError, IndexError): # no input stream with our name found for given processId
             newStreamsInId = Status.DB.streams_in.insert(dbStream)
             Status.DB.process_streams_in.insert({'qprocessdata_QProcessData_Id' : processId,
-                                                 'streams_in_id'                : newStreamsInId})
+                                                 'streams_in_id'                : newStreamsInId,
+                                                 'ProjectID'                    : Status.PId,
+                                                 'AlternativeProposalNo'        : Status.ANo})
         else: # found stream with our name for given processId
             streamRow.update(dbStream)
         
@@ -169,13 +197,15 @@ class InflowingStream(object):
         self.XInFlow      = streamRow['XInFlow']
         self.UPHc         = streamRow['UPHc']
         self.QdotProc_c   = streamRow['QdotProc_c']
+        self.QProcessData_ID = processId
+
 
 class OutflowingStream(object):
     '''
     classdocs
     '''
 
-    def __init__(self, Name, Medium=None, PTOutFlow=None, PTOutFlowRec=None, PTFinal=None, VOutFlowCycle=None, mOutFlowNom=None, HeatRecExist=None, HeatRecOk=None, HOutFlow=None, XOutFlow=None, UPHw=None, QdotProc_w=None):
+    def __init__(self, Name, Medium=None, PTOutFlow=None, PTOutFlowRec=None, PTFinal=None, VOutFlowCycle=None, mOutFlowNom=None, HeatRecExist=None, HeatRecOK=None, HOutFlow=None, XOutFlow=None, UPHw=None, QdotProc_w=None):
         '''
         Constructor
         '''
@@ -187,11 +217,12 @@ class OutflowingStream(object):
         self.VOutFlowCycle = VOutFlowCycle
         self.mOutFlowNom   = mOutFlowNom
         self.HeatRecExist  = HeatRecExist
-        self.HeatRecOk     = HeatRecOk
+        self.HeatRecOK     = HeatRecOK
         self.HOutFlow      = HOutFlow 
         self.XOutFlow      = XOutFlow
         self.UPHw          = UPHw
         self.QdotProc_w    = QdotProc_w
+        self.QProcessData_ID = None
         
     def deleteFromDB(self, processId):
         """Delete all streams with our name associated with given process"""
@@ -216,39 +247,45 @@ class OutflowingStream(object):
             except IndexError:
                 break
     
-    def saveToDB(self, processId):
+    def saveToDB(self, processId, ANo=None):
+        if ANo is None:
+            ANo = Status.ANo
         dbFluidId = findKey(Status.prj.getFluidDict(), self.Medium)
         if self.HeatRecExist is None:
             dbHeatRecExist = None
         else:
             dbHeatRecExist = self.HeatRecExist and 1 or 0
-        if self.HeatRecOk is None:
+        if self.HeatRecOK is None:
             dbHeatRecOk = None
         else:
-            dbHeatRecOk = self.HeatRecOk and 1 or 0
-        dbStream  = {'Name'          : check(self.Name),
-                     'dbfluid_id'    : check(dbFluidId),
-                     'PTOutFlow'     : check(self.PTOutFlow), 
-                     'PTOutFlowRec'  : check(self.PTOutFlowRec), 
-                     'PTFinal'       : check(self.PTFinal), 
-                     'VOutFlowCycle' : check(self.VOutFlowCycle),
-                     'mOutFlowNom'   : check(self.mOutFlowNom),
-                     'HeatRecExist'  : check(dbHeatRecExist), 
-                     'HeatRecOk'     : check(dbHeatRecOk), 
-                     'HOutFlow'      : check(self.HOutFlow),
-                     'XOutFlow'      : check(self.XOutFlow), 
-                     'UPHw'          : check(self.UPHw), 
-                     'QdotProc_w'    : check(self.QdotProc_w)} 
+            dbHeatRecOk = self.HeatRecOK and 1 or 0
+        dbStream  = {'Name'                 : check(self.Name),
+                     'dbfluid_id'           : check(dbFluidId),
+                     'PTOutFlow'            : check(self.PTOutFlow), 
+                     'PTOutFlowRec'         : check(self.PTOutFlowRec), 
+                     'PTFinal'              : check(self.PTFinal), 
+                     'VOutFlowCycle'        : check(self.VOutFlowCycle),
+                     'mOutFlowNom'          : check(self.mOutFlowNom),
+                     'HeatRecExist'         : check(dbHeatRecExist), 
+                     'HeatRecOk'            : check(dbHeatRecOk), 
+                     'HOutFlow'             : check(self.HOutFlow),
+                     'XOutFlow'             : check(self.XOutFlow), 
+                     'UPHw'                 : check(self.UPHw), 
+                     'QdotProc_w'           : check(self.QdotProc_w),
+                     'ProjectID'            : Status.PId,
+                     'AlternativeProposalNo': ANo} 
         
         try:
             streamsIds = Status.DB.process_streams_out.qprocessdata_QProcessData_Id[processId].streams_out_id.column()
             streamRow  = Status.DB.streams_out.sql_select('id IN (%s) AND Name = "%s"' % (', '.join(str(id) for id in streamsIds), self.Name))[0]
         except ProgrammingError:
             raise InconsistentDataBaseError
-        except LookupError, IndexError: # no input stream with our name found for given processId
+        except (LookupError, IndexError): # no input stream with our name found for given processId
             newStreamsOutId = Status.DB.streams_out.insert(dbStream)
             Status.DB.process_streams_out.insert({'qprocessdata_QProcessData_Id' : processId,
-                                                 'streams_out_id'                : newStreamsOutId})
+                                                 'streams_out_id'                : newStreamsOutId,
+                                                 'ProjectID'                     : Status.PId,
+                                                 'AlternativeProposalNo'         : Status.ANo})
         else: # found stream with our name for given processId
             streamRow.update(dbStream)        
         
@@ -281,10 +318,11 @@ class OutflowingStream(object):
         else:
             self.HeatRecExist = streamRow['HeatRecExist'] == 1
         if streamRow['HeatRecOk'] is None:
-            self.HeatRecOk = None
+            self.HeatRecOK = None
         else:
-            self.HeatRecOk = streamRow['HeatRecOk'] == 1
+            self.HeatRecOK = streamRow['HeatRecOk'] == 1
         self.HOutFlow      = streamRow['HOutFlow'] 
         self.XOutFlow      = streamRow['XOutFlow']
         self.UPHw          = streamRow['UPHw']
         self.QdotProc_w    = streamRow['QdotProc_w']
+        self.QProcessData_ID = processId

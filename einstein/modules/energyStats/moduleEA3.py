@@ -51,9 +51,9 @@ def _U(text):
 
 class ModuleEA3(object):
 
-    def __init__(self, keys):
+    def __init__(self, keys, showHeating):
         self.keys = keys # two grids, so a list of (2) keys
-
+        self._showHeating = showHeating
         self.initModule()
 
     def initModule(self):
@@ -62,21 +62,20 @@ class ModuleEA3(object):
         """
         module initialization
         """
-#------------------------------------------------------------------------------
-
         Status.mod.moduleEA.update()
-
         PId = Status.PId
         ANo = Status.ANo
 
         self.equipments = Status.prj.getEquipments()
+        if self._showHeating:
+            self.equipments = [e for e in self.equipments if isHeatingEquipment(e.EquipType)]
+        else:
+            self.equipments = [e for e in self.equipments if not isHeatingEquipment(e.EquipType)]
         self.NEquipe = len(self.equipments)
-
         dbfuel = Status.DB.dbfuel
         NDBFuel = len(dbfuel)
 
-# Final energy consumption by equipments 
-
+        # Final energy consumption by equipments 
         TotalFETj = 0.0
         TotalUSHj = 0.0
         EquipName = []
@@ -87,23 +86,18 @@ class ModuleEA3(object):
         for equipe in self.equipments:
             Equipment = unicode(equipe.Equipment,"utf-8")
             EquipName.append(Equipment)
-
-
-#................................................................................
-            if equipe.FETj is None:#SD: None control added
+            if equipe.FETj is None:
                 TotalFETj += 0.0
                 FETj.append(0.0)
             else:
                 TotalFETj += equipe.FETj/1000.0
                 FETj.append(equipe.FETj/1000.0)
-
             if equipe.USHj is None:
                 TotalUSHj += 0.0
                 USHj.append(0.0)
             else:
                 TotalUSHj += equipe.USHj/1000.0
                 USHj.append(equipe.USHj/1000.0)
-
 
             DBFuel_id = equipe.DBFuel_id
             if DBFuel_id is None or NDBFuel==0: 
@@ -113,16 +107,10 @@ class ModuleEA3(object):
                     FuelName = unicode(dbfuel.DBFuel_ID[DBFuel_id][0].FuelName,"utf-8")
                 except:
                     FuelName = 'not available'
-
             equipmentClass = getEquipmentClass(equipe.EquipType)
             if equipmentClass == "CHP":
                 FuelName += "(- gen.elect.)"
-                
             FuelType.append(FuelName)
-
-#.................................................................................           
-
-#        print 'TotalFET (calculated from CGenerationHC) = ', TotalFETj
 
         FETjPercentage = []
         USHjPercentage = []
@@ -138,8 +126,6 @@ class ModuleEA3(object):
             else:
                 USHjPercentage.append(0.0)
 
-
-#.............................................................................
         #finish the table columns, add total, percentage total
         EquipName.append('Total')
         FuelType.append('')
@@ -155,14 +141,9 @@ class ModuleEA3(object):
         for i in USHjPercentage:
             sum += i
         USHjPercentage.append(sum)
-#.........................................................
-            
 
-        #
         # upper grid FET by equipment
-        #
         TableColumnList1 = [EquipName,FuelType,FETj,FETjPercentage]
-
         #screen list and substitute None with "not available"
         for i in range(len(TableColumnList1)):
             for j in range(len(TableColumnList1[i])):
@@ -189,7 +170,7 @@ class ModuleEA3(object):
 
         Status.int.setGraphicsData(self.keys[1], data2)
 
-#------------------------------------------------------------------------------
+        #----------------------------------------------------------------------
         reportMatrix1 = []
         for i in range(len(matrix1)-1):
             if i < 10:
@@ -197,9 +178,7 @@ class ModuleEA3(object):
         for i in range(len(matrix1)-1,10):
             reportMatrix1.append([" "," "," "," "])
         reportMatrix1.append(matrix1[len(matrix1)-1])
-
         reportData1 = array(reportMatrix1)
-        print reportData1
 
         if Status.ANo == 0:
             Status.int.setGraphicsData("EA3_FET_REPORT", reportData1)
@@ -213,14 +192,17 @@ class ModuleEA3(object):
         for i in range(len(matrix2)-1,10):
             reportMatrix2.append([" "," "," "])
         reportMatrix2.append(matrix2[len(matrix2)-1])
-
         reportData2 = array(reportMatrix2)
-        print reportData2
 
         if Status.ANo == 0:
             Status.int.setGraphicsData("EA3_USH_REPORT", reportData2)
         elif Status.ANo == Status.FinalAlternative:
             Status.int.setGraphicsData("EA3_USH_REPORT_F", reportData2)
-#------------------------------------------------------------------------------
-
-#==============================================================================
+        
+    def updatePanel(self, showHeating):
+        """Update the data to be shown by the panel.
+        
+        :showHeating: Set whether only heating (or only cooling) entities should be shown.
+        """
+        self._showHeating = showHeating
+        self.initModule()

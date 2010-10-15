@@ -69,7 +69,7 @@ UNITS_WIDTH        = 100
 
 ENCODING = "latin-1"
 def _U(text):
-    return unicode(_(text),"utf-8")
+    return unicode(_(text), "utf-8")
 
 def GetSelectedItems(listCtrl):
     selectedItemIndex = []
@@ -90,8 +90,8 @@ def drawFigure(self):
 
     if hasattr(self, 'subplot'):
         del self.subplot
-    self.subplot = self.figure.add_subplot(1,1,1)
-    self.subplot.plot(linspace(0,int(WEEK), resolution*int(WEEK)), graphSquareFromSaw(resolution, Status.int.GData['SchedulePeriodWeeklyProfile']), 'b-')
+    self.subplot = self.figure.add_subplot(1, 1, 1)
+    self.subplot.plot(linspace(0, int(WEEK), resolution * int(WEEK)), graphSquareFromSaw(resolution, Status.int.GData['SchedulePeriodWeeklyProfile']), 'b-')
     #self.subplot.plot(Status.int.GData['EA4b_Plot'][0],
     #                  Status.int.GData['EA4b_Plot'][2],
     #                  color = ORANGE, label='UPH proc', linewidth=3)
@@ -137,7 +137,7 @@ def drawFigure(self):
 
 class PanelQ3(wx.Panel):
     def __init__(self, parent, main):
-	self.main = main
+        self.main = main
         self._init_ctrls(parent)
         self.__do_layout()
         self.selectedProcessName = None
@@ -148,7 +148,7 @@ class PanelQ3(wx.Panel):
 #--- UI setup
 #------------------------------------------------------------------------------
 
-        wx.Panel.__init__(self, id=-1, name='PanelQ3', parent=parent,
+        wx.Panel.__init__(self, id= -1, name='PanelQ3', parent=parent,
               pos=wx.Point(0, 0), size=wx.Size(780, 580), style=0)
         self.Hide()
 
@@ -206,8 +206,8 @@ class PanelQ3(wx.Panel):
         # 3. The width of the entry widget
         # 4. The width of the unit chooser.
         #
-        fs = FieldSizes(wHeight=HEIGHT_LEFT,wLabel=LABEL_WIDTH_LEFT,
-                       wData=DATA_ENTRY_WIDTH,wUnits=UNITS_WIDTH)
+        fs = FieldSizes(wHeight=HEIGHT_LEFT, wLabel=LABEL_WIDTH_LEFT,
+                       wData=DATA_ENTRY_WIDTH, wUnits=UNITS_WIDTH)
 
         # set font for labels of left tab
         fp.pushFont()
@@ -218,82 +218,83 @@ class PanelQ3(wx.Panel):
         #
 
         # process list
-        self.listBoxProcesses = wx.ListBox(self.page0,-1,choices=[])
+        self.listBoxProcesses = wx.ListBox(self.page0, -1, choices=[])
         self.listBoxProcesses.SetFont(fp.getFont())
         self.Bind(wx.EVT_LISTBOX, self.OnListBoxProcessesClick, self.listBoxProcesses)
 
-        p1 = wx.StaticBitmap(bitmap=wx.Bitmap(os.path.join('img','Q3.png'),
+        p1 = wx.StaticBitmap(bitmap=wx.Bitmap(os.path.join('img', 'Q3.png'),
                                              wx.BITMAP_TYPE_PNG),
-                                             id=-1,
+                                             id= -1,
                                              parent=self.page5,
                                              pos=wx.Point(0, 0),
-                                             size=wx.Size(800,600),
+                                             size=wx.Size(800, 600),
                                              style=wx.SUNKEN_BORDER)
         # Processes description
         #
-        self.tc1 = TextEntry(self.page0,maxchars=255,value='',
+        self.tc1 = TextEntry(self.page0, maxchars=255, value='',
                              label=_U("Process short name"),
                              tip=_U("Give an organizational diagram of the production process (e.g. the flux of crude milk in chease production or the the flux of car chasis in the automobile industry)"))
-        self.tc1_1 = TextEntry(self.page0,maxchars=200,value='',
+        self.tc1_1 = TextEntry(self.page0, maxchars=200, value='',
                              label=_U("Description"),
                              tip=_U("Give a short description of the process"))
-
         self.tc2 = ChoiceEntry(self.page0,
                                values=TRANSPROCTYPES.values(),
                                label=_U("Process type"),
                                tip=_U("Give a brief description of the process or the unitary operation, and specify if it is continuous or batch"))        
-
         self.tc3 = ChoiceEntry(self.page0,
                                values=[],
                                label=_U("Unit operation type"),
-                               tip=_U("Select from predefined list"))       
-
+                               tip=_U("Select from predefined list"))
+        self.tcHeating_cooling = ChoiceEntry(self.page0,
+                               values=HEATING_COOLING,
+                               label=_U("heating/cooling"),
+                               tip=_U("Select whether this is a heating or cooling process"))
         self.tc4 = ChoiceEntry(self.page0,
                                values=[],
                                label=_U("Product or process medium"),
                                tip=_U("The medium that is in direct contact with the treated product, e.g. air for drying, lye or water for washing, etc..."))           
-
         self.tc5 = FloatEntry(self.page0,
                               ipart=4, decimals=1, minval=0., maxval=999., value=0.,
                               unitdict='TEMPERATURE',
                               label=_U("Typical (final) temperature of the  process medium during operation"),
                               tip=_U("Give the temperature of the process medium and not that of the heat supplying medium."))
-
         self.tc7 = FloatEntry(self.page0,
                               ipart=4, decimals=1, minval=0., maxval=999., value=0.,
                               unitdict='TEMPERATURE',
                               label=_U("Start-up temperature of process medium (after breaks)"),
                               tip=_U("Temperature of the process equipment before heating up when process start-up begins"))
-
-        self.tc9 = FloatEntry(self.page0,
-                              ipart=10, decimals=1, minval=0., maxval=1.e+12, value=0.,
+        self.tc9 = FloatEntry(self.page0, ipart=10, decimals=1, minval=0., maxval=1.e+12, value=0.,
                               unitdict='VOLUME',
                               label=_U("Volume of the process medium within the equipment or storage"),
                               tip=_U("e.g. volume of liquid in a bottle for cleaning"))
+        self.ThermalMassFloatEntry = FloatEntry(self.page0,
+                              ipart=10, decimals=1, minval=0., maxval=1.e+12, value=0.,
+                              unitdict='MASS',
+                              label=_U("effective thermal mass of the process medium"),
+                              tip=_U("effective thermal mass of the process medium"))
 
         self.tc10 = FloatEntry(self.page0,
                               ipart=6, decimals=1, minval=0., maxval=1.e+12, value=0.,
                               unitdict='POWER',
                               label=_U("Power requirement of the process in operation"),
                               tip=_U("Power requirement during operation at steady state (thermal losses, evapoartion, endogenous chemical recations; without heating of circulating fluid)"))
-        
         self.Bind(wx.EVT_CHOICE, self.OnProcessMediumChoice, self.tc4.entry)
         
         # Right panel controls
         # make width of labels larger for this panel and change fontsize
         fp.changeFont(size=TYPE_SIZE_RIGHT)
-        f = FieldSizes(wHeight=HEIGHT_RIGHT,wLabel=LABEL_WIDTH_RIGHT)
+        f = FieldSizes(wHeight=HEIGHT_RIGHT, wLabel=LABEL_WIDTH_RIGHT)
 
         # Data of existing heat ...
         
-        self.tc22 = ChoiceEntry(self.page4, 
+        self.tc22 = ChoiceEntry(self.page4,
                                values=[],
                                label=_U("Medium supplying heat or cold to the process (water, steam, air)"),
                                tip=_U("Medium supplying heat or cold to the process (up to 3)"))
 
 
         self.tc23 = ChoiceEntry(self.page4,
-                             values = [],
+                             values=[],
                              label=_U("Heat or cold supply to the process from distribution line / branch No."),
                              tip=_U("Specify the distribution(supply) line of heat/cold feeding the process, using the nomenclature of the hydraulic scheme"))
 
@@ -302,10 +303,10 @@ class PanelQ3(wx.Panel):
                                unitdict='TEMPERATURE',
                                label=_U("Temperature of the incoming medium supplying heat or cold to the process/heat exchanger"),
                                tip=_U("Temperature of the supplying medium at heat exchangers inlet"),
-                               fontsize=TYPE_SIZE_RIGHT-1)
+                               fontsize=TYPE_SIZE_RIGHT - 1)
 
         self.tc25 = FloatEntry(self.page4,
-                               ipart=6, decimals=1, minval=0., maxval=1.e+12, value = 0.,
+                               ipart=6, decimals=1, minval=0., maxval=1.e+12, value=0.,
                                unitdict='MASSFLOW',
                                label=_U("Flow rate of the heat supply medium (close to process)"),
                                tip=_U("Mass flow of the heat/cold supplyind medium"))
@@ -317,21 +318,21 @@ class PanelQ3(wx.Panel):
                                tip=_U("Only for the process"))
 
         fp.popFont()
-        self.buttonAddProcess = wx.Button(self.page0,-1,_U("Add process"))
+        self.buttonAddProcess = wx.Button(self.page0, -1, _U("Add process"))
         self.buttonAddProcess.SetMinSize((125, 32))
         self.Bind(wx.EVT_BUTTON, self.OnButtonAddProcess, self.buttonAddProcess)
         self.buttonAddProcess.SetFont(fp.getFont())
 
-        self.buttonDeleteProcess = wx.Button(self.page0,-1,_U("Delete process"))
+        self.buttonDeleteProcess = wx.Button(self.page0, -1, _U("Delete process"))
         self.buttonDeleteProcess.SetMinSize((125, 32))
         self.Bind(wx.EVT_BUTTON, self.OnButtonDeleteProcess, self.buttonDeleteProcess)
         self.buttonDeleteProcess.SetFont(fp.getFont())
 
-        self.buttonCancel = wx.Button(self,wx.ID_CANCEL,_U("Cancel"))
+        self.buttonCancel = wx.Button(self, wx.ID_CANCEL, _U("Cancel"))
         self.Bind(wx.EVT_BUTTON, self.OnButtonCancel, self.buttonCancel)
         self.buttonCancel.SetFont(fp.getFont())
 
-        self.buttonOK = wx.Button(self,wx.ID_OK,_U("OK"))
+        self.buttonOK = wx.Button(self, wx.ID_OK, _U("OK"))
         self.Bind(wx.EVT_BUTTON, self.OnButtonOK, self.buttonOK)
         self.buttonOK.SetDefault()
         self.buttonOK.SetFont(fp.getFont())
@@ -348,7 +349,7 @@ class PanelQ3(wx.Panel):
         self.xrcSchedule.AttachUnknownControl("HPerDayFloatEntry",
                                               FloatEntry(self.page1,
                                                          ipart=2, decimals=1, minval=0., maxval=24., value=0.,
-                                                         unitdict = 'TIME',
+                                                         unitdict='TIME',
                                                          label=_U("Hours of process operation per day"),
                                                          tip=_U("Specify the total duration of process, e.g. 3 cycles/day x 2 hrs/cycle = 6 hrs.")))
         self.xrcSchedule.AttachUnknownControl("NCyclesFloatEntry",
@@ -427,10 +428,10 @@ class PanelQ3(wx.Panel):
     
         ### tab "Schedule"
         # instantiate custom controls
-        self.xrcSchedule.AttachUnknownControl('StartupFloatEntry'  , FloatEntry(self.page3, wLabel = 60, wData = 60, wUnits = 60, label = _U('startup:'),       unitdict = 'TIME', decimals = 1, value = '' , minval = 0., maxval = YEAR))
-        self.xrcSchedule.AttachUnknownControl('InflowFloatEntry'   , FloatEntry(self.page3, wLabel = 60, wData = 60, wUnits = 60, label = _U('inflow:') ,       unitdict = 'TIME', decimals = 1, value = '' , minval = 0., maxval = YEAR))
-        self.xrcSchedule.AttachUnknownControl('OutflowFloatEntry'  , FloatEntry(self.page3, wLabel = 60, wData = 60, wUnits = 60, label = _U('outflow:'),       unitdict = 'TIME', decimals = 1, value = '' , minval = 0., maxval = YEAR))
-        self.xrcSchedule.AttachUnknownControl('ToleranceFloatEntry', FloatEntry(self.page3, wLabel = 60, wData = 60, wUnits = 60, label = _U('tolerance +/-:'), unitdict = 'TIME', decimals = 1, value = 0.0, minval = 0., maxval = 12.0))
+        self.xrcSchedule.AttachUnknownControl('StartupFloatEntry'  , FloatEntry(self.page3, wLabel=60, wData=60, wUnits=60, label=_U('startup:'), unitdict='TIME', decimals=1, value='' , minval=0., maxval=YEAR))
+        self.xrcSchedule.AttachUnknownControl('InflowFloatEntry'   , FloatEntry(self.page3, wLabel=60, wData=60, wUnits=60, label=_U('inflow:') , unitdict='TIME', decimals=1, value='' , minval=0., maxval=YEAR))
+        self.xrcSchedule.AttachUnknownControl('OutflowFloatEntry'  , FloatEntry(self.page3, wLabel=60, wData=60, wUnits=60, label=_U('outflow:'), unitdict='TIME', decimals=1, value='' , minval=0., maxval=YEAR))
+        self.xrcSchedule.AttachUnknownControl('ToleranceFloatEntry', FloatEntry(self.page3, wLabel=60, wData=60, wUnits=60, label=_U('tolerance +/-:'), unitdict='TIME', decimals=1, value=0.0, minval=0., maxval=12.0))
         
         # Schedule
         self.page3.PeriodStaticBoxSizer       = wx.xrc.XRCCTRL(self.page3, 'PeriodStaticBoxSizer')
@@ -511,7 +512,7 @@ class PanelQ3(wx.Panel):
             self.page3.ScheduleListCtrl.SetStringItem(newPeriodItem, self.page3.ScheduleListCtrlScaleColumnIndex, '100')
             
         # Period Weekly Profile plot panel
-        paramList={'labels'       : 0,          # labels column
+        paramList = {'labels'       : 0, # labels column
                    'data'         : 0,                      # data column for this graph
                    'key'         : 'SchedulePeriodWeeklyProfile',                # key for Interface
                    'title'       : _U('Period Weekly Profile'),           # title of the graph
@@ -544,7 +545,7 @@ class PanelQ3(wx.Panel):
                                                                 unitdict='MASSFLOW',
                                                                 label=_U("Nominal mass flow rate of inflow of process medium"),
                                                                 tip=_U(""))
-        self.InputStreamsHeatRecExistChoiceEntry   = ChoiceEntry(self.page6, 
+        self.InputStreamsHeatRecExistChoiceEntry = ChoiceEntry(self.page6,
                                                                  values=[' '] + TRANSYESNO.values(), value=None,
                                                                  label=_U("Exists internal heat recovery for the process?"),
                                                                  tip=_U("If affirmative, specify the inlet temperature after heat recovery"))
@@ -577,11 +578,11 @@ class PanelQ3(wx.Panel):
         self.Bind(wx.EVT_CHOICE, self.OnInputStreamsHeatRecExistChoice, self.InputStreamsHeatRecExistChoiceEntry.entry)
         
         # Output streams
-        self.OutputStreamsHeatRecOkChoiceEntry    = ChoiceEntry(self.page7, 
+        self.OutputStreamsHeatRecOkChoiceEntry = ChoiceEntry(self.page7,
                                                                 values=[' '] + TRANSYESNO.values(), value=None,
                                                                 label=_U("Can heat be recovered from the outflowing medium?"),
                                                                 tip=_U("If NO, specify why: e.g. contamination with substances which can affect the heat exchanger,..."))
-        self.OutputStreamsProcMedOutChoiceEntry   = ChoiceEntry(self.page7, 
+        self.OutputStreamsProcMedOutChoiceEntry = ChoiceEntry(self.page7,
                                                                 values=[], value=None,
                                                                 label=_U("Medium of outgoing waste heat flows"),
                                                                 tip=_U("Specify media of waste heat flows (up to 3)"))
@@ -662,13 +663,15 @@ class PanelQ3(wx.Panel):
         sizer_21.Add(self.tc1_1, 0, flagText, 1)
         sizer_21.Add(self.tc2, 0, flagText, 1)
         sizer_21.Add(self.tc3, 0, flagText, 1)
+        sizer_21.Add(self.tcHeating_cooling, 0, flagText, 1)
         sizer_21.Add(self.tc4, 0, flagText, 1)
         sizer_21.Add(self.tc5, 0, flagText, 1)
         sizer_21.Add(self.tc7, 0, flagText, 1)
         sizer_21.Add(self.tc9, 0, flagText, 1)
+        sizer_21.Add(self.ThermalMassFloatEntry, 0, flagText, 1)
         sizer_21.Add(self.tc10, 0, flagText, 1)
 
-        sizer_7.Add(sizer_21, 1, wx.LEFT|wx.EXPAND, 40)
+        sizer_7.Add(sizer_21, 1, wx.LEFT | wx.EXPAND, 40)
         sizer_6.Add(sizer_7, 2, wx.EXPAND, 0)
 
         #sizer_8.Add(sizer_22, 1, wx.LEFT|wx.EXPAND, 40)
@@ -683,7 +686,7 @@ class PanelQ3(wx.Panel):
         sizer_25.Add(self.tc25, 0, flagText, 1)
         sizer_25.Add(self.tc26, 0, flagText, 1)
 
-        sizer_13.Add(sizer_25, 1, wx.LEFT|wx.TOP|wx.EXPAND, 10)
+        sizer_13.Add(sizer_25, 1, wx.LEFT | wx.TOP | wx.EXPAND, 10)
         sizer_10.Add(sizer_13, 0, wx.EXPAND, 0)
         self.page4.SetSizer(sizer_10)
         self.notebook.AddPage(self.page0, _U('Process data'))
@@ -698,9 +701,9 @@ class PanelQ3(wx.Panel):
         self.page2.Enable(False)
         self.page3.Enable(False)
         sizer_2.Add(self.notebook, 1, wx.EXPAND, 0)
-        sizerOKCancel.Add(self.buttonCancel, 0, wx.ALL|wx.EXPAND, 2)
-        sizerOKCancel.Add(self.buttonOK, 0, wx.ALL|wx.EXPAND, 2)
-        sizer_2.Add(sizerOKCancel, 0, wx.TOP|wx.ALIGN_RIGHT, 0)
+        sizerOKCancel.Add(self.buttonCancel, 0, wx.ALL | wx.EXPAND, 2)
+        sizerOKCancel.Add(self.buttonOK, 0, wx.ALL | wx.EXPAND, 2)
+        sizer_2.Add(sizerOKCancel, 0, wx.TOP | wx.ALIGN_RIGHT, 0)
         sizer_1.Add(sizer_2, 1, wx.EXPAND, 0)
         self.SetSizer(sizer_1)
         self.Layout()
@@ -730,7 +733,7 @@ class PanelQ3(wx.Panel):
 
     def OnButtonDeleteProcess(self, event):
         
-        if self.checkIfAllowed()==False:
+        if self.checkIfAllowed() == False:
             return
         
         Status.prj.deleteProcess(self.selectedProcessID)
@@ -751,12 +754,12 @@ class PanelQ3(wx.Panel):
 
     def OnListBoxProcessesClick(self, event):
         self.selectedProcessName = self.listBoxProcesses.GetStringSelection()
-        print "PanelQ3: selected Process Name = %r"%self.selectedProcessName
+        print "PanelQ3: selected Process Name = %r" % self.selectedProcessName
         self.showProcess()
 
     def showProcess(self):
 
-        print "PanelQ3 (showProcess): selected Process Name = %r"%self.selectedProcessName
+        print "PanelQ3 (showProcess): selected Process Name = %r" % self.selectedProcessName
         if self.selectedProcessName is not None:
             processes = Status.DB.qprocessdata.\
                         Questionnaire_id[Status.PId].\
@@ -777,7 +780,7 @@ class PanelQ3(wx.Panel):
         fluidDict = Status.prj.getFluidDict()
         unitOpDict = Status.prj.getUnitOpDict()
 
-        print "PanelQ3 (showProcess): now writing tc1 = %r"%q.Process
+        print "PanelQ3 (showProcess): now writing tc1 = %r" % q.Process
         self.tc1.SetValue(q.Process)
         self.tc1_1.SetValue(q.Description)
         if q.ProcType in TRANSPROCTYPES.keys():
@@ -790,6 +793,11 @@ class PanelQ3(wx.Panel):
             self.tc3.SetValue(unitOp)
         else:
             self.tc3.SetValue("None")
+
+        if q.heating_cooling in HEATING_COOLING:
+            self.tcHeating_cooling.SetValue(q.heating_cooling)
+        else:
+            self.tcHeating_cooling.SetValue("None")
 
         if q.ProcMedDBFluid_id in fluidDict.keys():
             fluidName = fluidDict[q.ProcMedDBFluid_id]
@@ -806,6 +814,7 @@ class PanelQ3(wx.Panel):
         self.InputStreamsMInFlowNomFloatEntry.SetValue(str(q.mInFlowNom))
         
         self.tc9.SetValue(str(q.VolProcMed))
+        self.ThermalMassFloatEntry.SetValue(str(q.ThermalMass))
         self.tc10.SetValue(str(q.QOpProc))
         self.page1.HPerDayFloatEntry.SetValue(str(q.HPerDayProc))
         self.page1.NCyclesFloatEntry.SetValue(str(q.NBatch))
@@ -910,7 +919,6 @@ class PanelQ3(wx.Panel):
         self.display()
 
     def OnButtonOK(self, event):
-
         if Status.PId == 0:
             return
 
@@ -922,7 +930,7 @@ class PanelQ3(wx.Panel):
 
 # assure that a name has been entered before continuing
         if len(processName) == 0 or processName is None:
-            showWarning(_("You have to enter a name for the new process before saving"))
+            showWarning(_U("You have to enter a name for the new process before saving"))
             return
         
         processes = Status.DB.qprocessdata.Questionnaire_id[Status.PId].\
@@ -934,32 +942,30 @@ class PanelQ3(wx.Panel):
         elif len(processes) == 1:
             process = processes[0]
         else:
-#	    self.showError("HX name has to be a uniqe value!")
-            print "PanelQ3 (ButtonOK): Process name has to be a uniqe value!"
+            showWarning(_U("PanelQ3 (ButtonOK): Process name has to be a unique value!"))
             return
 
         unitOpDict = Status.prj.getUnitOpDict()          
         fluidDict = Status.prj.getFluidDict()
             
         setUnitsFluidDensity(findKey(fluidDict,self.tc4.GetValue(text=True)))
-        
+
 ###     FIXME: What is this?   setUnitsFluidDensity(findKey(fluidDict,self.OutputStreamsProcMedOut.GetValue(text=True)))
 ### only one fluid per panel can be changed between mass/volume ...
         
         # load all in-flowing and out-flowing streams
         inputStreams      = []
         outputStreams     = []
-        inputStreamNames  = getInflowingStreamNamesFromDB(self.selectedProcessID)
-        outputStreamNames = getOutflowingStreamNamesFromDB(self.selectedProcessID) 
-        for name in inputStreamNames:
-            stream = InflowingStream(name)
-            stream.loadFromDB(self.selectedProcessID)
-            inputStreams.append(stream)
-        for name in outputStreamNames:
-            stream = OutflowingStream(name)
-            stream.loadFromDB(self.selectedProcessID)
-            outputStreams.append(stream)
-
+        #inputStreamNames  = getInputStreamNamesFromDB(self.selectedProcessID)
+        #outputStreamNames = getOutputStreamNamesFromDB(self.selectedProcessID) 
+        #for name in inputStreamNames:
+        #    stream = InflowingStream(name)
+        #    stream.loadFromDB(self.selectedProcessID)
+        #    inputStreams.append(stream)
+        #for name in outputStreamNames:
+        #    stream = OutflowingStream(name)
+        #    stream.loadFromDB(self.selectedProcessID)
+        #    outputStreams.append(stream)
         tmp = {
             "Questionnaire_id":Status.PId,
             "AlternativeProposalNo":Status.ANo,
@@ -973,7 +979,8 @@ class PanelQ3(wx.Panel):
             "PTStartUp":check(self.tc7.GetValue()), 
             "VInFlowCycle":check(None), # now separate for individual streams
             "mInFlowNom":check(sum([s.mInFlowNom is not None and s.mInFlowNom or 0. for s in inputStreams])), # now separate for individual streams
-            "VolProcMed":check(self.tc9.GetValue()), 
+            "VolProcMed":check(self.tc9.GetValue()),
+            "ThermalMass":check(self.ThermalMassFloatEntry.GetValue()),
             "QOpProc":check(self.tc10.GetValue()), 
             "HPerDayProc":check(self.page1.HPerDayFloatEntry.GetValue()), 
             "NBatch":check(self.page1.NCyclesFloatEntry.GetValue()), 
@@ -995,7 +1002,8 @@ class PanelQ3(wx.Panel):
             "PipeDuctProc":check(self.tc23.GetValue(text=True)), 
             "TSupply":check(self.tc24.GetValue()), 
             "SupplyMedFlow":check(self.tc25.GetValue()), 
-            "UPH":check(self.tc26.GetValue()) 
+            "UPH":check(self.tc26.GetValue()),
+            "heating_cooling":check(self.tcHeating_cooling.GetValue(text=True)),
         }
         process.update(tmp)
         
@@ -1015,12 +1023,11 @@ class PanelQ3(wx.Panel):
         print "PanelQ3 (ok-button): process table updated with: ",tmp
         Status.SQL.commit()
         print "PanelQ3 (ok-button): what arrived is this: ",process
-        
+
         Status.processData.changeInProcess()
 
         self.selectedProcessName = processName
-        self.display()
-        
+        self.display()        
     # Schedule type selection
     def OnDetailedScheduleCheckBox(self, event):
         if not self.selectedProcessName:
@@ -1235,7 +1242,7 @@ class PanelQ3(wx.Panel):
         addPeriodFromDate  = self.page3.PeriodFromDatePicker.GetValue()
         addPeriodFromDate  = date(addPeriodFromDate.GetYear(), addPeriodFromDate.GetMonth() + 1, addPeriodFromDate.GetDay())
         Status.int.setGraphicsData('SchedulePeriodWeeklyProfile', self.periodSchedule.getWeeklyProfile(addPeriodFromDate))
-        paramList={'labels'       : 0,          # labels column
+        paramList = {'labels'       : 0, # labels column
                    'data'         : 0,                      # data column for this graph
                    'key'         : 'SchedulePeriodWeeklyProfile',                # key for Interface
                    'title'       : _U('Period Weekly Profile'),           # title of the graph
@@ -1395,7 +1402,7 @@ class PanelQ3(wx.Panel):
         addPeriodFromDate  = self.page3.PeriodFromDatePicker.GetValue()
         addPeriodFromDate  = date(addPeriodFromDate.GetYear(), addPeriodFromDate.GetMonth() + 1, addPeriodFromDate.GetDay())
         Status.int.setGraphicsData('SchedulePeriodWeeklyProfile', self.periodSchedule.getWeeklyProfile(addPeriodFromDate))
-        paramList={'labels'       : 0,          # labels column
+        paramList = {'labels'       : 0, # labels column
                    'data'         : 0,                      # data column for this graph
                    'key'         : 'SchedulePeriodWeeklyProfile',                # key for Interface
                    'title'       : _U('Period Weekly Profile'),           # title of the graph
@@ -1412,7 +1419,7 @@ class PanelQ3(wx.Panel):
             self.page3.ScheduleListCtrl.DeleteItem(itemIndex)
         self.fillSchedule()
         Status.int.setGraphicsData('SchedulePeriodWeeklyProfile', [0] * int(WEEK))
-        paramList={'labels'       : 0,          # labels column
+        paramList = {'labels'       : 0, # labels column
                    'data'         : 0,                      # data column for this graph
                    'key'         : 'SchedulePeriodWeeklyProfile',                # key for Interface
                    'title'       : _U('Period Weekly Profile'),           # title of the graph
@@ -1444,7 +1451,7 @@ class PanelQ3(wx.Panel):
         for profileItemIndex in range(self.page3.ProfileListCtrl.GetItemCount()):
             self.page3.ProfileListCtrl.Select(profileItemIndex, self.page3.ProfileListCtrl.GetItem(profileItemIndex, self.page2.ProfileWeeklyListCtrlNameColumnIndex).GetText() in selectedProfileNames)
         Status.int.setGraphicsData('SchedulePeriodWeeklyProfile', self.periodSchedule.getWeeklyProfile(datetime.strptime(self.page3.ScheduleListCtrl.GetItem(selectedItemIndex, self.page3.ScheduleListCtrlFromColumnIndex).GetText(), '%m-%d')))
-        paramList={'labels'       : 0,          # labels column
+        paramList = {'labels'       : 0, # labels column
                    'data'         : 0,                      # data column for this graph
                    'key'         : 'SchedulePeriodWeeklyProfile',                # key for Interface
                    'title'       : _U('Period Weekly Profile'),           # title of the graph
@@ -1469,6 +1476,8 @@ class PanelQ3(wx.Panel):
             stream.HeatRecExist = None
         else:
             stream.HeatRecExist = (TRANSYESNO['yes'] == self.InputStreamsHeatRecExistChoiceEntry.GetValue(text=True))
+            if stream.HeatRecExist == False:
+                stream.PTInFlowRec = stream.PTInFlow
         try:
             stream.saveToDB(self.selectedProcessID)
         except InconsistentDataBaseError:
@@ -1477,6 +1486,8 @@ class PanelQ3(wx.Panel):
         return name
     
     def OnInputStreamsAddButtonClicked(self, event):
+        if self.checkIfAllowed()==False:
+            return
         newInputStreamName = self.InputStreamsNameTextCtrl.GetValue()
         if not newInputStreamName:
             logError("No name given for in-flowing stream.")
@@ -1494,6 +1505,8 @@ class PanelQ3(wx.Panel):
             self.InputStreamsListBox.SetSelection(-1)
         
     def OnInputStreamsChangeButtonClicked(self, event):
+        if self.checkIfAllowed()==False:
+            return
         changeInputStreamName = self.InputStreamsNameTextCtrl.GetValue()
         if not changeInputStreamName:
             logError("No name given for in-flowing stream.")
@@ -1505,8 +1518,12 @@ class PanelQ3(wx.Panel):
             return
         if name is not None:
             self.InputStreamsListBox.SetString(self.InputStreamsListBox.GetSelection(), name)
+        self.OnInputStreamsListBoxItemSelected(None)
+        
         
     def OnInputStreamsRemoveButtonClicked(self, event):
+        if self.checkIfAllowed()==False:
+            return
         selectedItemIndex = self.InputStreamsListBox.GetSelection()
         if selectedItemIndex == -1: # no selection
             return
@@ -1549,9 +1566,13 @@ class PanelQ3(wx.Panel):
             self.InputStreamsHeatRecExistChoiceEntry.SetValue(0)
         else:
             self.InputStreamsHeatRecExistChoiceEntry.SetValue(stream.HeatRecExist and TRANSYESNO['yes'] or TRANSYESNO['no'])
+            self.InputStreamsAfterHeatRecoveryStaticBoxSizer.Enable(stream.HeatRecExist)
+            self.InputStreamsPTInFlowRecFloatEntry.Enable(stream.HeatRecExist)
         self.InputStreamsPTInFlowRecFloatEntry.SetValue(stream.PTInFlowRec)
         
     def OnInputStreamsPTInFlowValueChanged(self, event):
+        if self.checkIfAllowed()==False:
+            return
         try:
             if not self.inputStreamsHeatRec:
                 self.InputStreamsPTInFlowRecFloatEntry.SetValue(event.GetString())
@@ -1559,6 +1580,8 @@ class PanelQ3(wx.Panel):
             pass
         
     def OnInputStreamsPTInFlowUnitChanged(self, event):
+        if self.checkIfAllowed()==False:
+            return
         try:
             if not self.inputStreamsHeatRec: 
                 self.InputStreamsPTInFlowRecFloatEntry.setUnit(self.InputStreamsPTInFlowFloatEntry.GetUnit(text=False))
@@ -1569,6 +1592,8 @@ class PanelQ3(wx.Panel):
             pass
         
     def OnInputStreamsHeatRecExistChoice(self, event):
+        if self.checkIfAllowed()==False:
+            return
         self.inputStreamsHeatRec = TRANSYESNO['yes'] == event.GetString()
         self.InputStreamsAfterHeatRecoveryStaticBoxSizer.Enable(self.inputStreamsHeatRec)
         self.InputStreamsPTInFlowRecFloatEntry.Enable(self.inputStreamsHeatRec)
@@ -1590,9 +1615,9 @@ class PanelQ3(wx.Panel):
         else:
             stream.Medium = self.OutputStreamsProcMedOutChoiceEntry.GetValue(text=True)
         if self.OutputStreamsHeatRecOkChoiceEntry.GetValue() == 0:
-            stream.HeatRecOk = None
+            stream.HeatRecOK = None
         else:
-            stream.HeatRecOk = (TRANSYESNO['yes'] == self.OutputStreamsHeatRecOkChoiceEntry.GetValue(text=True))
+            stream.HeatRecOK = (TRANSYESNO['yes'] == self.OutputStreamsHeatRecOkChoiceEntry.GetValue(text=True))
         try:
             stream.saveToDB(self.selectedProcessID)
         except InconsistentDataBaseError:
@@ -1601,6 +1626,8 @@ class PanelQ3(wx.Panel):
         return name
     
     def OnOutputStreamsAddButtonClicked(self, event):
+        if self.checkIfAllowed()==False:
+            return
         newOutputStreamName = self.OutputStreamsNameTextCtrl.GetValue()
         if not newOutputStreamName:
             logError("No name given for out-flowing stream.")
@@ -1618,6 +1645,8 @@ class PanelQ3(wx.Panel):
             self.OutputStreamsListBox.SetSelection(-1)
         
     def OnOutputStreamsChangeButtonClicked(self, event):
+        if self.checkIfAllowed()==False:
+            return
         changeOutputStreamName = self.OutputStreamsNameTextCtrl.GetValue()
         if not changeOutputStreamName:
             logError("No name given for out-flowing stream.")
@@ -1631,6 +1660,8 @@ class PanelQ3(wx.Panel):
             self.OutputStreamsListBox.SetString(self.OutputStreamsListBox.GetSelection(), name)
         
     def OnOutputStreamsRemoveButtonClicked(self, event):
+        if self.checkIfAllowed()==False:
+            return
         selectedItemIndex = self.OutputStreamsListBox.GetSelection()
         if selectedItemIndex == -1: # no selection
             return
@@ -1662,10 +1693,12 @@ class PanelQ3(wx.Panel):
             logError("Data base inconsistency. Please report this as a bug on http://sourceforge.net/tracker/?func=add&group_id=213015&atid=1024025.")
             return
         self.OutputStreamsNameTextCtrl.SetValue(stream.Name)
-        if stream.HeatRecOk is None:
+        if stream.HeatRecOK is None:
             self.OutputStreamsHeatRecOkChoiceEntry.SetValue(0)
         else:
-            self.OutputStreamsHeatRecOkChoiceEntry.SetValue(stream.HeatRecOk and TRANSYESNO['yes'] or TRANSYESNO['no'])
+            self.OutputStreamsHeatRecOkChoiceEntry.SetValue(stream.HeatRecOK 
+                                                            and TRANSYESNO['yes'] 
+                                                            or TRANSYESNO['no'])
         if stream.Medium is None:
             self.OutputStreamsProcMedOutChoiceEntry.SetValue(0)
         else:
@@ -1678,6 +1711,8 @@ class PanelQ3(wx.Panel):
         self.OutputStreamsMOutFlowNomFloatEntry.SetValue(stream.mOutFlowNom)
         
     def OnOutputStreamsHeatRecOkChoice(self, event):
+        if self.checkIfAllowed()==False:
+            return
         heatRec = TRANSYESNO['yes'] == event.GetString()
         self.OutputStreamsProcMedOutChoiceEntry.Enable(heatRec)
         self.OutputStreamsPTOutFlowFloatEntry.Enable(heatRec)
@@ -1740,10 +1775,10 @@ class PanelQ3(wx.Panel):
         processList = Status.prj.getProcessList("Process")
         for process in processList:
             self.listBoxProcesses.Append(process)
-            print "PanelQ3: adding process %r to list"%process
-	try: self.listBoxProcesses.SetStringSelection(self.selectedProcessName)
-	except: pass
-	print "PanelQ3: process List = ",processList
+            print "PanelQ3: adding process %r to list" % process
+        try: self.listBoxProcesses.SetStringSelection(self.selectedProcessName)
+        except: pass
+
 
     def clear(self):
         self.tc1.SetValue('')
@@ -1756,6 +1791,7 @@ class PanelQ3(wx.Panel):
         self.InputStreamsVInFlowCycleFloatEntry.SetValue('')
         self.InputStreamsMInFlowNomFloatEntry.SetValue('')
         self.tc9.SetValue('')
+        self.ThermalMassFloatEntry.SetValue('')
         self.tc10.SetValue('')
         self.page1.HPerDayFloatEntry.SetValue('')
         self.page1.NCyclesFloatEntry.SetValue('')
@@ -1779,9 +1815,9 @@ class PanelQ3(wx.Panel):
         self.tc26.SetValue('')
 
     def checkIfAllowed(self):
-	if Status.ANo >= 0:
-            showWarning(_U("In the present version of EINSTEIN it is not allowed to modify\n")+\
-                        _U("processes in the checked state or alternative proposals. Go to the original data view\n")+\
+        if Status.ANo >= 0:
+            showWarning(_U("In the present version of EINSTEIN it is not allowed to modify\n") + \
+                        _U("processes in the checked state or alternative proposals. Go to the original data view\n") + \
                         _U("Workaround for studying process optimisation: create a copy of your project\nand modify on this copy in original state"))
             return False
         else:   
@@ -1789,18 +1825,16 @@ class PanelQ3(wx.Panel):
 
 
 if __name__ == '__main__':
-    import pSQL
-    import MySQLdb
     class Main(object):
-	def __init__(self,qid):
-	    self.activeQid = qid
+        def __init__(self, qid):
+            self.activeQid = qid
 
     DBName = 'einstein'
     Status.SQL = MySQLdb.connect(host='localhost', user='root', passwd='tom.tom', db=DBName)
     Status.DB =  pSQL.pSQL(Status.SQL, DBName)
 
     app = wx.PySimpleApp()
-    frame = wx.Frame(parent=None, id=-1, size=wx.Size(800, 600), title="Einstein - panelQ3")
+    frame = wx.Frame(parent=None, id= -1, size=wx.Size(800, 600), title="Einstein - panelQ3")
     main = Main(1)
     panel = PanelQ3(frame, main)
 

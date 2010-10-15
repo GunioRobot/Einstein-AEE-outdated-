@@ -2,46 +2,17 @@
 <ExportXMLDataController xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <ListOfInputXMLQProcessData>
     <ExportXMLData>
-      <NumberOfHEX>1</NumberOfHEX>
-      <TotalPowerOfHEX>349.17</TotalPowerOfHEX>
-      <EnergySavedViaHex>911325</EnergySavedViaHex>
-      <ListOfHeatExchangerSpecificData>
-        <ExportXMLDataForEachHexDatabaseSpecific>
-          <HXNo>0</HXNo>
-          <HxName>NewHX0</HxName>
-          <HXType>plate (PHE)</HXType>
-          <QdotHX>349.1666667</QdotHX>
-          <HXLMTD>10</HXLMTD>
-          <QHX>911325.000087</QHX>
-          <HXSource>Hot water</HXSource>
-          <HXTSourceInlet>50</HXTSourceInlet>
-          <HXTSourceOutlet>20</HXTSourceOutlet>
-          <HXhSourceInlet>0.058194444444444444</HXhSourceInlet>
-          <HXhSourceOutlet>0.023277777777237777</HXhSourceOutlet>
-          <HXSink>Hot water</HXSink>
-          <HXTSinkInlet>10</HXTSinkInlet>
-          <HXTSinkOutlet>40</HXTSinkOutlet>
-          <HXSource_FluidID>1</HXSource_FluidID>
-          <HXSink_FluidID>1</HXSink_FluidID>
-          <storage_size>0</storage_size>
-          <HEX_area>16.294444446</HEX_area>
-          <HEX_turnkeyprice>70115.931253732939</HEX_turnkeyprice>
-          <HX_OandMfix>5656.01845446779</HX_OandMfix>
-          <HX_OandMvar>0</HX_OandMvar>
-          <HperYear>2610</HperYear>
-          <StreamStatusSource>sst_liquid</StreamStatusSource>
-          <StreamStatusSink>sst_liquid</StreamStatusSink>
-          <StreamTypeSource>sensible</StreamTypeSource>
-          <StreamTypeSink>sensible</StreamTypeSink>
-        </ExportXMLDataForEachHexDatabaseSpecific>
-      </ListOfHeatExchangerSpecificData>
+      <NumberOfHEX>0</NumberOfHEX>
+      <TotalPowerOfHEX>0</TotalPowerOfHEX>
+      <EnergySavedViaHex>0</EnergySavedViaHex>
+      <ListOfHeatExchangerSpecificData />
       <ColdCompositeCurveValues>
         <PairOfDouble>
           <getSetFirst>233</getSetFirst>
           <getSetSecond>10</getSetSecond>
         </PairOfDouble>
         <PairOfDouble>
-          <getSetFirst>1047.7222222999999</getSetFirst>
+          <getSetFirst>1048.4301801800002</getSetFirst>
           <getSetSecond>80</getSetSecond>
         </PairOfDouble>
       </ColdCompositeCurveValues>
@@ -59,43 +30,51 @@
           <getSetSecond>58.22</getSetSecond>
         </PairOfDouble>
         <PairOfDouble>
-          <getSetFirst>581.9444445</getSetFirst>
-          <getSetSecond>550.674382188</getSetSecond>
+          <getSetFirst>758.71269735688952</getSetFirst>
+          <getSetSecond>407.783754888</getSetSecond>
         </PairOfDouble>
       </HotCompositeCurveValues>
       <GrandCompositeCurveValues>
         <PairOfDouble>
-          <getSetFirst>465.55555560000005</getSetFirst>
-          <getSetSecond>545.674382188</getSetSecond>
+          <getSetFirst>289.49526062311048</getSetFirst>
+          <getSetSecond>402.783754888</getSetSecond>
         </PairOfDouble>
         <PairOfDouble>
-          <getSetFirst>465.55555560000005</getSetFirst>
+          <getSetFirst>450.19292550511045</getSetFirst>
           <getSetSecond>85</getSetSecond>
         </PairOfDouble>
         <PairOfDouble>
-          <getSetFirst>95.671666676000029</getSetFirst>
+          <getSetFirst>96.058211678110467</getSetFirst>
           <getSetSecond>53.22</getSetSecond>
         </PairOfDouble>
         <PairOfDouble>
-          <getSetFirst>2.8421709430404007E-14</getSetFirst>
+          <getSetFirst>0.30341052011046088</getSetFirst>
           <getSetSecond>45</getSetSecond>
         </PairOfDouble>
         <PairOfDouble>
-          <getSetFirst>2.8421709430404007E-14</getSetFirst>
+          <getSetFirst>1.1046086267896271E-10</getSetFirst>
           <getSetSecond>15</getSetSecond>
         </PairOfDouble>
         <PairOfDouble>
-          <getSetFirst>232.77777780000002</getSetFirst>
+          <getSetFirst>232.77777780011044</getSetFirst>
           <getSetSecond>-5</getSetSecond>
         </PairOfDouble>
       </GrandCompositeCurveValues>
       <ListOfStreamInformation>
         <ExportStreamInformation>
           <OperatingHours>2600</OperatingHours>
-          <HeatLoad>465.5555556</HeatLoad>
-          <StartTemp>40</StartTemp>
+          <HeatLoad>815.43018018</HeatLoad>
+          <StartTemp>10</StartTemp>
           <EndTemp>80</EndTemp>
           <HotColdType>cold</HotColdType>
+          <HeatType>sensible</HeatType>
+        </ExportStreamInformation>
+        <ExportStreamInformation>
+          <OperatingHours>2600</OperatingHours>
+          <HeatLoad>349.1666667</HeatLoad>
+          <StartTemp>50</StartTemp>
+          <EndTemp>20</EndTemp>
+          <HotColdType>hot</HotColdType>
           <HeatType>sensible</HeatType>
         </ExportStreamInformation>
         <ExportStreamInformation>
@@ -108,8 +87,8 @@
         </ExportStreamInformation>
         <ExportStreamInformation>
           <OperatingHours>2600</OperatingHours>
-          <HeatLoad>0</HeatLoad>
-          <StartTemp>550.67</StartTemp>
+          <HeatLoad>176.768252857</HeatLoad>
+          <StartTemp>407.78</StartTemp>
           <EndTemp>58.22</EndTemp>
           <HotColdType>hot</HotColdType>
           <HeatType>sensible</HeatType>

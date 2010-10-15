@@ -65,6 +65,8 @@ from checkTotals import *
 from checkECO import *
 from connect import *
 
+global DEBUG
+
 def _U(text):
     return unicode(_(text),"utf-8")
 
@@ -347,8 +349,8 @@ class ModuleCC(object):
         self.QHXProc = CCRow("QHXProc",NK)      # incoming waste heat from heat recovery
         self.QWHProc = CCRow("QWHProc",NK)    # outgoing waste heat to be recovered
 
-#        for k in range(NK):
-#            self.ccProc.append(CheckProc(k))  # añade un objeto checkProc con todas las variables necesarias a la listac
+        for k in range(NK):
+            self.ccProc.append(CheckProc(k))  # añade un objeto checkProc con todas las variables necesarias a la listac
 
 
 #..............................................................................
@@ -579,13 +581,13 @@ class ModuleCC(object):
                     
                 conflict.setDataGroup("Process",k+1)
 
-#                self.ccProc[k].check()             # ejecuta la función check para proceso k
+                self.ccProc[k].check()             # ejecuta la función check para proceso k
 
-#                self.UPHProck[k].update(self.ccProc[k].UPHProc)      #obtain results
-#                self.UPHk[k].update(self.ccProc[k].UPH)      #obtain results
-#
-#                self.QHXProc[k].update(self.ccProc[k].QHXProc)
-#                self.QWHProc[k].update(self.ccProc[k].QWHProc)
+                self.UPHProck[k].update(self.ccProc[k].UPHProc)      #obtain results 
+                self.UPHk[k].update(self.ccProc[k].UPH)      #obtain results 
+
+                self.QHXProc[k].update(self.ccProc[k].QHXProc)
+                self.QWHProc[k].update(self.ccProc[k].QWHProc)
 
 #..............................................................................
 # check of heat exchangers
@@ -596,17 +598,17 @@ class ModuleCC(object):
                 print "===================================================="
 
             NH = self.NHX
-#
-#            for h in range(self.NHX):
-#                if DEBUG in ["ALL"]:
-#                    print ("checking HX no. %s"%h)
-#
-#                conflict.setDataGroup("HX",h+1)
-#
-#                self.ccHX[h].check()             # ejecuta la función check para proceso k
-#
-#                self.QHX[h].update(self.ccHX[h].QHX)      #obtain results
-#                self.QWH[h].update(self.ccHX[h].QWH)      #obtain results
+
+            for h in range(self.NHX):
+                if DEBUG in ["ALL"]:
+                    print ("checking HX no. %s"%h)
+                    
+                conflict.setDataGroup("HX",h+1)
+
+                self.ccHX[h].check()             # ejecuta la función check para proceso k
+
+                self.QHX[h].update(self.ccHX[h].QHX)      #obtain results 
+                self.QWH[h].update(self.ccHX[h].QWH)      #obtain results 
 
 #..............................................................................
 # check of whees
@@ -721,8 +723,8 @@ class ModuleCC(object):
                 for m in range(NM):
                     self.ccPipe[m].UPHProcm.update(self.UPHProcm[m])
 
-#                for k in range(NK):
-#                    self.ccProc[k].UPHProc.update(self.UPHProck[k])
+                for k in range(NK):
+                    self.ccProc[k].UPHProc.update(self.UPHProck[k])
 
 #..............................................................................
 # If any matrix conflict appears, break immediately.
@@ -740,11 +742,10 @@ class ModuleCC(object):
                     ndaymax = 0
                     hopmin = self.ccPipe[m].HPerYearPipe.valMin
                     for k in range(NK):
-                        pass
-#                        if Status.UPHLink[k][m] == 1:
-#                            hopmin = max(self.ccProc[k].HPerYearProc.valMin, hopmin)
-#                            ndaymax = max(self.ccProc[k].NDaysProc.valMax,ndaymax)
-#                            hopdaymax += self.ccProc[k].HPerDayProc.valMax
+                        if Status.UPHLink[k][m] == 1:
+                            hopmin = max(self.ccProc[k].HPerYearProc.valMin, hopmin)
+                            ndaymax = max(self.ccProc[k].NDaysProc.valMax,ndaymax)
+                            hopdaymax += self.ccProc[k].HPerDayProc.valMax
                             
                     hopdaymax = min(24.0,hopdaymax)
                     ndaymax = min(365.,ndaymax)
@@ -793,10 +794,10 @@ class ModuleCC(object):
                     self.ccPipe[m].QHXPipe.update(self.QHXPipe[m])
                     self.ccPipe[m].QWHPipe.update(self.QWHPipe[m]) #to be changed in QWHPipeRec if necessary
 
-#                for k in range(NK):
-#
-#                    self.ccProc[k].QHXProc.update(self.QHXProc[k])
-#                    self.ccProc[k].QWHProc.update(self.QWHProc[k])
+                for k in range(NK):
+                    
+                    self.ccProc[k].QHXProc.update(self.QHXProc[k])
+                    self.ccProc[k].QWHProc.update(self.QWHProc[k])
 
                 for n in range(NN):
                     self.ccWHEE[n].QWHEEYear.update(self.QWHEE[n])
@@ -849,13 +850,13 @@ class ModuleCC(object):
             self.ccEq[j].screen()
         for k in range(NK):       
             screen.setDataGroup("Proc.",k+1)
-#            self.ccProc[k].screen()
+            self.ccProc[k].screen()
         for m in range(NM):      
             screen.setDataGroup("Pipe",m+1)
             self.ccPipe[m].screen()
-#        for h in range(NH):
-#            screen.setDataGroup("HX",h+1)
-#            self.ccHX[h].screen()
+        for h in range(NH):       
+            screen.setDataGroup("HX",h+1)
+            self.ccHX[h].screen()       
         for n in range(NN):       
             screen.setDataGroup("WHEE",n+1)
             self.ccWHEE[n].screen()
@@ -881,8 +882,8 @@ class ModuleCC(object):
             self.ccFET[i].exportData()
         for j in range(NJ):       
             self.ccEq[j].exportData()
-#        for k in range(NK):
-#            self.ccProc[k].exportData()
+        for k in range(NK):       
+            self.ccProc[k].exportData()
         for m in range(NM):
 #            print "ModuleCC (basicCheck): exporting pipe %s data"%(m+1)
             self.ccPipe[m].exportData()
@@ -920,7 +921,7 @@ class ModuleCC(object):
         NK = self.NThProc
         for k in range(NK):       
             screen.setDataGroup("Proc.",k+1)
-#            self.ccProc[k].estimate()
+            self.ccProc[k].estimate()
 
         NM = self.NPipeDuct
         for m in range(NM):      
@@ -963,7 +964,7 @@ class ModuleCC(object):
 
         procList = []
         for k in range(NK):
-#            UPH[k] = self.ccProc[k].UPH
+            UPH[k] = self.ccProc[k].UPH
 
             if UPH[k].sqerr < MAX_SQERR:
                 UPH_Ok += UPH[k].val
@@ -1007,7 +1008,7 @@ class ModuleCC(object):
                (UPHMax_Sum > 0.4*UPHTotal.val):
                 mainProcess = True
 
-#            self.ccProc[k].definePriority(mainProcess)
+            self.ccProc[k].definePriority(mainProcess)
             
 #------------------------------------------------------------------------------
 #==============================================================================

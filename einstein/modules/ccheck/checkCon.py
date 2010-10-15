@@ -39,24 +39,22 @@
 #	Software Foundation (www.gnu.org).
 #
 #============================================================================== 				
+from ccheckFunctions import *
 
+global DEBUG
 MAXBALANCEERROR = 1.e-3
 NMAXITERATIONS = 1
 INFINITE = 1.e99    # numerical value assigned to "infinite"
 
-from math import *
-from ccheckFunctions import *
-from numpy import *
-
 #------------------------------------------------------------------------------
-def CCMatrix(name,ncol,nrow):
+def CCMatrix(name, ncol, nrow):
 #------------------------------------------------------------------------------
 #   Builds up matrix
 #------------------------------------------------------------------------------
 
     matrix = []
     for j in range(nrow):
-        matrix.append(CCRow(name+"["+str(j)+"]",ncol))
+        matrix.append(CCRow(name + "[" + str(j) + "]", ncol))
     return matrix
 
 
@@ -67,7 +65,7 @@ class CheckCon():
 #------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
-    def __init__(self,name,colTotals,rowTotals,linkMatrix,ambient=False):     #function that is called at the beginning when object is created
+    def __init__(self, name, colTotals, rowTotals, linkMatrix, ambient=False):     #function that is called at the beginning when object is created
 #------------------------------------------------------------------------------
 #   init function is only called once at the beginning (every time that base
 #   actions that should be carried out in each iteration -> initCheck()
@@ -83,14 +81,14 @@ class CheckCon():
         self.colTotals = colTotals
         self.rowTotals = rowTotals
         
-        self.M = CCMatrix(name+"(M)",ncol,nrow)
+        self.M = CCMatrix(name + "(M)", ncol, nrow)
         self.FCol = linkMatrix
 
-        self.MAmb = CCRow(name+"(MAmb)",nrow)   #Energy dissipated to ambient
-        self.MAmb1 = CCRow(name+"(MAmb1)",nrow)
+        self.MAmb = CCRow(name + "(MAmb)", nrow)   #Energy dissipated to ambient
+        self.MAmb1 = CCRow(name + "(MAmb1)", nrow)
 
-        self.MRec = CCRow(name+"(MRec)",nrow)   #Energy used (recovered)
-        self.MRec1 = CCRow(name+"(MRec1)",nrow)
+        self.MRec = CCRow(name + "(MRec)", nrow)   #Energy used (recovered)
+        self.MRec1 = CCRow(name + "(MRec1)", nrow)
 
 #..............................................................................
 #   Initialises the distribution matrix:
@@ -107,7 +105,7 @@ class CheckCon():
                 colSum += linkMatrix[n][m]
 
             if colSum > 1:
-                print "CheckCon (__init__): ERROR in linkMatrix, column %s"%m
+                print "CheckCon (__init__): ERROR in linkMatrix, column %s" % m
 
 #..............................................................................
 # now assign zeros where the linkMatrix is zero
@@ -138,19 +136,20 @@ class CheckCon():
             if self.ambient == False:
                 self.MAmb[n].setValue(0.0)
 
-            self.MRec1[n] = calcRowSum("calcMRow",self.M[n],self.ncol)
-            Sum = calcSum("MRowAmb",self.MRec[n],self.MAmb[n])
+            self.MRec1[n] = calcRowSum("calcMRow", self.M[n])
+            Sum = calcSum("MRowAmb", self.MRec[n], self.MAmb[n])
 
-            ccheck1(self.MRec[n],self.MRec1[n])
-            ccheck1(Sum,self.rowTotals[n])
 
-            adjustSum(Sum,self.MRec1[n],self.MAmb[n])
+            ccheck1(self.MRec[n], self.MRec1[n])
+            ccheck1(Sum, self.rowTotals[n])
 
-            ccheck1(self.MAmb[n],self.MAmb1[n])
-            ccheck1(self.MRec[n],self.MRec1[n])
+            adjustSum(Sum, self.MRec1[n], self.MAmb[n])
+
+            ccheck1(self.MAmb[n], self.MAmb1[n])
+            ccheck1(self.MRec[n], self.MRec1[n])
                 
             if not (self.MRec[n].val == None):              
-                diff += adjRowSum("adjMRow",self.MRec[n],self.M[n],self.ncol)
+                diff += adjRowSum(self.MRec[n], self.M[n], self.ncol)
         return diff
 
 #------------------------------------------------------------------------------
@@ -162,7 +161,7 @@ class CheckCon():
         for m in range(self.ncol):                
             for n in range(self.nrow):
                 if self.FCol[n][m] == 1:
-                    ccheck1(self.M[n][m],self.colTotals[m])                
+                    ccheck1(self.M[n][m], self.colTotals[m])                
 
 #------------------------------------------------------------------------------
     def check(self):
@@ -175,7 +174,7 @@ class CheckCon():
         improvement = INFINITE
         improvementCtr = 0
 
-        if DEBUG in ["ALL","MAIN","BASIC"]:
+        if DEBUG in ["ALL", "MAIN", "BASIC"]:
             print "======================================================"
             print " starting values of connection matrix M"
             print "======================================================"
@@ -212,13 +211,13 @@ class CheckCon():
 
             improvement -= diff
 
-            if DEBUG in ["ALL","MAIN"]:
+            if DEBUG in ["ALL", "MAIN"]:
                 print "======================================================"
-                print "CheckCon (check): diff[%s] = "%i,diff
+                print "CheckCon (check): diff[%s] = " % i, diff
                 print "======================================================"
-                print "improvement [%s]: "%improvementCtr,improvement," diff: ",diff
+                print "improvement [%s]: " % improvementCtr, improvement, " diff: ", diff
 
-            if (diff < MAXBALANCEERROR or improvement < 0.1*MAXBALANCEERROR):
+            if (diff < MAXBALANCEERROR or improvement < 0.1 * MAXBALANCEERROR):
                 improvementCtr += 1
             else:
                 improvementCtr = 0
@@ -227,11 +226,11 @@ class CheckCon():
             if improvementCtr == 10:
                 break
 
-        if DEBUG in ["ALL","MAIN","BASIC"]:
+        if DEBUG in ["ALL", "MAIN", "BASIC"]:
             print "======================================================"
             print "CheckCon concluded ==================================="
             print "======================================================"
-            print "last adjustment difference: ",diff
+            print "last adjustment difference: ", diff
             print "======================================================"
             self.printM()
             
@@ -240,13 +239,13 @@ class CheckCon():
         print "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM"
         for i in range(self.nrow):
             for j in range(self.ncol):
-                print i,j,self.M[i][j].val,self.M[i][j].sqerr
+                print i, j, self.M[i][j].val, self.M[i][j].sqerr
         print "colTotals"
         for j in range(self.ncol):
-            print j,self.colTotals[j].val,self.colTotals[j].sqerr
+            print j, self.colTotals[j].val, self.colTotals[j].sqerr
         print "rowTotals"
         for i in range(self.nrow):
-            print i,self.rowTotals[i].val,self.rowTotals[i].sqerr
+            print i, self.rowTotals[i].val, self.rowTotals[i].sqerr
         print "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM"
         
 #------------------------------------------------------------------------------

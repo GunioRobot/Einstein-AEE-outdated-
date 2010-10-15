@@ -42,9 +42,7 @@ import wx
 from einstein.modules.constants import *    #not needed here, but in the Panels !!!
 from einstein.modules.messageLogger import *
 
-#..............................................................................
 # color set-up for grids and static boxes
-
 ORANGE = '#FF6000'
 SOFTORANGE = '#FFA066'
 WHITE = '#FFFFFF'
@@ -114,15 +112,16 @@ def setChoice(choice,strChoice):
 #------------------------------------------------------------------------------		
     try:choice.SetSelection(choice.FindString(strChoice))
     except:choice.SetSelection(-1)
-#------------------------------------------------------------------------------		
-#------------------------------------------------------------------------------
+
 def check(value):
-#------------------------------------------------------------------------------
-#   auxiliary function. substitutes ""'s and None's by 'NULL'
-#   (should be moved some day to a separate file with sql-tools ...)
-#------------------------------------------------------------------------------
-    if value <> "" and value <> "None" and value is not None:
-        if isinstance(value,str) or isinstance(value,unicode):
+    """
+    Substitute ""'s and None's by 'NULL'
+
+    (should be moved some day to a separate file with sql-tools ...)
+
+    """
+    if value != "" and value != "None" and value is not None:
+        if isinstance(value, str) or isinstance(value, unicode):
             logDebug("GuiTools (check): string or unicode instance detected: %r"%value)
             return value.encode("utf-8")
         else:

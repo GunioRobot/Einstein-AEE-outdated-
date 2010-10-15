@@ -50,8 +50,10 @@ from numCtrl import *
 
 from status import Status
 from einstein.modules.energyStats.moduleEA3 import *
+from displayClasses import ChoiceEntry
 import einstein.modules.matPanel as Mp
 from GUITools import *
+from matplotlib.pyplot import plotting
 
 [wxID_PANELEA3, wxID_PANELEA3GRID1, wxID_PANELEA3GRID2, 
  wxID_PANELEA3PANELGRAPHFET, wxID_PANELEA3STATICTEXT1, 
@@ -70,6 +72,7 @@ LIGHTGREEN = '#F0FFFF'
 
 GRID_LETTER_SIZE = 8 #points
 GRID_LABEL_SIZE = 9  # points
+MINROWS = 10 # minmal count of rows
 GRID_LETTER_COLOR = DARKGREY     # specified as hex #RRGGBB
 GRID_BACKGROUND_COLOR = LIGHTGREY # idem
 GRAPH_BACKGROUND_COLOR = WHITE # idem
@@ -83,9 +86,10 @@ def _U(text):
 class PanelEA3(wx.Panel):
     def __init__(self, parent):
         self._init_ctrls(parent)
-        keys = ['EA3_FET', 'EA3_USH'] 
-        self.mod = ModuleEA3(keys)
-        labels_column = 0
+        self._keys = ['EA3_FET', 'EA3_USH'] 
+        self._showHeating = True
+        self.mod = ModuleEA3(self._keys, self._showHeating)
+        self._labels_column = 0
         # remaps drawing methods to the wx widgets.
         #
         # upper graph: FET by equipment
@@ -97,12 +101,12 @@ class PanelEA3(wx.Panel):
 ##            print "PanelEA3: crash during initialisation avoided -> check this"
 ##            rows = 1 #xxx dummy for avoiding crash
 ##            cols = MAXCOLS #xxx dummy for avoiding crash
-        (rows,cols) = Interfaces.GData[keys[0]].shape
+        (rows,cols) = Interfaces.GData[self._keys[0]].shape
         ignoredrows = [rows-1]
 
-        paramList={'labels'      : labels_column,          # labels column
+        paramList={'labels'      : self._labels_column,          # labels column
                    'data'        : 3,                      # data column for this graph
-                   'key'         : keys[0],                # key for Interface
+                   'key'         : self._keys[0],                # key for Interface
                    'title'       : _U('FET by equipment'),     # title of the graph
                    'backcolor'   : GRAPH_BACKGROUND_COLOR, # graph background color
                    'ignoredrows' : ignoredrows}            # rows that should not be plotted
@@ -111,43 +115,14 @@ class PanelEA3(wx.Panel):
                             wx.Panel,
                             drawPiePlot,
                             paramList)
-        #
-        # lower graph: USH by equipment
-        #
-#SD2008-07-06
-##        try:
-##            (rows,cols) = Interfaces.GData[keys[1]].shape
-##        except:
-##            print "PanelEA3: crash during initialisation avoided -> check this"
-##            rows = 1 #xxx dummy for avoiding crash
-##            cols = MAXCOLS #xxx dummy for avoiding crash
-        (rows,cols) = Interfaces.GData[keys[1]].shape   
-        ignoredrows = [rows-1]
-
-        paramList={'labels'      : labels_column,          # labels column
-                   'data'        : 2,                      # data column for this graph
-                   'key'         : keys[1],                # key for Interface
-                   'title'       : _U('USH by equipment'),     # title of the graph
-                   'backcolor'   : GRAPH_BACKGROUND_COLOR, # graph background color
-                   'ignoredrows' : ignoredrows}            # rows that should not be plotted
-
-        dummy = Mp.MatPanel(self.panelGraphUSH,
-                            wx.Panel,
-                            drawPiePlot,
-                            paramList)
-
-        #
         # additional widgets setup
-        #
         # data cell attributes
         attr = wx.grid.GridCellAttr()
         attr.SetTextColour(GRID_LETTER_COLOR)
         attr.SetBackgroundColour(GRID_BACKGROUND_COLOR)
         attr.SetFont(wx.Font(GRID_LETTER_SIZE, wx.SWISS, wx.NORMAL, wx.BOLD))
-        #
         # set upper grid
-        #
-        data = Interfaces.GData[keys[0]]
+        data = Interfaces.GData[self._keys[0]]
 
 #####Security feature against non existing GData entry
         COLNO1 = 4 #grid has usually a fixed column size, not necessary to read from GData        
@@ -168,7 +143,7 @@ class PanelEA3(wx.Panel):
         #
         # set upper grid
         #
-        self.grid1.CreateGrid(max(rows,10), COLNO1)
+        self.grid1.CreateGrid(max(rows, MINROWS), COLNO1)
 
         self.grid1.EnableGridLines(True)
         self.grid1.SetDefaultRowSize(20)
@@ -204,7 +179,7 @@ class PanelEA3(wx.Panel):
                     else:
                         self.grid1.SetCellValue(r, c, data[r][c])
                 except: pass
-                if c == labels_column:
+                if c == self._labels_column:
                     self.grid1.SetCellAlignment(r, c, wx.ALIGN_LEFT, wx.ALIGN_CENTRE);
                 elif c == 1:
                     self.grid1.SetCellAlignment(r, c, wx.ALIGN_LEFT, wx.ALIGN_CENTRE);                
@@ -212,59 +187,7 @@ class PanelEA3(wx.Panel):
                     self.grid1.SetCellAlignment(r, c, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE);
 
         self.grid1.SetGridCursor(0, 0)
-        #
-        # set lower grid
-        #
-        data = Interfaces.GData[keys[1]]
-
-#####Security feature against non existing GData entry
-        COLNO1 = 4 #grid has usually a fixed column size, not necessary to read from GData        
-        try: (rows,cols) = data.shape
-        except: (rows,cols) = (0,COLNO1)
-
-        self.grid2.CreateGrid(max(rows,10), COLNO1)
-
-        self.grid2.EnableGridLines(True)
-        self.grid2.SetDefaultRowSize(20)
-        self.grid2.SetRowLabelSize(30)
-
-        self.grid2.SetColSize(0,125)
-        self.grid2.SetColSize(1,85)
-        self.grid2.SetColSize(2,70)
-        self.grid2.SetColSize(3,110)
         
-        self.grid2.EnableEditing(False)
-        self.grid2.SetLabelFont(wx.Font(9, wx.ROMAN, wx.ITALIC, wx.BOLD))
-        self.grid2.SetColLabelValue(0, _U("Equipment"))
-        self.grid2.SetColLabelValue(1, _U("MWh"))
-        self.grid2.SetColLabelValue(2, _U("%"))
-        self.grid2.SetColLabelValue(3, _U(" "))
-        #
-        # copy values from dictionary to grid
-        #
-
-#SD2008-06-30
-        decimals = [-1,0,1,-1]   #number of decimal digits for each colum
-        for r in range(rows):
-            if r < rows-1:
-                self.grid2.SetRowAttr(r, attr)
-            else:
-                self.grid2.SetRowAttr(r,attr2)  #highlight totals row
-            for c in range(cols):
-                try:
-                    if decimals[c] >= 0: # -1 indicates text
-                        self.grid2.SetCellValue(r, c, \
-                            convertDoubleToString(float(data[r][c]),nDecimals = decimals[c]))
-                    else:
-                        self.grid2.SetCellValue(r, c, data[r][c])
-                except: pass
-                if c == labels_column:
-                    self.grid2.SetCellAlignment(r, c, wx.ALIGN_LEFT, wx.ALIGN_CENTRE);
-                else:
-                    self.grid2.SetCellAlignment(r, c, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE);
-
-
-        self.grid2.SetGridCursor(0, 0)
 
     def _init_ctrls(self, prnt):
 
@@ -291,22 +214,21 @@ class PanelEA3(wx.Panel):
 
 #..............................................................................
 #   box 2
-
-        self.box2 = wx.StaticBox(self, -1, _U('Useful supply heat (USH) by equipment'),
-                                 pos = (10,290),size=(780,260))
+        
+        self.box2 = wx.StaticBox(self, -1, unicode(""),
+                                 pos = (10,285),size=(780,265))
         self.box2.SetForegroundColour(TITLE_COLOR)
         self.box2.SetFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.BOLD))
+        sizer1 = wx.BoxSizer(wx.VERTICAL)
+        self.sizer2 = wx.BoxSizer(wx.HORIZONTAL)
+        self.hcModeChooser = ChoiceEntry(self, values=HEATING_COOLING,
+                                         value=_U('heating'), label=_U('heating/cooling'),
+                                         tip=_U('Show only heating or cooling processes.'))
+        self.hcModeChooser.Bind(wx.EVT_CHOICE, self.OnModeChooser)
+        sizer1.Add(self.hcModeChooser, flag=wx.ALIGN_RIGHT | wx.RIGHT, border=2)
+        sizer1.Add(self.sizer2)
+        sizer1.SetDimension(x=20, y=305, width=740, height=230)
         
-        self.grid2 = wx.grid.Grid(id=wxID_PANELEA3GRID2, name='grid2',
-              parent=self, pos=wx.Point(20, 320), size=wx.Size(440, 220),
-              style=0)
-
-
-        self.panelGraphUSH = wx.Panel(id=wxID_PANELEA3PANELGRAPHUSH,
-              name=u'panelGraphUSH', parent=self, pos=wx.Point(480, 320),
-              size=wx.Size(300, 220), style=wx.TAB_TRAVERSAL|wx.SUNKEN_BORDER)
-        self.panelGraphUSH.SetBackgroundColour(wx.Colour(127, 127, 127))
-
 #..............................................................................
 #   default buttons
 #..............................................................................
@@ -338,23 +260,108 @@ class PanelEA3(wx.Panel):
     def OnBtnBackButton(self, event):
         self.Hide()
         Status.main.tree.SelectItem(Status.main.qEA2, select=True)
-        print "Button exitModuleBack: now I should show another window"
 
     def OnBtnForwardButton(self, event):
         self.Hide()
         Status.main.tree.SelectItem(Status.main.qEA4a, select=True)
-        print "Button exitModuleFwd: now I should show another window"
 
+    def OnModeChooser(self, event):
+        if event.GetClientData().GetStringSelection() == _('heating'):
+            self._showHeating = True
+        else:
+            self._showHeating = False
+        self.mod.updatePanel(self._showHeating)
+        self.display()
 
 #------------------------------------------------------------------------------	
     def display(self):
-#------------------------------------------------------------------------------		
-#   display function. carries out all the necessary calculations before
-#   showing the panel
-#------------------------------------------------------------------------------	
-#####Security feature against any strange thing in graphs
+        """Update the representation in the panel."""
+        (rows,cols) = Interfaces.GData[self._keys[1]].shape   
+        # set lower grid
+        data = Interfaces.GData[self._keys[1]]
+        #Security feature against non existing GData entry
+        COLNO1 = 4 #grid has usually a fixed column size, not necessary to read from GData        
+        try: (rows,cols) = data.shape
+        except: (rows,cols) = (0,COLNO1)
+        # Basic setup for bottom grid, is done dynamically. 
+        self.sizer2.Clear(deleteWindows=True)
+        self.grid2 = wx.grid.Grid(id=wxID_PANELEA3GRID2, name='grid2',
+              parent=self, size=wx.Size(440, 200), style=0)
+        self.panelGraphUSH = wx.Panel(id=wxID_PANELEA3PANELGRAPHUSH,
+              name=u'panelGraphUSH', parent=self, size=wx.Size(280, 210),
+              style=wx.TAB_TRAVERSAL|wx.SUNKEN_BORDER)
+        self.panelGraphUSH.SetBackgroundColour(wx.Colour(127, 127, 127))
+        self.sizer2.Add(self.grid2)
+        self.sizer2.AddSpacer(20)
+        self.sizer2.Add(self.panelGraphUSH)
+        self.sizer2.Layout()
+        
+        self.grid2.CreateGrid(max(rows, MINROWS), COLNO1)
+        self.grid2.EnableGridLines(True)
+        self.grid2.SetDefaultRowSize(20)
+        self.grid2.SetRowLabelSize(30)
+        self.grid2.SetColSize(0,125)
+        self.grid2.SetColSize(1,85)
+        self.grid2.SetColSize(2,70)
+        self.grid2.SetColSize(3,110)
+        self.grid2.EnableEditing(False)
+        self.grid2.SetLabelFont(wx.Font(9, wx.ROMAN, wx.ITALIC, wx.BOLD))
+        self.grid2.SetColLabelValue(0, _U("Equipment"))
+        self.grid2.SetColLabelValue(1, _U("MWh"))
+        self.grid2.SetColLabelValue(2, _U("%"))
+        self.grid2.SetColLabelValue(3, _U(" "))
+        # data cell attributes
+        attr = wx.grid.GridCellAttr()
+        attr.SetTextColour(GRID_LETTER_COLOR)
+        attr.SetBackgroundColour(GRID_BACKGROUND_COLOR)
+        attr.SetFont(wx.Font(GRID_LETTER_SIZE, wx.SWISS, wx.NORMAL, wx.NORMAL))
+        attr2 = wx.grid.GridCellAttr()
+        attr2.SetTextColour(GRID_LETTER_COLOR_HIGHLIGHT)
+        attr2.SetBackgroundColour(GRID_BACKGROUND_COLOR_HIGHLIGHT)
+        attr2.SetFont(wx.Font(GRID_LETTER_SIZE, wx.SWISS, wx.NORMAL, wx.BOLD))
+        # copy values from dictionary to grid
+        decimals = [-1,0,1,-1]   #number of decimal digits for each column
+        for r in range(rows):
+            if r < rows-1:
+                self.grid2.SetRowAttr(r, attr)
+            else:
+                self.grid2.SetRowAttr(r,attr2)  #highlight totals row
+            for c in range(cols):
+                try:
+                    if decimals[c] >= 0: # -1 indicates text
+                        self.grid2.SetCellValue(r, c, \
+                            convertDoubleToString(float(data[r][c]),nDecimals = decimals[c]))
+                    else:
+                        self.grid2.SetCellValue(r, c, data[r][c])
+                except: pass
+                if c == self._labels_column:
+                    self.grid2.SetCellAlignment(r, c, wx.ALIGN_LEFT, wx.ALIGN_CENTRE);
+                else:
+                    self.grid2.SetCellAlignment(r, c, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE);
+        self.grid2.SetGridCursor(0, 0)
+        
+        ignoredrows = [rows-1]
+        if self._showHeating:
+            self.box2.SetLabel(_U('Useful supply heat (USH) by equipment'))
+            plottitle = _U('USH by equipment')
+        else:
+            self.box2.SetLabel(_U('Useful cooling supply (USC) by equipment'))
+            plottitle = _U('USC by equipment')
+        paramList={'labels'      : self._labels_column,     # labels column
+                   'data'        : 2,                       # data column for this graph
+                   'key'         : self._keys[1],           # key for Interface
+                   'title'       : plottitle,               # title of the graph
+                   'backcolor'   : GRAPH_BACKGROUND_COLOR,  # graph background color
+                   'ignoredrows' : ignoredrows}             # rows that should not be plotted
+        Mp.MatPanel(self.panelGraphUSH, wx.Panel, drawPiePlot, paramList)
         try: self.panelGraphFET.draw()
-        except: pass
+        except Exception, e:
+            logError("panelEA3.display() FET.draw: " + str(e))
+            pass
         try: self.panelGraphUSH.draw()
-        except: pass
+        except Exception, e:
+            logError("panelEA3.display() USH.draw: " + str(e))
+            pass
+        
+        self.Refresh()
         self.Show()

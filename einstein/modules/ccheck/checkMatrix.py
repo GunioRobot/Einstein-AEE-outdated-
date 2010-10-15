@@ -46,18 +46,19 @@ INFINITE = 1.e99    # numerical value assigned to "infinite"
 
 from math import *
 from ccheckFunctions import *
-from numpy import *
+import numpy as np
 import copy
+global DEBUG
 
 #------------------------------------------------------------------------------
-def CCMatrix(name,ncol,nrow):
+def CCMatrix(name, ncol, nrow):
 #------------------------------------------------------------------------------
 #   Builds up matrix
 #------------------------------------------------------------------------------
 
     matrix = []
     for j in range(nrow):
-        matrix.append(CCRow(name+"["+str(j+1)+"]",ncol))
+        matrix.append(CCRow(name + "[" + str(j + 1) + "]", ncol))
     return matrix
 
 
@@ -68,7 +69,7 @@ class CheckMatrix():
 #------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
-    def __init__(self,name,colTotals,rowTotals,linkMatrix):     #function that is called at the beginning when object is created
+    def __init__(self, name, colTotals, rowTotals, linkMatrix):     #function that is called at the beginning when object is created
 #------------------------------------------------------------------------------
 #   init function is only called once at the beginning (every time that base
 #   actions that should be carried out in each iteration -> initCheck()
@@ -83,16 +84,16 @@ class CheckMatrix():
         self.colTotals = colTotals
         self.rowTotals = rowTotals
         
-        self.M = CCMatrix(name,ncol,nrow)
-        self.FCol = CCMatrix(name,ncol,nrow)
-        self.FRow = CCMatrix(name,ncol,nrow)
+        self.M = CCMatrix(name, ncol, nrow)
+        self.FCol = CCMatrix(name, ncol, nrow)
+        self.FRow = CCMatrix(name, ncol, nrow)
         self.initF(linkMatrix)
 
         self.name = name
 
         
 #------------------------------------------------------------------------------
-    def initF(self,linkMatrix):
+    def initF(self, linkMatrix):
 #------------------------------------------------------------------------------
 #   Initialises the FRow and FCol matrix with the basic link matrix:
 #   0: no connection between source n and sink m
@@ -119,7 +120,7 @@ class CheckMatrix():
 
         for m in range(self.ncol):
             for n in range(self.nrow):
-                if linkMatrix[n][m] == 0 and rowSum[n]>0:
+                if linkMatrix[n][m] == 0 and rowSum[n] > 0:
                     self.FRow[n][m].val = 0
                     self.FRow[n][m].valMin = 0
                     self.FRow[n][m].valMax = 0
@@ -130,7 +131,7 @@ class CheckMatrix():
                     self.FRow[n][m].valMax = 1
                     self.FRow[n][m].sqerr = INFINITE
 
-                if linkMatrix[n][m] == 0 and colSum[m]>0:
+                if linkMatrix[n][m] == 0 and colSum[m] > 0:
                     self.FCol[n][m].val = 0
                     self.FCol[n][m].valMin = 0
                     self.FCol[n][m].valMax = 0
@@ -160,7 +161,7 @@ class CheckMatrix():
         
         diff = 0
         for n in range(self.nrow):
-            diff += adjRowSum(self.name+"-Matrix",CCOne(),self.FRow[n],self.ncol)
+            diff += adjRowSum(CCOne(), self.FRow[n], self.ncol)
         return diff
 
 #------------------------------------------------------------------------------
@@ -170,11 +171,11 @@ class CheckMatrix():
 #------------------------------------------------------------------------------
         diff = 0
         for m in range(self.ncol):
-            col = CCRow(self.name+"-Matrix",self.nrow) #???
+            col = CCRow(self.name + "-Matrix", self.nrow) #???
             for n in range(self.nrow):
                 col[n] = self.FCol[n][m]
                 
-            diff += adjRowSum(self.name+"-Matrix",CCOne(),col,self.nrow)
+            diff += adjRowSum(CCOne(), col, self.nrow)
 
             for n in range(self.nrow):
                 self.FCol[n][m].update(col[n])
@@ -189,10 +190,11 @@ class CheckMatrix():
         
         diff = 0
         for n in range(self.nrow):
-            Sum = calcRowSum(self.name+"-Matrix",self.M[n],self.ncol)
-            ccheck1(self.rowTotals[n],Sum)
+            Sum = calcRowSum(self.name + "-Matrix", self.M[n])
+
+            ccheck1(self.rowTotals[n], Sum)
             if not (Sum.val == None):              
-                diff += adjRowSum(self.name+"-Matrix",Sum,self.M[n],self.ncol)
+                diff += adjRowSum(Sum, self.M[n], self.ncol)
         return diff
 
 #------------------------------------------------------------------------------
@@ -204,14 +206,14 @@ class CheckMatrix():
 
         diff = 0
         for m in range(self.ncol):
-            col = CCRow(self.name+"-Matrix",self.nrow) #???
+            col = CCRow(self.name + "-Matrix", self.nrow) #???
             for n in range(self.nrow):
                 col[n] = self.M[n][m]
-            Sum = calcRowSum(self.name+"-Matrix",col,self.nrow)
-            ccheck1(self.colTotals[m],Sum)
+            Sum = calcRowSum(self.name + "-Matrix", col)
+            ccheck1(self.colTotals[m], Sum)
 
             if not (self.colTotals[m] == None):
-                diff += adjRowSum(self.name+"-Matrix",Sum,col,self.nrow)
+                diff += adjRowSum(Sum, col, self.nrow)
 
             for n in range(self.nrow):
                 self.M[n][m].update(col[n])
@@ -224,17 +226,17 @@ class CheckMatrix():
 # (1) Mij = FRowij * xi
 # (2) Mij = FColij * yj
 #------------------------------------------------------------------------------
-        MColTotals = CCMatrix(self.name,self.ncol,self.nrow)
-        MRowTotals = CCMatrix(self.name,self.ncol,self.nrow)
+        MColTotals = CCMatrix(self.name, self.ncol, self.nrow)
+        MRowTotals = CCMatrix(self.name, self.ncol, self.nrow)
         Mean = CCPar(self.name)
-        col = CCRow("[col]",self.nrow)
+        col = CCRow("[col]", self.nrow)
         
         for n in range(self.nrow):
             for m in range(self.ncol):                
-                MCol = calcProd(self.name+"[%s][%s]"%((m+1),(n+1)),self.FCol[n][m],self.colTotals[m])
-                MRow = calcProd(self.name+"[%s][%s]"%((m+1),(n+1)),self.FRow[n][m],self.rowTotals[n])
+                MCol = calcProd(self.name + "[%s][%s]" % ((m + 1), (n + 1)), self.FCol[n][m], self.colTotals[m])
+                MRow = calcProd(self.name + "[%s][%s]" % ((m + 1), (n + 1)), self.FRow[n][m], self.rowTotals[n])
 
-                ccheck2(MCol,MRow,self.M[n][m])
+                ccheck2(MCol, MRow, self.M[n][m])
 
                 MColTotals[n][m].update(self.colTotals[m])
                 MRowTotals[n][m].update(self.rowTotals[n])
@@ -242,41 +244,41 @@ class CheckMatrix():
                 FRow = self.FRow[n][m]
                 FCol = self.FCol[n][m]
                 
-                adjustProd(MRow,FRow,MRowTotals[n][m])
-                adjustProd(MCol,FCol,MColTotals[n][m])
+                adjustProd(MRow, FRow, MRowTotals[n][m])
+                adjustProd(MCol, FCol, MColTotals[n][m])
 
-                ccheck1(FRow,self.FRow[n][m])
-                ccheck1(FCol,self.FCol[n][m])
+                ccheck1(FRow, self.FRow[n][m])
+                ccheck1(FCol, self.FCol[n][m])
 
 # get mean values of MRowTotals
 
         for n in range(self.nrow):
-            Mean = meanOfRow(MRowTotals[n],self.ncol)
-            ccheck1(self.rowTotals[n],Mean)
+            Mean = meanOfRow(MRowTotals[n], self.ncol)
+            ccheck1(self.rowTotals[n], Mean)
 
         for m in range(self.ncol):
             for n in range(self.nrow):
-                col[n]=MColTotals[n][m]
-            Mean = meanOfRow(col,self.nrow)
-            ccheck1(self.colTotals[m],Mean)
+                col[n] = MColTotals[n][m]
+            Mean = meanOfRow(col, self.nrow)
+            ccheck1(self.colTotals[m], Mean)
         
 # finally calculate the total of totals ...
 
-        TotTot1 = calcRowSum(self.name,self.rowTotals,self.nrow)
-        TotTot2 = calcRowSum(self.name,self.colTotals,self.ncol)
+        TotTot1 = calcRowSum(self.name, self.rowTotals)
+        TotTot2 = calcRowSum(self.name, self.colTotals)
         
-        ccheck1(TotTot1,TotTot2)
+        ccheck1(TotTot1, TotTot2)
         rT = copy.deepcopy(self.rowTotals)
         cT = copy.deepcopy(self.colTotals)
         
-        adjRowSum(self.name,TotTot1,rT,self.nrow)
-        adjRowSum(self.name,TotTot2,cT,self.ncol)
+        adjRowSum(TotTot1, rT, self.nrow)
+        adjRowSum(TotTot2, cT, self.ncol)
 
         for n in range(self.nrow):
-            ccheck1(self.rowTotals[n],rT[n])
+            ccheck1(self.rowTotals[n], rT[n])
 
         for m in range(self.ncol):
-            ccheck1(self.colTotals[m],cT[m])
+            ccheck1(self.colTotals[m], cT[m])
         
 
 #------------------------------------------------------------------------------
@@ -290,9 +292,9 @@ class CheckMatrix():
         improvement = INFINITE
         improvementCtr = 0
 
-        if DEBUG in ["ALL","MAIN","BASIC"]:
+        if DEBUG in ["ALL", "MAIN", "BASIC"]:
             print "======================================================"
-            print " starting values of matrix %s",self.name
+            print " starting values of matrix %s", self.name
             print "======================================================"
             self.printM()
 
@@ -355,13 +357,13 @@ class CheckMatrix():
 
             improvement -= diff
 
-            if DEBUG in ["ALL","MAIN"]:
+            if DEBUG in ["ALL", "MAIN"]:
                 print "======================================================"
-                print "CheckMatrix (check): diff[%s] = "%i,diff
+                print "CheckMatrix (check): diff[%s] = " % i, diff
                 print "======================================================"
-                print "improvement [%s]: "%improvementCtr,improvement," diff: ",diff
+                print "improvement [%s]: " % improvementCtr, improvement, " diff: ", diff
 
-            if (diff < MAXBALANCEERROR or improvement < 0.1*MAXBALANCEERROR):
+            if (diff < MAXBALANCEERROR or improvement < 0.1 * MAXBALANCEERROR):
                 improvementCtr += 1
             else:
                 improvementCtr = 0
@@ -370,16 +372,16 @@ class CheckMatrix():
             if improvementCtr == 10:
                 break
 
-        if DEBUG in ["ALL","MAIN","BASIC"]:
+        if DEBUG in ["ALL", "MAIN", "BASIC"]:
             print "======================================================"
             print "CheckMatrix concluded ================================"
             print "======================================================"
-            print "last adjustment difference: ",diff
+            print "last adjustment difference: ", diff
             print "======================================================"
             self.printM()
 
             print "-------------------------------------------------"
-            print "Cycle balance (Matrix): mean %s max %s "%(cycle.getMeanBalance(),cycle.getMaxBalance())
+            print "Cycle balance (Matrix): mean %s max %s " % (cycle.getMeanBalance(), cycle.getMaxBalance())
             print "-------------------------------------------------"
 
         cycle.checkTotalBalance()
@@ -390,10 +392,10 @@ class CheckMatrix():
         print "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM"
         for i in range(self.nrow):
             for j in range(self.ncol):
-                print "%3d %3d %s (%s) %s %s"%(i,j,\
-                                               self.printFloat(self.M[i][j].val),\
-                                               self.printFloat(self.M[i][j].sqerr),\
-                                               self.printFloat(self.FCol[i][j].val),\
+                print "%3d %3d %s (%s) %s %s" % (i, j, \
+                                               self.printFloat(self.M[i][j].val), \
+                                               self.printFloat(self.M[i][j].sqerr), \
+                                               self.printFloat(self.FCol[i][j].val), \
                                                self.printFloat(self.FRow[i][j].val))
         print "colTotals"
         for j in range(self.ncol):
@@ -405,9 +407,9 @@ class CheckMatrix():
         
 #------------------------------------------------------------------------------
 
-    def printFloat(self,val):
+    def printFloat(self, val):
         try:
-            return str("%12.4f"%val)
+            return str("%12.4f" % val)
         except:
             return str(val)
         
@@ -418,7 +420,7 @@ if __name__ == "__main__":
     NI = 2
     NJ = 3
     
-    FECi = CCRow("FECi",NI)
+    FECi = CCRow("FECi", NI)
     FECi[0].val = 2
     FECi[0].sqerr = 0.
     FECi[0].valMin = 1.9
@@ -429,7 +431,7 @@ if __name__ == "__main__":
     FECi[1].valMin = 3.9
     FECi[1].valMax = 4.1
 
-    FECj = CCRow("FECj",NJ)
+    FECj = CCRow("FECj", NJ)
     FECj[0].val = 3
     FECj[0].valMin = 2.9
     FECj[0].valMax = 3.1
@@ -443,7 +445,7 @@ if __name__ == "__main__":
     FECj[2].valMin = 0
     FECj[2].valMax = INFINITE
 
-    FECLink = arange(NI*NJ).reshape(NJ,NI)
+    FECLink = np.arange(NI * NJ).reshape(NJ, NI)
     FECLink[0][0] = 1
     FECLink[1][0] = 0
     FECLink[2][0] = 0
@@ -452,6 +454,6 @@ if __name__ == "__main__":
     FECLink[2][1] = 1
     print FECLink
 
-    CM = CheckMatrix("FECi-FECj",FECi,FECj,FECLink)
+    CM = CheckMatrix("FECi-FECj", FECi, FECj, FECLink)
     
     CM.check()

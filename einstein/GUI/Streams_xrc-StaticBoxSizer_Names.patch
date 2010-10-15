@@ -1,0 +1,22 @@
+diff --git a/GUI/Streams.xrc b/GUI/Streams.xrc
+index 7d4fd35..cbe6855 100644
+--- a/GUI/Streams.xrc
++++ b/GUI/Streams.xrc
+@@ -116,7 +116,7 @@
+ 						<option>0</option>
+ 						<flag>wxEXPAND</flag>
+ 						<border>5</border>
+-						<object class="wxStaticBoxSizer">
++						<object class="wxStaticBoxSizer" name="InputStreamsBeforeHeatRecoveryStaticBoxSizer">
+ 							<orient>wxVERTICAL</orient>
+ 							<label>before heat recovery</label>
+ 							<object class="sizeritem">
+@@ -131,7 +131,7 @@
+ 						<option>0</option>
+ 						<flag>wxEXPAND</flag>
+ 						<border>5</border>
+-						<object class="wxStaticBoxSizer">
++						<object class="wxStaticBoxSizer" name="InputStreamsAfterHeatRecoveryStaticBoxSizer">
+ 							<orient>wxVERTICAL</orient>
+ 							<label>after heat recovery</label>
+ 							<object class="sizeritem">

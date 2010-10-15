@@ -1219,8 +1219,8 @@ class ModuleBB(object):
 #        zz=int(80/Status.TemperatureInterval)
 #HS2008-07-06: zz substituted by iT80. is more self-understanding
 
-        QDmax = maxInList(Status.int.QD_Tt_mod[self.firstBB][iT80])
-#        yy= maxInList(Status.int.QD_Tt_mod[self.firstBB][iT80])
+        QDmax = max(Status.int.QD_Tt_mod[self.firstBB][iT80])
+#        yy= max(Status.int.QD_Tt_mod[self.firstBB][iT80])
 #HS2008-07-06. idem yy -> QDmax
 
         b=max((QDmax  - exBP),0)
@@ -1252,7 +1252,7 @@ class ModuleBB(object):
                         exBP += row['equipePnom']
 
             iT140 =int(140/Status.TemperatureInterval + 0.5)
-            QDmax = maxInList(Status.int.QD_Tt_mod [self.firstBB140][iT140])
+            QDmax = max(Status.int.QD_Tt_mod [self.firstBB140][iT140])
             b=max((QDmax  - exBP),0) #   minimum power of the new boilers at 140°C
             c=[]
             for it in range (Status.Nt):
@@ -1280,7 +1280,7 @@ class ModuleBB(object):
 #        cI= len(Status.int.QD_Tt_mod)+1
 #        
 #        iTmax =int(self.maxTemp/Status.TemperatureInterval + 0.5)
-#        QDmax = maxInList(Status.int.QD_Tt_mod [self.firstBBmaxTemp][iTmax])
+#        QDmax = max(Status.int.QD_Tt_mod [self.firstBBmaxTemp][iTmax])
 #        b=max((QDmax  - exBP),0) #   minimum power of the new boilers at maxTemp°C
 #        c=[]
 #        for it in range (Status.Nt):

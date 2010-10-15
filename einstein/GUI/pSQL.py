@@ -135,7 +135,8 @@ class pSQL(object):
        be 'singled out' :-)"""
     self._c.execute(query)
     res = self._c.fetchall()
-    while type(res) == TupleType and len(res) == 1: res = res[0]
+    if type(res) == TupleType and len(res) == 1: 
+        res = res[0]
     return res
 
   #    ------------------------------------------------------------------

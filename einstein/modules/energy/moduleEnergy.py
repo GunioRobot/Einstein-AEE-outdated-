@@ -362,6 +362,9 @@ class ModuleEnergy(object):
                 
             elif equipeClass == "CHP":
                 Status.mod.moduleCHP.calculateEnergyFlows(equipe,cascadeIndex)
+            
+            elif equipeClass == "CH":
+                Status.mod.moduleCH.calculateEnergyFlows(equipe,cascadeIndex)    
                 
             else:
                 logTrack("WARNING: equipment type not yet forseen in system simulation module")
@@ -396,9 +399,9 @@ class ModuleEnergy(object):
             logTrack("ModuleEnergy (runSimulation): updating Energy balances")
 
             (projectData,generalData) = Status.prj.getProjectData()
-
+            # TODO: replace this 1 with a 10 when testing is done
             if loop == True:
-                for i in range(10):
+                for i in range(1):
 
                     USH0 = Status.int.USHTotal
                     QWHEq0 = Status.int.QWHEqTotal
