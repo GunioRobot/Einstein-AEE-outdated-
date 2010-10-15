@@ -343,9 +343,10 @@ class StreamUtils():
         print "Enthalpy Nominal: ", stream.EnthalpyNom
         print "Enthalpy Vector: ", hEList
         print "MassFlow Avg", stream.MassFlowAvg
-        if len(stream.MassFlowVector)>0:
-            print "MF Avg Vector: ", sum(stream.MassFlowVector)/len(stream.MassFlowVector)
-            print "MF max Vector: ", max(stream.MassFlowVector)
+        if stream.MassFlowVector != None:
+            if len(stream.MassFlowVector)>0:
+                print "MF Avg Vector: ", sum(stream.MassFlowVector)/len(stream.MassFlowVector)
+                print "MF max Vector: ", max(stream.MassFlowVector)
         print "Specific Heat Capacity: ", stream.SpecHeatCap
         print "Specific Enthalpy: ", stream.SpecEnthalpy
         print "Heat Transfer Coefficient: ", stream.HeatTransferCoeff
@@ -993,7 +994,7 @@ class DistLineStreams(StreamUtils, StreamSet):
             print "--calculate Dist Streams --"
             if stream.DBType == STREAMTYPE[10]:
                 print "--CONDENSATE RECOVERY--"
-                #self.generateCondensateRecoveryStream(stream)
+                self.generateCondensateRecoveryStream(stream)
             elif stream.DBType == STREAMTYPE[9]:
                 print "--BOILERFEEDWATER-"
 
