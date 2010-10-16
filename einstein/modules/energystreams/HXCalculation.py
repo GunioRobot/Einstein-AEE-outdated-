@@ -600,6 +600,8 @@ class HXSimulation():
 
             mlog = (Thsin-self.Tcsout[i])/(self.Thsout[i]-Tcsin)
 #            print "mlog: " + str(mlog)
+            if mlog < 1:
+                mlog = 1
             mlog = math.log(mlog)
 #            print "mlog: " + str(mlog)
             if mlog == 0:
@@ -662,8 +664,8 @@ class HXSimulation():
                         if self.Thsout < self.Tcsin[i] + self.dTmin:
                             self.Thsout = self.Tcsin[i] + self.dTmin
                 else:
-                    if self.Thsout < Tcsinv + self.dTmin:
-                        self.Thsout = Tcsinv + self.dTmin
+                    if self.Thsout < self.Tcsin + self.dTmin:
+                        self.Thsout = self.Tcsin + self.dTmin
         else:
             for i in xrange(Status.Nt):
                 if type(self.Tcsin) == type([]):
@@ -678,11 +680,11 @@ class HXSimulation():
         if type(self.Tcsout) != type([]):
             if type(self.Thsin) == type([]):
                 for i in xrange(Status.Nt):
-                    if self.Tcsout < Thsinv[i] - self.dTmin:
-                        self.Tcsout = Thsinv[i] - self.dTmin
+                    if self.Tcsout < self.Thsin[i] - self.dTmin:
+                        self.Tcsout = self.Thsin[i] - self.dTmin
             else: 
-                if self.Tcsout < Thsinv - self.dTmin:
-                    self.Tcsout = Thsinv - self.dTmin
+                if self.Tcsout < self.Thsin - self.dTmin:
+                    self.Tcsout = self.Thsin - self.dTmin
         else:
             for i in xrange(Status.Nt):
                 if type(self.Thsin) == type([]):

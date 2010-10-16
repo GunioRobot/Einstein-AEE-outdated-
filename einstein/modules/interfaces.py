@@ -207,6 +207,16 @@ class Interfaces(object):
             Q_T[iT] *= Status.EXTRAPOLATE_TO_YEAR
         return Q_T
 
+    def calcQ_Tt(self, Q_t, Q_T):
+        Q_Tt = []
+        for i in xrange(len(Q_t)):
+            list = []
+            for j in xrange(len(Q_T)):
+                list.append(Q_t[i]*Q_T[i])
+            Q_Tt.append(list)
+            
+        return Q_Tt
+
     def initCascadeArrays(self,cascadeSize):
         """
         Initialize storage space for energy flows in a cascade

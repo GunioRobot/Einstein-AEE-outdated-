@@ -596,12 +596,14 @@ class EinsteinFrame(wx.Frame):
 #        ex = ExportProject(pid=Status.PId)
 
 # DO CURVE CALCULATION
-        if Status.processData.outOfDate == True:
-            Status.processData.createAggregateDemand()
-        Status.int.NameGen.calcStreams()
-        curvecalc = CurveCalculation()
-        curvecalc.calculate()
-        curvecalc.printResults()
+#        if Status.processData.outOfDate == True:
+#            Status.processData.createAggregateDemand()
+#        Status.int.NameGen.calcStreams()
+#        curvecalc = CurveCalculation()
+#        curvecalc.calculate()
+#        curvecalc.printResults()
+        Status.mod.moduleHR.doHXPostProcessing()
+
 
     def OnMenuImportProject(self, event):
         ex = ImportProject()

@@ -69,7 +69,7 @@
 #
 #============================================================================== 
 
-import sys
+import sys, os
 from math import *
 from numpy import *
 
@@ -220,7 +220,8 @@ class ModuleHR(object):
         
         key = "HX%02d_PLOT_REPORT" % Status.ANo
         dataReport2 = []
-        doc = XMLImportHRModule.importXML("export.xml")
+        importPath = os.path.join(sys.path[0], 'export.xml')
+        doc = XMLImportHRModule.importXML(importPath)
         self.data.loadCurves(doc)
         QD_T = []
         QA_T = []
@@ -664,6 +665,30 @@ class ModuleHR(object):
 
         self.__storeResults(UPHProc_Tt, QHXProc_Tt, QWHAmb_Tt)
             
+    def doHXPostProcessing(self, QHX_t):
+        TempDist = Status.processData.createTempDistHX(8, 322, "cooling")
+        
+        QHX_Tt = Status.int.calcQ_Tt(self, QHX_t, TempDist)
+        UPHProc_Tt = copy.deepcopy(UPH_Tt) 
+        for iT in range(1, Status.NT + 2):
+            for it in range(Status.Nt):
+                UPHProc_Tt[iT][it] -= QHX_Tt[iT][it]
+        
+        
+        for it in range(Status.Nt):
+    
+            itw = (it + Status.Nt ) % Status.Nt
+            
+            for iTw in range(Status.NT + 1):
+                iT = max(iTw - 2, 0)
+                QWHAmb_Tt[iTw][itw] -= (QHX_Tt[Status.NT + 1][it] - QHX_Tt[iT][it])
+                QWHAmb_Tt[iTw][itw] = max(QWHAmb_Tt[iTw][itw], 0.0)
+                if iTw > 0:
+                    QWHAmb_Tt[iTw][itw] = min(QWHAmb_Tt[iTw][itw], QWHAmb_Tt[iTw - 1][itw])    #guarantee monotonous curve
+
+        
+        print TempDist
+        self.__storeResults(UPHProc_Tt, QHX_Tt, QWHAmb_Tt)
 #------------------------------------------------------------------------------
     def __maxHRPotential(self, UPH_Tt, QWH_Tt, timeShift):
 #------------------------------------------------------------------------------

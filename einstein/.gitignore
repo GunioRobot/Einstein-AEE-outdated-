@@ -2,6 +2,8 @@
 *.pyc
 .project
 .pydevproject
+einstein\einsteinMSG.txt
 einstein/einsteinMSG.txt
+einsteinMSG.txt
 .settings/org.eclipse.core.resources.prefs
 einstein/.gitignore

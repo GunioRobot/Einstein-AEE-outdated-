@@ -396,6 +396,10 @@ class Processes(object):
         Status.int.changeInCascade(0)
         logTrack("Processes (changeInProcess): process data changed")
         
+        
+    def createTempDistHX(self, PT, T0, mode):
+        return self._createTempDist(PT, T0, mode)
+        
     def _createTempDist(self, PT, T0=None, mode="heating"):
         """
         Create a default temperature distribution for a given temperature PT. 

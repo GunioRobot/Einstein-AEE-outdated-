@@ -174,7 +174,7 @@ class DlgDatabase(wx.Dialog):
 
         oldDict = {}
 
-        inifile = os.path.join(os.getcwd(),'einstein.ini')
+        inifile = os.path.join(sys.path[0], 'einstein.ini')
         fr = open(inifile, 'r')
         lines = fr.readlines()
         fr.close()

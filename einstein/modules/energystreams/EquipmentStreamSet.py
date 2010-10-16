@@ -17,7 +17,7 @@ def getEquipListperLine(LineID):
             except:
                 pass
 
-        if LineID in list and equip.AlternativeProposalNo == -1:
+        if LineID in list and equip.AlternativeProposalNo == Status.ANo:
             equipments.append(equip.QGenerationHC_ID)
     return equipments
 

@@ -296,9 +296,12 @@ class CurveCalculation():
         hcc = Curve()
         gcc = Curve()
 
-        self.appendCurve(ccc, self.ccc_arrows)
-        self.appendCurve(hcc, self.hcc_arrows)
-        self.appendCurve(gcc, self.gcc_arrows)
+        self.appendStartCurve(ccc, self.ccc_arrows)
+        self.appendEndCurve(ccc, self.ccc_arrows)
+        self.appendStartCurve(hcc, self.hcc_arrows)
+        self.appendEndCurve(hcc, self.hcc_arrows)
+        self.appendStartCurve(gcc, self.gcc_arrows)
+        self.appendEndCurve(gcc, self.gcc_arrows)
         
         data.curves = [ccc, hcc, gcc]
         Status.int.hrdata = data
@@ -307,6 +310,16 @@ class CurveCalculation():
         for elem in curve_arrows:
             curve.X.append(elem.kw)
             curve.Y.append(elem.StartTemp)
+            curve.X.append(elem.kw)
+            curve.Y.append(elem.EndTemp)
+
+    def appendStartCurve(self, curve, curve_arrows):
+        for elem in curve_arrows:
+            curve.X.append(elem.kw)
+            curve.Y.append(elem.StartTemp)
+            
+    def appendEndCurve(self, curve, curve_arrows):
+        for elem in curve_arrows:
             curve.X.append(elem.kw)
             curve.Y.append(elem.EndTemp)
 

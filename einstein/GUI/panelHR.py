@@ -429,7 +429,7 @@ class PanelHR(wx.Panel):
 #------------------------------------------------------------------------------		
 #   function activated on each entry into the panel from the tree
 #------------------------------------------------------------------------------		
-        self.mod.initPanel()        # prepares data for plotting
+#        self.mod.initPanel()        # prepares data for plotting
         self.UpdateGrid()           
         self.UpdatePlot()          
         self.Show()
