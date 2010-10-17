@@ -212,8 +212,9 @@ class PanelQ6(wx.Panel):
         self.HXName = None
         self.WHEEName = None
 
-        Status.int.NameGen = NameGeneration()
-        Status.int.NameGen.loadDataFromDB()
+        if Status.int.NameGen == None:
+            Status.int.NameGen = NameGeneration()
+            Status.int.NameGen.loadDataFromDB()
 
         self.HXPinch = None
         self.selectedSStream = None

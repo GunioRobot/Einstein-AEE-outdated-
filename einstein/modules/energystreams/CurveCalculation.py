@@ -295,13 +295,17 @@ class CurveCalculation():
         ccc = Curve()
         hcc = Curve()
         gcc = Curve()
+        
+        ccc.Name = "CCC"
+        hcc.Name = "HCC"
+        gcc.Name = "GCC"
 
         self.appendStartCurve(ccc, self.ccc_arrows)
-        self.appendEndCurve(ccc, self.ccc_arrows)
+#        self.appendEndCurve(ccc, self.ccc_arrows)
         self.appendStartCurve(hcc, self.hcc_arrows)
-        self.appendEndCurve(hcc, self.hcc_arrows)
+#        self.appendEndCurve(hcc, self.hcc_arrows)
         self.appendStartCurve(gcc, self.gcc_arrows)
-        self.appendEndCurve(gcc, self.gcc_arrows)
+#        self.appendEndCurve(gcc, self.gcc_arrows)
         
         data.curves = [ccc, hcc, gcc]
         Status.int.hrdata = data

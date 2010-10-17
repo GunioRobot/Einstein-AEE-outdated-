@@ -668,13 +668,21 @@ class ModuleHR(object):
     def doHXPostProcessing(self, QHX_t):
         TempDist = Status.processData.createTempDistHX(8, 322, "cooling")
         
-        QHX_Tt = Status.int.calcQ_Tt(self, QHX_t, TempDist)
+        UPH_Tt = Status.int.UPHTotal_Tt
+        QHX_Tt = Status.int.calcQ_Tt(QHX_t, TempDist)
         UPHProc_Tt = copy.deepcopy(UPH_Tt) 
+        
         for iT in range(1, Status.NT + 2):
             for it in range(Status.Nt):
                 UPHProc_Tt[iT][it] -= QHX_Tt[iT][it]
         
+        UPHw_Tt = Status.int.UPHwTotal_Tt
+        QWHAmb_Tt = copy.deepcopy(UPHw_Tt) 
         
+        for iT in range(Status.NT + 2):
+            for it in range(Status.Nt):
+                QWHAmb_Tt[iT][it] += Status.int.QWHEqTotal_Tt[iT][it] + Status.int.QWHEE_Tt[iT][it]
+                
         for it in range(Status.Nt):
     
             itw = (it + Status.Nt ) % Status.Nt

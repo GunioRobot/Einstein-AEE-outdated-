@@ -43,21 +43,25 @@
 #	Software Foundation (www.gnu.org).
 #
 #============================================================================== 
-
+from GUITools import *
+from einstein.GUI.dialog_changeHX import *
+from einstein.GUI.status import Status
+from einstein.modules.energystreams.CurveCalculation import *
+from einstein.modules.energystreams.Stream import HXPinchConnection
+from einstein.modules.energystreams.StreamConstants import *
+from einstein.modules.energystreams.StreamGeneration import *
+from einstein.modules.interfaces import *
+from einstein.modules.messageLogger import *
+from einstein.modules.modules import Modules
+from matplotlib.ticker import MaxNLocator
+from numCtrl import *
+from pylab import *
+import einstein.modules.matPanel as Mp
 import wx
 import wx.grid
 
-from GUITools import *
-from numCtrl import *
+
 #from einstein.modules.plotPanel import PlotPanel
-import einstein.modules.matPanel as Mp
-from pylab import *
-from matplotlib.ticker import MaxNLocator
-from einstein.GUI.dialog_changeHX import *
-from einstein.modules.modules import Modules
-from einstein.GUI.status import Status
-from einstein.modules.interfaces import *
-from einstein.modules.messageLogger import *
 
 def _U(text):
     try:
@@ -430,9 +434,56 @@ class PanelHR(wx.Panel):
 #   function activated on each entry into the panel from the tree
 #------------------------------------------------------------------------------		
 #        self.mod.initPanel()        # prepares data for plotting
+        self.initCurves()
         self.UpdateGrid()           
         self.UpdatePlot()          
         self.Show()
+        
+    def initCurves(self):
+        if Status.int.NameGen == None:
+            Status.int.NameGen = NameGeneration()
+            Status.int.NameGen.loadDataFromDB()
+        DB = Status.DB
+        HXIDList = Status.prj.getHXList("QHeatExchanger_ID")
+        Status.int.HXPinchConnection = []
+        for elem in HXIDList:
+            HXPinch = HXPinchConnection(elem)
+            HXPinch.loadFromDB()
+            Status.int.HXPinchConnection.append(HXPinch)
+        
+        
+        if Status.processData.outOfDate == True:
+            Status.processData.createAggregateDemand()
+        for i in xrange(len(Status.int.HXPinchConnection)):
+            for j in xrange(len(Status.int.HXPinchConnection[i].sinkstreams)):
+                stream = Status.int.HXPinchConnection[i].sinkstreams[j].stream
+                self.calcStream(stream)
+                stream.printStream()
+
+            for j in xrange(len(Status.int.HXPinchConnection[i].sourcestreams)):
+                stream = Status.int.HXPinchConnection[i].sourcestreams[j].stream
+                self.calcStream(stream)
+                stream.printStream()
+
+        Status.int.NameGen.calcStreams()
+
+        curvecalc = CurveCalculation()
+        curvecalc.calculate()
+        curvecalc.printResults()
+    
+    def calcStream(self, stream):
+        initStream(stream)
+        if stream.Source == STREAMSOURCE[0]:
+            calcProcessStream(stream)
+        elif stream.Source == STREAMSOURCE[1]:
+            calcProcessStream(stream)
+        elif stream.Source == STREAMSOURCE[2]:
+            calcEquipmentStream(stream)
+        elif stream.Source == STREAMSOURCE[3]:
+            calcWHEEStream(stream)
+        elif stream.Source == STREAMSOURCE[4]:
+            calcDistLineStream(stream)
+    
     
     def UpdateGrid(self):
         try:

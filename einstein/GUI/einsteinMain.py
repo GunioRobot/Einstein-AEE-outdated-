@@ -372,7 +372,7 @@ class EinsteinFrame(wx.Frame):
 
 #------------------------------------------------------------------------------
     def _log(self,fcolor,bcolor,text):
-        tl = time.localtime()
+#        tl = time.localtime()
 #        now = '%s-%s-%s %s:%s:%s  ' % (tl[0],tl[1],tl[2],tl[3],tl[4],tl[5])
         now = ""
         item = wx.ListItem()

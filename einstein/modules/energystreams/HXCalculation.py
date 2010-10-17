@@ -144,7 +144,7 @@ class HXCombination():
                     if elem.outletTemp != None and elem.outletTemp < elem.stream.EndTemp.getAvg() and elem.stream.StartTemp.getAvg()!=elem.stream.EndTemp.getAvg():
                         stream.EnthalpyVector[i] = (stream.EnthalpyVector[i]/(elem.stream.StartTemp.getAvg()-elem.stream.EndTemp.getAvg()))\
                         *(elem.inletTemp-elem.stream.EndTemp.getAvg())
-                        print elem.outletTemp, elem.inletTemp
+#                        print elem.outletTemp, elem.inletTemp
                 combH[i] += stream.EnthalpyVector[i]*(elem.percentHeatFlow/100)
 
 #        for elem in pinchstreams[0].stream.EnthalpyVector:
@@ -291,7 +291,7 @@ class HXSimulation():
         self.Energy = Energy
         self.Thsout = self.toList(Thsout, Status.Nt)
         self.Tcsout = self.toList(Tcsout, Status.Nt)
-        self.UA = 1000
+        self.UA = 10000
         self.hxPinchCon = hxPinchCon
         if hxPinchCon.combinedSource.percentHeatFlow != None:
             self.bhxhs = self.toList(hxPinchCon.combinedSource.percentHeatFlow, Status.Nt)
@@ -304,6 +304,7 @@ class HXSimulation():
         self.QHX1cs = None
 
         self.data = HRData(Status.PId,Status.ANo)
+        self.mod = Status.mod.moduleHR
 
 
     def toList(self, value, length):
@@ -325,7 +326,7 @@ class HXSimulation():
         self.UA = UA
 
         # Values to get:
-        self.QHXVector = None
+#        self.QHXVector = None
         self.dTmin = 5
         self.dThs = None
         self.dTcs = None
@@ -374,9 +375,10 @@ class HXSimulation():
             self.printBasicValues()
             print "CheckQ"
             self.checkQ()
-
+            print "Q: " + str(self.Q)
+            self.mod.doHXPostProcessing(self.Q)
             print "Finished Basic Calculation"
-
+            
 
         elif (self.Thsout == None and self.Tcsout == None) or (self.bhxcs != None and self.bhxhs != None):
             self.calculateThsoutOverTcsin()
@@ -452,9 +454,9 @@ class HXSimulation():
 
     def checkQ(self):
 
-        for i in xrange(len(self.Q)):
+        for i in xrange(Status.Nt):
             if self.UA * self.Tloghx[i] != self.Q[i]:
-                self.UA
+                self.UA = self.Q[i]/self.Tloghx[i]
 
     def checkQHX(self):
 
@@ -518,9 +520,7 @@ class HXSimulation():
 
                 else:
                     pass
-                    # Set default value?
-
-        
+                    # Set default value?        
 #        self.checkTcsoutVector()
 
     def adaptThsout(self):
@@ -566,8 +566,6 @@ class HXSimulation():
 
                 self.mhshx1[i] = mhs[i]*self.bhxhs[i]
 
-
-
 #    def adaptBhxhs(self):
 #        self.mhshx1 = []
 #        mhs = self.hxPinchCon.combinedSource.stream.MassFlowVector
@@ -584,7 +582,6 @@ class HXSimulation():
 #        self.bhxcs = []
 #        for i in xrange(len(self.QHX1hs)):
 #            self.bhxcs.append(self.QHX1hs[i]/(mcs[i]*cpcs*(self.Tcsout[i]-self.Tcsin)))
-
 
     def calculateHXoverUA(self):
 
