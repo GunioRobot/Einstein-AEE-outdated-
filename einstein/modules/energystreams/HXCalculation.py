@@ -460,7 +460,7 @@ class HXSimulation():
         for i in xrange(Status.Nt):
             if self.UA * self.Tloghx[i] != self.QHX1cs[i]:
                 self.UA = self.QHX1cs[i]/self.Tloghx[i]
-
+            
     def checkQHX(self):
 
         mhs = self.hxPinchCon.combinedSource.stream.MassFlowVector

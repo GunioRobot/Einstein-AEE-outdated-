@@ -150,15 +150,24 @@ class HRData:
         newHXID = qhxTable.insert(tmphx)
         print newHXID
         
-#        tmpconn = {"pinchstream_id":hxconn[0].pinchstream_id,
-#                   
-#                   }
+        
+        for conn in hxconn:
+            tmpconn = {"qheatexchanger_QHeatExchanger_Id":check(newHXID),
+                       "pinchstream_id":check(conn.pinchstream_id),
+                       "inletTemp":check(conn.inletTemp),
+                       "outletTemp":check(conn.outletTemp),
+                       "outletOfHX_id":check(conn.outletOfHX_id),
+                       "inletOfHX_id":check(conn.inletOfHX_id),
+                       "HeatFlowPercent":check(conn.HeatFlowPercent)
+                       }
+            connTable = Status.DB.heatexchanger_pinchstream
+            connTable.insert(tmpconn)
         
         # Update HXIDs from new HX
-#        for i in xrange(len(Status.int.HxPinchConnection)):
-#            if Status.int.HXPinchConnection.HXID == HXID:
-#                Status.int.HXPinchConnection.HXID = newHXID
-#        
+        for i in xrange(len(Status.int.HXPinchConnection)):
+            if Status.int.HXPinchConnection[i].HXID == HXID:
+                Status.int.HXPinchConnection[i].HXID = newHXID
+        
 #        # Delete old HXs from DB
 #        delquery = "DELETE FROM qheatexchanger  WHERE ProjectID=%s AND AlternativeProposalNo=%s AND QHeatExchanger_ID = '%s'" % (self.pid,self.ano, HXID)
 #        Status.DB.sql_query(delquery)
