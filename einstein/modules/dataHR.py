@@ -85,7 +85,86 @@ class HRData:
             self.hexers = Status.DB.qheatexchanger.sql_select(sqlQuery)
         except:
             self.hexers = []
-    
+            
+            
+    def storeHXData(self, HXID, QHX_t, combinedSink, combinedSource, UA, Tloghx, HXTSinkInlet, HXTSinkOutlet, HXTSourceInlet, HXTSourceOutlet):
+        try:      
+            sqlQuery = "ProjectID = '%s' AND AlternativeProposalNo = '%s' AND QHeatExchanger_ID = '%s'"%(self.pid,self.ano, HXID)
+            self.hexers.append(Status.DB.qheatexchanger.sql_select(sqlQuery))
+            
+            streamQuery = "qheatexchanger_QHeatExchanger_Id = '%s'"%(HXID)
+            hxconn = Status.DB.heatexchanger_pinchstream.sql_select(streamQuery)
+            
+        except:
+            return
+        
+        hx = self.hexers[-1]
+        
+        
+        for hxp in Status.int.HXPinchConnection:
+            if hxp.HXID == HXID:
+                activeHX = hxp
+        
+        SourceName = ""
+        for stream in activeHX.sourcestreams:
+            SourceName += stream.stream.name    
+        SourceName = SourceName[0:300]
+        
+        SinkName = ""
+        for stream in activeHX.sinkstreams:
+            SinkName += stream.stream.name
+        SinkName = SinkName[0:300]
+        
+        print "HXNo: ", str(hx.HXNo)
+        
+        tmphx = {"ProjectID":self.pid,
+               "AlternativeProposalNo":self.ano,
+               "HXNo":hx[0].HXNo,
+               "HXName":check(str(hx[0].HXName) + str("_new")),
+               "HXType":check(hx[0].HXType),
+               "QdotHX":check(max(QHX_t)),
+               "HXLMTD":check(max(Tloghx)),
+               "Area":check(None),
+               "QHX":check(sum(QHX_t)),
+               "HXSource":check(SourceName),
+               "FluidIDSource":check(None),
+               "HXTSourceInlet":check(max(HXTSourceInlet)),
+               "HXhSourceInlet":check(None),
+               "HXTSourceOutlet":check(max(HXTSourceOutlet)),
+               "HXhSourceOutlet":check(None),
+               "HXSink":check(SinkName),
+               "FluidIDSink":check(None),
+               "HXTSinkInlet":check(max(HXTSinkInlet)),
+               "HXTSinkOutlet":check(max(HXTSinkOutlet)),
+               "TurnKeyPrice":check(None),
+               "OMFix":check(None),
+               "OMVar":check(None),
+               "StorageSize":check(None),
+               "StreamStatusSource":check(None),
+               "StreamStatusSink":check(None),
+               "StreamTypeSink":check(None),
+               "StreamTypeSource":check(None),
+               "UA":check(max(UA))}
+        
+        qhxTable = Status.DB.qheatexchanger
+        newHXID = qhxTable.insert(tmphx)
+        print newHXID
+        
+#        tmpconn = {"pinchstream_id":hxconn[0].pinchstream_id,
+#                   
+#                   }
+        
+        # Update HXIDs from new HX
+#        for i in xrange(len(Status.int.HxPinchConnection)):
+#            if Status.int.HXPinchConnection.HXID == HXID:
+#                Status.int.HXPinchConnection.HXID = newHXID
+#        
+#        # Delete old HXs from DB
+#        delquery = "DELETE FROM qheatexchanger  WHERE ProjectID=%s AND AlternativeProposalNo=%s AND QHeatExchanger_ID = '%s'" % (self.pid,self.ano, HXID)
+#        Status.DB.sql_query(delquery)
+        
+        
+        
                    
     def __storeNewHX(self,listofhexdata):   
     #stores HEXers found in XML document
@@ -149,6 +228,10 @@ class HRData:
                 newcurve = Curve()
                 newcurve.loadFromData(curvedata)
                 self.curves.append(newcurve)
+        print self.curves
+        for elem in self.curves:
+            print "x:" + str(elem.X)
+            print "y:" + str(elem.Y)
     
     def deleteHex(self,index):   
     #deletes a specific HEX in db and reloads list of hx          

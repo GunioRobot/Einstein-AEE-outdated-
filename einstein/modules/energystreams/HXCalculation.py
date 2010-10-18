@@ -139,8 +139,8 @@ class HXCombination():
                 elif elem.stream.HotOrCold == "Source" or elem.stream.HotOrCold == "Hot":
                     if elem.stream.MassFlowVector[i]!=0:
                         elem.outletTemp = elem.inletTemp-stream.EnthalpyVector[i]/(elem.stream.MassFlowVector[i]*elem.stream.SpecHeatCap)
-                    else:
-                        elem.outletTemp = elem.inletTemp
+                    #else:
+                        #elem.outletTemp = elem.inletTemp
                     if elem.outletTemp != None and elem.outletTemp < elem.stream.EndTemp.getAvg() and elem.stream.StartTemp.getAvg()!=elem.stream.EndTemp.getAvg():
                         stream.EnthalpyVector[i] = (stream.EnthalpyVector[i]/(elem.stream.StartTemp.getAvg()-elem.stream.EndTemp.getAvg()))\
                         *(elem.inletTemp-elem.stream.EndTemp.getAvg())
@@ -375,9 +375,12 @@ class HXSimulation():
             self.printBasicValues()
             print "CheckQ"
             self.checkQ()
-            print "Q: " + str(self.Q)
-            self.mod.doHXPostProcessing(self.Q)
+#            print "Q: " + str(self.Q)
+            self.mod.doHXPostProcessing(self.QHX1cs)
             print "Finished Basic Calculation"
+            Status.int.hrdata.storeHXData(self.hxPinchCon.HXID, self.QHX1cs, \
+                                          self.hxPinchCon.combinedSink, self.hxPinchCon.combinedSource,\
+                                           self.UA, self.Tloghx, self.Tcsin, self.Tcsout, self.Thsin, self.Thsout)
             
 
         elif (self.Thsout == None and self.Tcsout == None) or (self.bhxcs != None and self.bhxhs != None):
@@ -455,8 +458,8 @@ class HXSimulation():
     def checkQ(self):
 
         for i in xrange(Status.Nt):
-            if self.UA * self.Tloghx[i] != self.Q[i]:
-                self.UA = self.Q[i]/self.Tloghx[i]
+            if self.UA * self.Tloghx[i] != self.QHX1cs[i]:
+                self.UA = self.QHX1cs[i]/self.Tloghx[i]
 
     def checkQHX(self):
 
@@ -860,7 +863,10 @@ class HXSimulation():
                     hsdemand = self.QHX1hs[startrow+1]
 
 #Do Until (instorage + instoragenext) < (csdemand - hsdemand) Or startrow > lastrow
-                while instorage + instoragenext > csdemand - hsdemand or startrow < lastrow:
+                #while instorage + instoragenext > csdemand - hsdemand or startrow < lastrow:
+                while instorage + instoragenext > csdemand - hsdemand:
+                    if startrow > lastrow:
+                        break
                     if csdemand > hsdemand:
                         realStorageOut[startrow+1] = csdemand - hsdemand
 

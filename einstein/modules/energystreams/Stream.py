@@ -142,6 +142,7 @@ class HXPinchConnection():
     HXID = None
     combinedSink = None
     combinedSource = None
+    StorageSize = None
 
     def __init__(self, HXID):
         self.HXID = HXID
@@ -149,6 +150,7 @@ class HXPinchConnection():
         self.sourcestreams = []
         self.combinedSink = None
         self.combinedSource = None
+        self.StorageSize = 0
 
     def writeToDB(self):
 

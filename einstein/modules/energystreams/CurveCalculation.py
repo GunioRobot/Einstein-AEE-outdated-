@@ -66,30 +66,30 @@ class CurveCalculation():
         self.seperateHotColdStreams(self.streams)
         
         self.ColdIntervals = self.getTemperatureLevels(self.ColdStreams)
-        self.HotIntervals = self.getTemperatureLevels(self.HotIntervals)
+        self.HotIntervals = self.getTemperatureLevels(self.HotStreams)
 
-        self.fillTemperatureLevels(self.ColdIntervals, self.ColdStreams)
-        self.fillTemperatureLevels(self.HotIntervals, self.HotStreams)
+        self.fillTemperatureLevelsCS(self.ColdIntervals, self.ColdStreams)
+        self.fillTemperatureLevelsHS(self.HotIntervals, self.HotStreams)
 
         self.calculateVectors(self.ColdIntervals)
         self.calculateVectors(self.HotIntervals)
         
         curveCCC = self.setColdCurves(self.ColdIntervals)
         curveHCC = self.setHotCurves(self.HotIntervals)
-        
-        Status.int.hrdata.curves = [curveCCC, curveHCC]
+        curveGCC = Curve("HCC")
+        Status.int.hrdata.curves = [curveCCC, curveHCC, curveGCC]
         
     def setHotCurves(self, Intervals):
         curve = Curve("HCC")
         curve.X.append(0)
         curve.Y.append(0)
         
-        print "Hot Curves"
+#        print "Hot Curves"
         for interval in Intervals:
-            curve.X.append(curve.X[-1]+interval.CP)
+            curve.X.append(curve.X[-1]+interval.H)
             curve.Y.append(curve.Y[-1]+abs(interval.StartTemp-interval.EndTemp))
-            print "X: ", str(curve.X[-1]), "Interval: ", str(interval.CP)
-            print "Y: ", str(curve.Y[-1]), "diffTemp: ", str(abs(interval.StartTemp-interval.EndTemp))
+#            print "X: ", str(curve.X[-1]), "Interval: ", str(interval.CP)
+#            print "Y: ", str(curve.Y[-1]), "diffTemp: ", str(abs(interval.StartTemp-interval.EndTemp))
 
         return curve
 #        Status.int.hrdata.curves[1] = curve
@@ -100,12 +100,12 @@ class CurveCalculation():
         curve.X.append(0)
         curve.Y.append(0)
         
-        print "Cold Curves"
+#        print "Cold Curves"
         for interval in Intervals:
-            curve.X.append(curve.X[-1]+interval.CP)
+            curve.X.append(curve.X[-1]+interval.H)
             curve.Y.append(curve.Y[-1]+abs(interval.StartTemp-interval.EndTemp))
-            print "X: ", str(curve.X[-1]), "Interval: ", str(interval.CP)
-            print "Y: ", str(curve.Y[-1]), "diffTemp: ", str(abs(interval.StartTemp-interval.EndTemp))
+#            print "X: ", str(curve.X[-1]), "Interval: ", str(interval.CP)
+#            print "Y: ", str(curve.Y[-1]), "diffTemp: ", str(abs(interval.StartTemp-interval.EndTemp))
 
         return curve
 #        Status.int.hrdata.curves[0] = curve
@@ -114,12 +114,20 @@ class CurveCalculation():
         for i in xrange(len(Intervals)):
             Intervals[i].calculateCP()
 
-    def fillTemperatureLevels(self, Intervals, streams):
+    def fillTemperatureLevelsCS(self, Intervals, streams):
         
         for interval in Intervals:
             for stream in streams:
                 if stream.StartTemp.getAvg() <= interval.StartTemp and \
                     stream.EndTemp.getAvg() >= interval.EndTemp:
+                    interval.Streams.append(stream)
+
+    def fillTemperatureLevelsHS(self, Intervals, streams):
+        
+        for interval in Intervals:
+            for stream in streams:
+                if stream.StartTemp.getAvg() >= interval.StartTemp and \
+                    stream.EndTemp.getAvg() <= interval.EndTemp:
                     interval.Streams.append(stream)
                 
 
@@ -129,8 +137,10 @@ class CurveCalculation():
         for stream in streams:
             if stream.HotOrCold == "Hot" or stream.HotOrCold == "Source":
                 self.HotStreams.append(stream)
-            else:
+            elif stream.HotOrCold == "Cold" or stream.HotOrCold == "Sink":
                 self.ColdStreams.append(stream)
+            else:
+                print "Cant find Stream hot or Cold Type"
         
     def getTemperatureLevels(self, streams):
         lvl = []
@@ -500,7 +510,7 @@ class Interval():
     StartTemp = None
     EndTemp = None
     Streams = []
-    CP = None
+    H = None
     
     def __init__(self, StartTemp, EndTemp):
         self.StartTemp = StartTemp
@@ -508,10 +518,12 @@ class Interval():
         self.Streams = []
 
     def calculateCP(self):
-        self.CP = 0
+        self.H = 0
         for stream in self.Streams:
-            self.CP += stream.EnthalpyNom
-            print "CP: " , str(stream.EnthalpyNom)
+            if abs(stream.StartTemp.getAvg()-stream.EndTemp.getAvg()) != 0:
+                self.H += stream.EnthalpyNom / abs(stream.StartTemp.getAvg()-stream.EndTemp.getAvg()) * abs(self.StartTemp-self.EndTemp)
+            
+            print "H: " , str(stream.EnthalpyNom)
 
 if __name__ == "__main__":
     print "Hello World";

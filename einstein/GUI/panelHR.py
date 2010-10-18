@@ -47,6 +47,7 @@ from GUITools import *
 from einstein.GUI.dialog_changeHX import *
 from einstein.GUI.status import Status
 from einstein.modules.energystreams.CurveCalculation import *
+from einstein.modules.energystreams.HXCalculation import *
 from einstein.modules.energystreams.Stream import HXPinchConnection
 from einstein.modules.energystreams.StreamConstants import *
 from einstein.modules.energystreams.StreamGeneration import *
@@ -438,9 +439,35 @@ class PanelHR(wx.Panel):
         for elem in Status.int.hrdata.curves:
             print "x:" + str(elem.X)
             print "y:" + str(elem.Y)
+        self.calculateHX()
         self.UpdateGrid()           
         self.UpdatePlot()          
         self.Show()
+        
+    def calculateHX(self):
+        hxcomb = HXCombination()
+        hxcomb.combineAllStreams()
+        print "--------------------COMBINED STREAMS--------------------"
+#        for elem in Status.int.HXPinchConnection:
+#            elem.combinedSink.stream.printStream()
+#            elem.combinedSource.stream.printStream()
+        print "--------------------SIMULATION--------------------------"
+
+        #hxlist =  createHXList()
+        for hx in Status.int.HXPinchConnection:
+            hxes = Status.DB.qheatexchanger.\
+               QHeatExchanger_ID[hx.HXID]
+            hxsim = HXSimulation(hx.combinedSource.inletTemp,\
+                                    hx.combinedSink.inletTemp,\
+                                    hxes[0].QdotHX,\
+                                    hxes[0].QHX,\
+                                    hx.combinedSource.outletTemp,\
+                                    hx.combinedSink.outletTemp,\
+                                    hxes[0].UA,\
+                                    hx
+                                    )
+            hxsim.startSimulation()
+            
         
     def initCurves(self):
         if Status.int.NameGen == None:
@@ -469,6 +496,7 @@ class PanelHR(wx.Panel):
                 stream.printStream()
 
         Status.int.NameGen.calcStreams()
+        Status.int.NameGen.deleteEmptyStreams()
 
         curvecalc = CurveCalculation()
         curvecalc.calculate()
