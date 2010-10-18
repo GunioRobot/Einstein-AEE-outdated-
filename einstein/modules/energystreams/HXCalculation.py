@@ -378,9 +378,35 @@ class HXSimulation():
 #            print "Q: " + str(self.Q)
             self.mod.doHXPostProcessing(self.QHX1cs)
             print "Finished Basic Calculation"
-            Status.int.hrdata.storeHXData(self.hxPinchCon.HXID, self.QHX1cs, \
-                                          self.hxPinchCon.combinedSink, self.hxPinchCon.combinedSource,\
-                                           self.UA, self.Tloghx, self.Tcsin, self.Tcsout, self.Thsin, self.Thsout)
+    
+            if len(self.hxPinchCon.sinkstreams)>1:
+                # Insert List of new inlet/outletTemp in the right order
+                # inletTSink = [sinktemp1, sinktemp2, ...]
+                pass
+            elif len(self.hxPinchCon.sinkstreams)==1:
+                inletTSink = [self.hxPinchCon.sinkstreams[0].inletTemp]
+                outletTSink = [self.hxPinchCon.sinkstreams[0].outletTemp]
+                HeatFlowPercentSink = [self.hxPinchCon.sinkstreams[0].percentHeatFlow]
+            else:
+                inletTSink = []
+                outletTSink = []
+                HeatFlowPercentSink = []
+                
+            if len(self.hxPinchCon.sourcestreams)>1:
+                pass
+            elif len(self.hxPinchCon.sourcestreams)==1:
+                inletTSource = [self.hxPinchCon.sourcestreams[0].inletTemp]
+                outletTSource = [self.hxPinchCon.sourcestreams[0].outletTemp]
+                HeatFlowPercentSource = [self.hxPinchCon.sourcestreams[0].percentHeatFlow]
+            else:
+                inletTSource = []
+                outletTSource = []
+                HeatFlowPercentSource = []
+                
+    
+            Status.int.hrdata.storeHXData(self.hxPinchCon, self.QHX1cs, self.UA, self.Tloghx, self.Tcsin, self.Tcsout, 
+                                          self.Thsin, self.Thsout, inletTSink, outletTSink, HeatFlowPercentSink, inletTSource,
+                                          outletTSource, HeatFlowPercentSource)
             
 
         elif (self.Thsout == None and self.Tcsout == None) or (self.bhxcs != None and self.bhxhs != None):

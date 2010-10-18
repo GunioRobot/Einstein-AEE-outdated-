@@ -86,8 +86,22 @@ class HRData:
         except:
             self.hexers = []
             
-            
-    def storeHXData(self, HXID, QHX_t, combinedSink, combinedSource, UA, Tloghx, HXTSinkInlet, HXTSinkOutlet, HXTSourceInlet, HXTSourceOutlet):
+                        
+    def storeHXData(self, HXPinchConnection, QHX_t, UA, Tloghx, \
+                    HXTSinkInlet, HXTSinkOutlet, HXTSourceInlet, HXTSourceOutlet,\
+                    inletTSink, outletTSink, HeatFlowPercentSink, inletTSource, outletTSource, HeatFlowPercentSource):
+        
+        print inletTSink
+        print outletTSink
+        print HeatFlowPercentSink
+        print inletTSource
+        print outletTSource
+        print HeatFlowPercentSource
+        
+        
+        HXID = HXPinchConnection.HXID
+        combinedSink = HXPinchConnection.combinedSink
+        combinedSource = HXPinchConnection.combinedSource
         try:      
             sqlQuery = "ProjectID = '%s' AND AlternativeProposalNo = '%s' AND QHeatExchanger_ID = '%s'"%(self.pid,self.ano, HXID)
             self.hexers.append(Status.DB.qheatexchanger.sql_select(sqlQuery))
@@ -99,7 +113,6 @@ class HRData:
             return
         
         hx = self.hexers[-1]
-        
         
         for hxp in Status.int.HXPinchConnection:
             if hxp.HXID == HXID:
@@ -150,15 +163,36 @@ class HRData:
         newHXID = qhxTable.insert(tmphx)
         print newHXID
         
-        
-        for conn in hxconn:
+        j=k=0
+        for i in xrange(len(hxconn)):
+            
+            streamQuery = "id = '%s'"%(hxconn[i].pinchstream_id)
+            pinchstreams = Status.DB.pinchstream.sql_select(streamQuery)
+            HotColdType = pinchstreams[0].Hot_Cold
+            
+            if HotColdType == "Sink" or HotColdType == "Cold":
+                inletTemp = inletTSink[0]
+                outletTemp = outletTSink[0]
+                HeatFlowPercent = HeatFlowPercentSink[0]
+                del inletTSink[0]
+                del outletTSink[0]
+                del HeatFlowPercentSink[0]
+            else:
+                inletTemp = inletTSource[0]
+                outletTemp = outletTSource[0]
+                HeatFlowPercent = HeatFlowPercentSource[0]
+                del inletTSource[0]
+                del outletTSource[0]
+                del HeatFlowPercentSource[0]
+                
+            
             tmpconn = {"qheatexchanger_QHeatExchanger_Id":check(newHXID),
-                       "pinchstream_id":check(conn.pinchstream_id),
-                       "inletTemp":check(conn.inletTemp),
-                       "outletTemp":check(conn.outletTemp),
-                       "outletOfHX_id":check(conn.outletOfHX_id),
-                       "inletOfHX_id":check(conn.inletOfHX_id),
-                       "HeatFlowPercent":check(conn.HeatFlowPercent)
+                       "pinchstream_id":check(hxconn[i].pinchstream_id),
+                       "inletTemp":check(inletTemp),
+                       "outletTemp":check(outletTemp),
+                       "outletOfHX_id":check(hxconn[i].outletOfHX_id),
+                       "inletOfHX_id":check(hxconn[i].inletOfHX_id),
+                       "HeatFlowPercent":check(HeatFlowPercent)
                        }
             connTable = Status.DB.heatexchanger_pinchstream
             connTable.insert(tmpconn)
