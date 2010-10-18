@@ -80,7 +80,8 @@ class ConfigHelper():
     def __init__(self):
         global ConfigFile
         self.config = ConfigParser()
-        self.config.read(sys.path[0] + '//' + ConfigFile)
+        configpath = os.path.join(sys.path[0], ConfigFile)
+        self.config.read(configpath)
 
 
     def get(self, section, setting):
