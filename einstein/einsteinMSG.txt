@@ -22,7 +22,7 @@ Specific Heat Capacity:  3.935
 Specific Enthalpy:  102.307633949
 Heat Transfer Coefficient:  5000
 Fluid Density 1035.0
-ID:  ac29ac1a-20f2-44dd-bdb6-8adf45fbc56a
+ID:  d3545d0a-adcc-491a-9bd2-929ca08f502c
 Operating Hours:  620.5
 
 Name:  fermenter_WasteHeat_BelowCond
@@ -39,7 +39,7 @@ Specific Heat Capacity:  1.0
 Specific Enthalpy:  0.0
 Heat Transfer Coefficient:  100
 Fluid Density 1035.0
-ID:  2ea0bac4-aae9-425f-9aa3-e2719a51da3c
+ID:  3c0c7db0-c6bf-40eb-ab26-1064d280d5f7
 Operating Hours:  465.375
 
 Name:  Cheese wash water_Circulation
@@ -56,7 +56,7 @@ Specific Heat Capacity:  4.19
 Specific Enthalpy:  230.45
 Heat Transfer Coefficient:  5000
 Fluid Density 1000.0
-ID:  4860e6d4-018d-49b4-b7b8-e141b4c05cf8
+ID:  e2e1db28-5cd5-45f8-94fb-c45f29bd9685
 Operating Hours:  465.375
 
 Name:  natural gas boiler_ExhaustGas
@@ -73,7 +73,7 @@ Specific Heat Capacity:  1.12719
 Specific Enthalpy:  -97.5205868327
 Heat Transfer Coefficient:  100
 Fluid Density 1.23483
-ID:  55d722e0-b3f0-4e2c-87b1-d72ad4c13d28
+ID:  6c7f1a25-54e8-4c05-ad79-2984ec2fbd28
 Operating Hours:  5200.0
 
 --------Start MassFlow Waste Heat calculation------
@@ -103,7 +103,7 @@ Specific Heat Capacity:  3.935
 Specific Enthalpy:  39.3468390023
 Heat Transfer Coefficient:  5000
 Fluid Density 1035.0
-ID:  76ecf390-2914-4e32-afc2-2dbeb4753ccb
+ID:  74c471e1-3381-4d46-8228-76386b6a4eaf
 
 Name:  fermenter_Circulation
 StartTemp:  45.0
@@ -120,7 +120,7 @@ Specific Heat Capacity:  3.935
 Specific Enthalpy:  0.0
 Heat Transfer Coefficient:  5000
 Fluid Density 1035.0
-ID:  7756677a-f49a-43a7-bfe6-36d75af86622
+ID:  4af20086-dbe4-4c43-8d1a-e400b911075a
 
 Name:  fermenter_Maintainance
 StartTemp:  45.0
@@ -137,7 +137,7 @@ Specific Heat Capacity:  3600
 Specific Enthalpy:  360.0
 Heat Transfer Coefficient:  5000
 Fluid Density 1000
-ID:  e8b892cc-fc38-4f6c-97a8-845d89bf6229
+ID:  fdac1648-31f5-47e1-95af-a5b374e20fb5
 
 Name:  fermenter_WasteHeat_AboveCond
 StartTemp:  98.0
@@ -154,7 +154,7 @@ Specific Heat Capacity:  1.0
 Specific Enthalpy:  0.0
 Heat Transfer Coefficient:  100
 Fluid Density 1035.0
-ID:  cbb8939b-ff6b-4c62-bd7e-1a02def13ed8
+ID:  03c48981-db70-4971-9701-e8d849a8177f
 
 Name:  fermenter_WasteHeat_Cond
 StartTemp:  45.0
@@ -171,7 +171,7 @@ Specific Heat Capacity:  3.935
 Specific Enthalpy:  -145.595
 Heat Transfer Coefficient:  5000
 Fluid Density 1035.0
-ID:  9f9df6a9-43a9-4e5a-b9c8-68ff8feff767
+ID:  7989c8d7-aff7-419d-a152-1295642c5a00
 
 Name:  fermenter_WasteHeat_BelowCond
 StartTemp:  98.0
@@ -188,7 +188,7 @@ Specific Heat Capacity:  22250.0
 Specific Enthalpy:  2225.0
 Heat Transfer Coefficient:  10000
 Fluid Density 1000
-ID:  0cb74033-77e4-47e1-b17d-1900483f41a7
+ID:  a3242cca-ef7c-4870-a5bc-460268297dd4
 
 Name:  Cheese wash water_StartUp
 StartTemp:  10.0
@@ -205,7 +205,7 @@ Specific Heat Capacity:  4.19
 Specific Enthalpy:  230.45
 Heat Transfer Coefficient:  5000
 Fluid Density 1000.0
-ID:  a70eae1d-cf5d-4658-b703-9d3d4b75686e
+ID:  fff5c8c0-7d1b-48bd-ad6d-01b33216f2f9
 
 Name:  Cheese wash water_Circulation
 StartTemp:  10.0
@@ -222,7 +222,7 @@ Specific Heat Capacity:  4.19
 Specific Enthalpy:  230.45
 Heat Transfer Coefficient:  5000
 Fluid Density 1000.0
-ID:  b71d3da1-62e6-485e-9adf-b334f4e6e65f
+ID:  fd8fd9f6-63bf-4f7e-a72d-abe8e0f7a575
 
 Name:  Cheese wash water_Maintainance
 StartTemp:  65.0
@@ -239,7 +239,7 @@ Specific Heat Capacity:  3600
 Specific Enthalpy:  360.0
 Heat Transfer Coefficient:  5000
 Fluid Density 1000
-ID:  fb5af6e7-71a0-4346-9553-d401807c83f8
+ID:  af59b2b6-1709-4528-9318-d6f4c1912489
 
 Name:  Cheese wash water_WasteHeat_AboveCond
 StartTemp:  999.0
@@ -256,7 +256,7 @@ Specific Heat Capacity:  1.0
 Specific Enthalpy:  0.0
 Heat Transfer Coefficient:  100
 Fluid Density 1000.0
-ID:  6d683c54-d8f6-49e9-89af-f8e19fe3e8ca
+ID:  dbaf7549-fbdd-47a2-bd4a-546c4a9ada9a
 
 Name:  Cheese wash water_WasteHeat_Cond
 StartTemp:  65.0
@@ -273,7 +273,7 @@ Specific Heat Capacity:  4.19
 Specific Enthalpy:  0.0
 Heat Transfer Coefficient:  5000
 Fluid Density 1000.0
-ID:  78d5414a-8e84-4972-b9a0-86366a6ff6b7
+ID:  37df21bd-cc3a-4665-927e-edc77bf17137
 
 Name:  Cheese wash water_WasteHeat_BelowCond
 StartTemp:  999.0
@@ -290,7 +290,7 @@ Specific Heat Capacity:  22250.0
 Specific Enthalpy:  2225.0
 Heat Transfer Coefficient:  10000
 Fluid Density 1000
-ID:  a422d3c8-340a-4c86-a04c-6e2bc9a1eaec
+ID:  fd5b542a-ba1a-4bb5-af67-fb310a1ea37b
 
 Name:  Whey concentrate cooling_StartUp
 StartTemp:  50.0
@@ -307,7 +307,7 @@ Specific Heat Capacity:  3.0
 Specific Enthalpy:  0.0
 Heat Transfer Coefficient:  5000
 Fluid Density 1200.0
-ID:  c3f168da-7723-4ebc-80e2-c8bc6af82367
+ID:  1b7a190c-313e-4b96-8f5e-2ffbe7759d49
 
 Name:  Whey concentrate cooling_Circulation
 StartTemp:  50.0
@@ -324,7 +324,7 @@ Specific Heat Capacity:  3.0
 Specific Enthalpy:  0.0
 Heat Transfer Coefficient:  5000
 Fluid Density 1200.0
-ID:  25fa9757-5256-4796-81d7-c995f464a04b
+ID:  fb742d6c-737f-41c7-b981-12ff9402a77d
 
 Name:  Whey concentrate cooling_Maintainance
 StartTemp:  50.0
@@ -341,7 +341,7 @@ Specific Heat Capacity:  3600
 Specific Enthalpy:  360.0
 Heat Transfer Coefficient:  5000
 Fluid Density 1000
-ID:  b260c8a7-5d5a-42c6-bee3-cbbbff43b1b7
+ID:  fa11bb5f-c1dd-4d5c-a1b1-22e45d0d00fa
 
 Name:  Whey concentrate cooling_WasteHeat_AboveCond
 StartTemp:  99.0
@@ -358,7 +358,7 @@ Specific Heat Capacity:  1.0
 Specific Enthalpy:  0.0
 Heat Transfer Coefficient:  100
 Fluid Density 1200.0
-ID:  d42103ad-c6dd-41b7-99ff-71095c6d248c
+ID:  5915462b-c5f2-493a-8578-b06b9ac05dfe
 
 Name:  Whey concentrate cooling_WasteHeat_Cond
 StartTemp:  50.0
@@ -375,7 +375,7 @@ Specific Heat Capacity:  3.0
 Specific Enthalpy:  -126.0
 Heat Transfer Coefficient:  5000
 Fluid Density 1200.0
-ID:  65d6fc9a-1932-42e5-b188-9e86eabd3072
+ID:  074c350b-dd69-4528-9404-b1817b6b4d90
 
 Name:  Whey concentrate cooling_WasteHeat_BelowCond
 StartTemp:  99.0
@@ -392,7 +392,7 @@ Specific Heat Capacity:  22250.0
 Specific Enthalpy:  2225.0
 Heat Transfer Coefficient:  10000
 Fluid Density 1000
-ID:  3c556ba4-6150-42f3-ac06-b2cec0112331
+ID:  13087def-4a21-4b36-855a-eca1a7492c5a
 
 Name:  milk heating_StartUp
 StartTemp:  6.00060128354
@@ -409,7 +409,7 @@ Specific Heat Capacity:  3.935
 Specific Enthalpy:  102.307633949
 Heat Transfer Coefficient:  5000
 Fluid Density 1035.0
-ID:  38f187c0-d7bf-4495-93bf-f5a233033e8f
+ID:  bf37a6b7-ec2f-4c45-a143-aacc352e1b7d
 
 Name:  milk heating_Circulation
 StartTemp:  32.0
@@ -426,7 +426,7 @@ Specific Heat Capacity:  3.935
 Specific Enthalpy:  0.0
 Heat Transfer Coefficient:  5000
 Fluid Density 1035.0
-ID:  e1d24c35-fe36-43c6-ab67-2c4dc3b7fccc
+ID:  5b3b04e5-a97e-412b-844d-6c77b8a06684
 
 Name:  milk heating_Maintainance
 StartTemp:  32.0
@@ -443,7 +443,7 @@ Specific Heat Capacity:  3600
 Specific Enthalpy:  360.0
 Heat Transfer Coefficient:  5000
 Fluid Density 1000
-ID:  f39db479-7b52-4d39-ae3d-9fbf4657e77e
+ID:  8c34e29d-1ecd-40ad-a0d2-66b76156d8b4
 
 Name:  milk heating_WasteHeat_AboveCond
 StartTemp:  98.0
@@ -460,7 +460,7 @@ Specific Heat Capacity:  1.0
 Specific Enthalpy:  0.0
 Heat Transfer Coefficient:  100
 Fluid Density 1035.0
-ID:  0bc21400-1469-4eb4-bd1b-07b522bef564
+ID:  c8a87c19-7ac0-4f07-9a6c-5d8605d7fbb1
 
 Name:  milk heating_WasteHeat_Cond
 StartTemp:  32.0
@@ -477,7 +477,7 @@ Specific Heat Capacity:  3.935
 Specific Enthalpy:  0.0
 Heat Transfer Coefficient:  5000
 Fluid Density 1035.0
-ID:  09477f07-4760-46bf-87a2-6e9bb7afa1ef
+ID:  f0ddb532-4497-40f2-a463-165ffc627fb0
 
 Name:  milk heating_WasteHeat_BelowCond
 StartTemp:  98.0
@@ -494,7 +494,7 @@ Specific Heat Capacity:  22250.0
 Specific Enthalpy:  2225.0
 Heat Transfer Coefficient:  10000
 Fluid Density 1000
-ID:  002917ee-cad1-43ce-a8a0-23c0196b0ed5
+ID:  4a2d74eb-9b12-459c-86b1-0a6565f6479a
 
 Name:  whey evaporation_StartUp
 StartTemp:  100.0
@@ -511,7 +511,7 @@ Specific Heat Capacity:  4.19
 Specific Enthalpy:  0.0
 Heat Transfer Coefficient:  5000
 Fluid Density 1000.0
-ID:  0a8b6d8d-5485-4e4c-8eb9-048ac72b2016
+ID:  22e15491-3318-408b-8649-1ddbbefbb6ac
 
 Name:  whey evaporation_Circulation
 StartTemp:  8.0
@@ -528,7 +528,7 @@ Specific Heat Capacity:  4.19
 Specific Enthalpy:  385.48
 Heat Transfer Coefficient:  5000
 Fluid Density 1000.0
-ID:  e8404f5a-b75d-4036-abc9-fef2901e38d1
+ID:  cd4ebf3b-4dd1-48b5-8463-378a10487b09
 
 Name:  whey evaporation_Maintainance
 StartTemp:  100.0
@@ -545,7 +545,7 @@ Specific Heat Capacity:  3600
 Specific Enthalpy:  360.0
 Heat Transfer Coefficient:  5000
 Fluid Density 1000
-ID:  028e42fb-ee73-443e-be58-1e01102e1e1b
+ID:  26e85e03-7859-4d11-8184-ec96bd54294f
 
 Name:  whey evaporation_WasteHeat_AboveCond
 StartTemp:  999.0
@@ -562,7 +562,7 @@ Specific Heat Capacity:  1.0
 Specific Enthalpy:  0.0
 Heat Transfer Coefficient:  100
 Fluid Density 1000.0
-ID:  6d3d2e6c-d2de-49ed-8a93-0e93a6cdfa07
+ID:  6737c5c4-2af9-4943-9e02-fdc5404c8488
 
 Name:  whey evaporation_WasteHeat_Cond
 StartTemp:  75.0
@@ -579,7 +579,7 @@ Specific Heat Capacity:  4.19
 Specific Enthalpy:  -297.49
 Heat Transfer Coefficient:  5000
 Fluid Density 1000.0
-ID:  13e486bb-2e0e-4645-908b-b2d47c38c8bf
+ID:  a896cacf-3821-4424-bf48-4475f9756924
 
 Name:  whey evaporation_WasteHeat_BelowCond
 StartTemp:  999.0
@@ -596,7 +596,7 @@ Specific Heat Capacity:  22250.0
 Specific Enthalpy:  2225.0
 Heat Transfer Coefficient:  10000
 Fluid Density 1000
-ID:  96f00bb4-b814-44c4-b631-8efd62122396
+ID:  3c784342-5ad0-4e8d-8cee-ad83b83c17e8
 
 Name:  steam network_CondensateRecovery
 StartTemp:  110.0
@@ -613,7 +613,7 @@ Specific Heat Capacity:  20.0
 Specific Enthalpy:  -2000.0
 Heat Transfer Coefficient:  5000
 Fluid Density 1000.0
-ID:  aa32ab5c-6661-496a-866c-cb892aa00377
+ID:  543dc402-79eb-4926-be13-0bcd3d9dba72
 
 Name:  natural gas boiler_CombustionAir
 StartTemp:  25
@@ -630,7 +630,7 @@ Specific Heat Capacity:  1.2
 Specific Enthalpy:  138.769856634
 Heat Transfer Coefficient:  100
 Fluid Density 1.012
-ID:  fbf750dc-3aa0-4fc9-b5fb-b3133376d05e
+ID:  872ddbbb-fbf2-4759-94bd-67bdd0fc7d12
 
 Name:  natural gas boiler_ExhaustGas
 StartTemp:  140.641547195
@@ -647,7 +647,7 @@ Specific Heat Capacity:  1.12719
 Specific Enthalpy:  -97.5205868327
 Heat Transfer Coefficient:  100
 Fluid Density 1.23483
-ID:  e64c0736-3336-4224-b0cb-0100976e9e13
+ID:  403e02ab-ab03-4444-97b1-26c4f5b475e9
 
 fermenter_StartUp 35.0008033031 45.0 11.9786029412 Cold
 fermenter_Circulation 45.0 45.0 0.0 Hot
@@ -684,6 +684,90 @@ natural gas boiler_CombustionAir 25 140.641547195 1.54222772533 Cold
 natural gas boiler_ExhaustGas 140.641547195 54.125 1.53192892251 Hot
 only cold cp:  [0, 11.978602941176471, 85.851181232921576, 87.083533538258692, 88.62576126358455, 76.647158322408089, 76.647158322408089, 88.62576126358455, 86.646971064428229, 76.647158322408089, 76.647158322408089, 76.647158322408089, 75.414806017070958, 75.414806017070958, 221.40523178631332, 1.5422277253258652]
 NEW HR DATA 278 1
+CP:  311.436473934
+CP:  311.436473934
+CP:  6796.27720284
+CP:  0.0
+CP:  67.7793767935
+CP:  311.436473934
+CP:  6796.27720284
+CP:  0.0
+CP:  67.7793767935
+CP:  311.436473934
+CP:  6796.27720284
+CP:  178.345600284
+CP:  0.0
+CP:  67.7793767935
+CP:  0.0
+CP:  6796.27720284
+CP:  178.345600284
+CP:  0.0
+CP:  67.7793767935
+CP:  6796.27720284
+CP:  178.345600284
+CP:  119.776406963
+CP:  0.0
+CP:  67.7793767935
+CP:  6796.27720284
+CP:  178.345600284
+CP:  99.9981274202
+CP:  0.0
+CP:  67.7793767935
+CP:  6796.27720284
+CP:  178.345600284
+CP:  0.0
+CP:  67.7793767935
+CP:  6796.27720284
+CP:  178.345600284
+CP:  0.0
+CP:  67.7793767935
+CP:  0.0
+CP:  6796.27720284
+CP:  178.345600284
+CP:  0.0
+CP:  67.7793767935
+CP:  6796.27720284
+CP:  178.345600284
+CP:  0.0
+CP:  6796.27720284
+CP:  178.345600284
+CP:  6796.27720284
+CP:  178.345600284
+CP:  2198.63004061
+CP:  178.345600284
+CP:  178.345600284
+Cold Curves
+X:  311.436473934 Interval:  311.436473934
+Y:  1.99939871646 diffTemp:  1.99939871646
+X:  7419.15015071 Interval:  7107.71367677
+Y:  3.99939871646 diffTemp:  2.0
+X:  14594.6432043 Interval:  7175.49305357
+Y:  18.9993987165 diffTemp:  15.0
+X:  21948.4818581 Interval:  7353.83865385
+Y:  25.9993987165 diffTemp:  7.0
+X:  28990.884038 Interval:  7042.40217992
+Y:  26.0993987165 diffTemp:  0.1
+X:  36033.286218 Interval:  7042.40217992
+Y:  29.0002020196 diffTemp:  2.9008033031
+X:  43195.4648048 Interval:  7162.17858688
+Y:  38.9993987165 diffTemp:  9.9991966969
+X:  50337.8651122 Interval:  7142.40030734
+Y:  39.0993987165 diffTemp:  0.1
+X:  57380.2672921 Interval:  7042.40217992
+Y:  43.9993987165 diffTemp:  4.9
+X:  64422.669472 Interval:  7042.40217992
+Y:  44.0993987165 diffTemp:  0.1
+X:  71465.0716519 Interval:  7042.40217992
+Y:  58.9993987165 diffTemp:  14.9
+X:  78439.6944551 Interval:  6974.62280312
+Y:  59.0993987165 diffTemp:  0.1
+X:  85414.3172582 Interval:  6974.62280312
+Y:  93.9993987165 diffTemp:  34.9
+X:  87791.2928991 Interval:  2376.97564089
+Y:  94.0993987165 diffTemp:  0.1
+X:  87969.6384994 Interval:  178.345600284
+Y:  134.640945911 diffTemp:  40.541547195
+Hot Curves
 GCC Arrows: 
 54.9673822576 143.141547195 107.5 -1 5956.36138244 274.836911288
 0.0 107.5 102.6 1 5901.39400019 0.0
@@ -737,3 +821,7 @@ HCC Arrows
 213.055565529 10.0 8.0 1065.27782764
 213.055565529 8.0 4.0 1065.27782764
 213.055565529 4.0 999.0 1065.27782764
+x:[0, 311.43647393380746, 7419.150150708163, 14594.643204276061, 21948.481858127667, 28990.884038045464, 36033.286217963265, 43195.464804843956, 50337.865112181957, 57380.267292099757, 64422.669472017558, 71465.071651935359, 78439.694455059624, 85414.317258183873, 87791.292899077584, 87969.638499361288]
+y:[0, 1.99939871646, 3.99939871646, 18.99939871646, 25.99939871646, 26.099398716460001, 29.00020201956, 38.99939871646, 39.099398716460001, 43.99939871646, 44.099398716460001, 58.99939871646, 59.099398716459994, 93.999398716460007, 94.099398716460001, 134.64094591145999]
+x:[0]
+y:[0]

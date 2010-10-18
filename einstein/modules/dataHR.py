@@ -268,6 +268,11 @@ class Curve:
     Y = []
     Name = "None"
     
+    def __init__(self, Name = "None"):
+        self.Name = Name
+        self.X = []
+        self.Y = []
+    
     def loadFromData(self,curvedata):
         if (curvedata.IsValid):        
             self.Name = curvedata.Name

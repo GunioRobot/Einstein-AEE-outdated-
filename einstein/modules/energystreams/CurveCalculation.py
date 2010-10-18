@@ -1,5 +1,7 @@
 from einstein.GUI.status import *
 from einstein.modules.dataHR import *
+from einstein.modules.schedules import intervalsOnOffUnit
+from sets import Set
 __author__="Andre Rattinger"
 __date__ ="$25.09.2010 01:03:40$"
 
@@ -54,7 +56,97 @@ class CurveCalculation():
             self.streams = Status.int.NameGen.getAllStreams()
         except:
             self.streams = []
+        
+    def calc(self):
+        self.__calculateIntervals()
+        
+    def __calculateIntervals(self):
+        self.ColdIntervals = []
+        self.HotIntervals = []
+        self.seperateHotColdStreams(self.streams)
+        
+        self.ColdIntervals = self.getTemperatureLevels(self.ColdStreams)
+        self.HotIntervals = self.getTemperatureLevels(self.HotIntervals)
+
+        self.fillTemperatureLevels(self.ColdIntervals, self.ColdStreams)
+        self.fillTemperatureLevels(self.HotIntervals, self.HotStreams)
+
+        self.calculateVectors(self.ColdIntervals)
+        self.calculateVectors(self.HotIntervals)
+        
+        curveCCC = self.setColdCurves(self.ColdIntervals)
+        curveHCC = self.setHotCurves(self.HotIntervals)
+        
+        Status.int.hrdata.curves = [curveCCC, curveHCC]
+        
+    def setHotCurves(self, Intervals):
+        curve = Curve("HCC")
+        curve.X.append(0)
+        curve.Y.append(0)
+        
+        print "Hot Curves"
+        for interval in Intervals:
+            curve.X.append(curve.X[-1]+interval.CP)
+            curve.Y.append(curve.Y[-1]+abs(interval.StartTemp-interval.EndTemp))
+            print "X: ", str(curve.X[-1]), "Interval: ", str(interval.CP)
+            print "Y: ", str(curve.Y[-1]), "diffTemp: ", str(abs(interval.StartTemp-interval.EndTemp))
+
+        return curve
+#        Status.int.hrdata.curves[1] = curve
+        
+    def setColdCurves(self, Intervals):
+        curve = Curve("CCC")
+        
+        curve.X.append(0)
+        curve.Y.append(0)
+        
+        print "Cold Curves"
+        for interval in Intervals:
+            curve.X.append(curve.X[-1]+interval.CP)
+            curve.Y.append(curve.Y[-1]+abs(interval.StartTemp-interval.EndTemp))
+            print "X: ", str(curve.X[-1]), "Interval: ", str(interval.CP)
+            print "Y: ", str(curve.Y[-1]), "diffTemp: ", str(abs(interval.StartTemp-interval.EndTemp))
+
+        return curve
+#        Status.int.hrdata.curves[0] = curve
+
+    def calculateVectors(self, Intervals):
+        for i in xrange(len(Intervals)):
+            Intervals[i].calculateCP()
+
+    def fillTemperatureLevels(self, Intervals, streams):
+        
+        for interval in Intervals:
+            for stream in streams:
+                if stream.StartTemp.getAvg() <= interval.StartTemp and \
+                    stream.EndTemp.getAvg() >= interval.EndTemp:
+                    interval.Streams.append(stream)
+                
+
+    def seperateHotColdStreams(self, streams):
+        self.HotStreams = []
+        self.ColdStreams = []
+        for stream in streams:
+            if stream.HotOrCold == "Hot" or stream.HotOrCold == "Source":
+                self.HotStreams.append(stream)
+            else:
+                self.ColdStreams.append(stream)
+        
+    def getTemperatureLevels(self, streams):
+        lvl = []
+        for stream in streams:        
+            lvl.append(stream.StartTemp.getAvg())
+            lvl.append(stream.EndTemp.getAvg())
             
+        lvl = list(Set(lvl))
+        lvl.sort()
+        Intervals = []
+        for i in xrange(len(lvl)-1):
+            Intervals.append(Interval(lvl[i], lvl[i+1]))
+        
+        return Intervals
+    
+    
     def calculate(self):
         self.__getStreams()
 
@@ -73,6 +165,7 @@ class CurveCalculation():
         self.__calculateCCCResults()
         
         self.setDataCurves()
+        self.calc()
         
     def printResults(self):
         print "GCC Arrows: "
@@ -312,19 +405,19 @@ class CurveCalculation():
         
     def appendCurve(self, curve, curve_arrows):
         for elem in curve_arrows:
-            curve.X.append(elem.kw)
+            curve.X.append(elem.MCP)
             curve.Y.append(elem.StartTemp)
-            curve.X.append(elem.kw)
+            curve.X.append(elem.MCP)
             curve.Y.append(elem.EndTemp)
 
     def appendStartCurve(self, curve, curve_arrows):
         for elem in curve_arrows:
-            curve.X.append(elem.kw)
-            curve.Y.append(elem.StartTemp)
+            curve.X.append(elem.MCP)
+            curve.Y.append(abs(elem.StartTemp-elem.EndTemp))
             
     def appendEndCurve(self, curve, curve_arrows):
         for elem in curve_arrows:
-            curve.X.append(elem.kw)
+            curve.X.append(elem.MCP)
             curve.Y.append(elem.EndTemp)
 
 class ArrowCCCHCC():
@@ -401,6 +494,24 @@ class SortedList():
 
     def Values(self, i):
         return self.list[i].Value
+
+class Interval():
+    
+    StartTemp = None
+    EndTemp = None
+    Streams = []
+    CP = None
+    
+    def __init__(self, StartTemp, EndTemp):
+        self.StartTemp = StartTemp
+        self.EndTemp = EndTemp
+        self.Streams = []
+
+    def calculateCP(self):
+        self.CP = 0
+        for stream in self.Streams:
+            self.CP += stream.EnthalpyNom
+            print "CP: " , str(stream.EnthalpyNom)
 
 if __name__ == "__main__":
     print "Hello World";

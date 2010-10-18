@@ -435,6 +435,9 @@ class PanelHR(wx.Panel):
 #------------------------------------------------------------------------------		
 #        self.mod.initPanel()        # prepares data for plotting
         self.initCurves()
+        for elem in Status.int.hrdata.curves:
+            print "x:" + str(elem.X)
+            print "y:" + str(elem.Y)
         self.UpdateGrid()           
         self.UpdatePlot()          
         self.Show()
