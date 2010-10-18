@@ -144,7 +144,7 @@ class HRData:
                "StreamStatusSink":check(None),
                "StreamTypeSink":check(None),
                "StreamTypeSource":check(None),
-               "UA":check(max(UA))}
+               "UA":check(UA)}
         
         qhxTable = Status.DB.qheatexchanger
         newHXID = qhxTable.insert(tmphx)
