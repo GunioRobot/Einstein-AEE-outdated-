@@ -34,7 +34,7 @@ class HXCombination():
             self.combineStream(elem.combinedSink, elem.sinkstreams)
             pT = elem.combinedSink
             pT.outletTemp = self.combineSinkTempOut(elem.sinkstreams)
-            pT.inletTemp = self.combineTemp(pT.outletTemp, pT.stream.EnthalpyVector,\
+            pT.inletTemp = self.combineTempSink(elem.sinkstreams,pT.outletTemp, pT.stream.EnthalpyVector,\
                                                    pT.stream.MassFlowVector, pT.stream.SpecHeatCap)
 
             pT.stream.OperatingHours = self.combineOperatingHours(elem.sinkstreams)
@@ -59,8 +59,8 @@ class HXCombination():
             elem.combinedSource = pinchTemp()
             self.combineStream(elem.combinedSource, elem.sourcestreams)
             pT = elem.combinedSource
-            pT.inletTemp = self.combineSourceTempIn(elem.sourcestreams)
-            pT.outletTemp = self.combineTemp(pT.inletTemp, pT.stream.EnthalpyVector, \
+            pT.inletTemp = self.combineTempIn(elem.sourcestreams)
+            pT.outletTemp = self.combineTempSource(pT.inletTemp, pT.stream.EnthalpyVector, \
                                                  pT.stream.MassFlowVector, pT.stream.SpecHeatCap)
 
             pT.stream.OperatingHours = self.combineOperatingHours(elem.sourcestreams)
@@ -157,7 +157,7 @@ class HXCombination():
         return combH
 
 
-    def combineSourceTempIn(self, pinchstreams):
+    def combineTempIn(self, pinchstreams):
         TIn = 0
         div = 0
         for elem in pinchstreams:
@@ -179,13 +179,30 @@ class HXCombination():
 
 #            pT.inletTemp = self.combineTemp(pT.outletTemp, pT.stream.EnthalpyVector,\
 #                                                   pT.stream.MassFlowVector, pT.stream.SpecHeatCap)
-    def combineTemp(self, T, Hcomb, mcomb, cpcomb):
+    def combineTempSource(self, T, Hcomb, mcomb, cpcomb):
         Treturn = []
         for i in xrange(Status.Nt):
             Treturn.append(0)
             if mcomb[i] == 0 or cpcomb == 0:
                 Treturn[i] = T
+
             else: Treturn[i] = T - Hcomb[i]/(mcomb[i]*cpcomb)
+            
+        return Treturn
+
+    def combineTempSink(self, pinchstreams, T, Hcomb, mcomb, cpcomb):
+        Treturn = []
+
+        mw = self.combineTempIn(pinchstreams)
+        
+        for i in xrange(Status.Nt):
+            Treturn.append(0)
+            if mcomb[i] == 0 or cpcomb == 0:
+                Treturn[i] = mw
+
+            else: Treturn[i] = T - Hcomb[i]/(mcomb[i]*cpcomb)
+            
+        
         return Treturn
 
 
@@ -283,6 +300,7 @@ class HXSimulation():
     UA = None
     hxPinchCon= None
 
+
     def __init__(self, Thsin, Tcsin, Q=None, Energy=None, Thsout=None, Tcsout=None, UA=10000, hxPinchCon = None):
         self.Thsin = self.toList(Thsin, Status.Nt)
         self.Tcsin = self.toList(Tcsin, Status.Nt)
@@ -302,6 +320,7 @@ class HXSimulation():
         self.dTmin = 5
         self.QHX1hs = None
         self.QHX1cs = None
+        self.StorageSize=0
 
         self.data = HRData(Status.PId,Status.ANo)
         self.mod = Status.mod.moduleHR
@@ -331,6 +350,7 @@ class HXSimulation():
         self.dThs = None
         self.dTcs = None
         self.QStorage = None
+        self.StorageSize=0
 
     def startSimulation(self):
 #        self.getStartQHXVector()
@@ -355,6 +375,8 @@ class HXSimulation():
             print "CheckQHX"
             self.checkQHX()
             self.printBasicValues()
+            
+            self.dThs = self.calculateDThs()
             print "CalculateQStorage"
             self.calculateQStorage()
             self.printBasicValues()
@@ -379,14 +401,21 @@ class HXSimulation():
             self.mod.doHXPostProcessing(self.QHX1cs)
             print "Finished Basic Calculation"
     
+            
+            
+
+    
+    
             if len(self.hxPinchCon.sinkstreams)>1:
                 # Insert List of new inlet/outletTemp in the right order
                 # inletTSink = [sinktemp1, sinktemp2, ...]
                 pass
             elif len(self.hxPinchCon.sinkstreams)==1:
-                inletTSink = [self.hxPinchCon.sinkstreams[0].inletTemp]
-                outletTSink = [self.hxPinchCon.sinkstreams[0].outletTemp]
-                HeatFlowPercentSink = [self.hxPinchCon.sinkstreams[0].percentHeatFlow]
+                tcsin = self.getNonZeroAverage(self.Tcsin, self.QHX1cs)
+                tcsout = self.getNonZeroAverage(self.Tcsout, self.QHX1cs)
+                inletTSink = [tcsin]
+                outletTSink = [tcsout]
+                HeatFlowPercentSink = [sum(self.bhxcs)/len(self.bhxcs)]
             else:
                 inletTSink = []
                 outletTSink = []
@@ -395,9 +424,11 @@ class HXSimulation():
             if len(self.hxPinchCon.sourcestreams)>1:
                 pass
             elif len(self.hxPinchCon.sourcestreams)==1:
-                inletTSource = [self.hxPinchCon.sourcestreams[0].inletTemp]
-                outletTSource = [self.hxPinchCon.sourcestreams[0].outletTemp]
-                HeatFlowPercentSource = [self.hxPinchCon.sourcestreams[0].percentHeatFlow]
+                thsin = self.getNonZeroAverage(self.Thsin, self.QHX1hs)
+                thsout = self.getNonZeroAverage(self.Thsout, self.QHX1hs)
+                inletTSource = [thsin]
+                outletTSource = [thsout]
+                HeatFlowPercentSource = [sum(self.bhxhs)/len(self.bhxhs)]
             else:
                 inletTSource = []
                 outletTSource = []
@@ -406,7 +437,7 @@ class HXSimulation():
     
             Status.int.hrdata.storeHXData(self.hxPinchCon, self.QHX1cs, self.UA, self.Tloghx, self.Tcsin, self.Tcsout, 
                                           self.Thsin, self.Thsout, inletTSink, outletTSink, HeatFlowPercentSink, inletTSource,
-                                          outletTSource, HeatFlowPercentSource)
+                                          outletTSource, HeatFlowPercentSource, self.StorageSize)
             
 
         elif (self.Thsout == None and self.Tcsout == None) or (self.bhxcs != None and self.bhxhs != None):
@@ -430,6 +461,14 @@ class HXSimulation():
         print "bhxhs: " + str(self.bhxhs)
 #        print "" + str()
 
+    def getNonZeroAverage(self, T, Q):
+        t = []
+        for i in xrange(Status.Nt):
+            if Q[i] != 0:
+                t.append(T[i])
+        
+        return sum(t)/len(t)
+
     def adaptQHX(self):
         for i in xrange(Status.Nt):
             if self.QHX1hs[i] > self.QHX1cs[i]:
@@ -445,7 +484,7 @@ class HXSimulation():
                     T = self.Tcsout[i]-Td
                 else:
                     T = self.Tcsout-Td
-                self.Tcsout[i]=self.Tcsout[i]-(T*self.mcs[i]*self.cpcs*self.bhxcs[i])/(self.mhs[i]*self.cphs*self.bhxhs[i])
+                self.Tcsout[i]=self.Tcsout[i]-(T*self.mcs[i]*self.cpcs*self.bhxcs[i]/100)/(self.mhs[i]*self.cphs*self.bhxhs[i]/100)
 
             elif self.QHX1hs[i] < self.QHX1cs[i]:
                 if type(self.Tcsin)==type([]):
@@ -461,7 +500,7 @@ class HXSimulation():
                 else:
                     T = Td-self.Tcsout
 
-                self.Tcsout = self.Tcsout + (T*self.mhs[i]*self.cphs*self.bhxhs[i])/(self.mcs[i]*self.cpcs*self.bhxcs[i])
+                self.Tcsout = self.Tcsout + (T*self.mhs[i]*self.cphs*self.bhxhs[i]/100)/(self.mcs[i]*self.cpcs*self.bhxcs[i]/100)
 
 
 
@@ -482,11 +521,12 @@ class HXSimulation():
             self.Tcsout = self.Thsin - self.dTmin
 
     def checkQ(self):
-
+        self.UA = [self.UA]*Status.Nt
         for i in xrange(Status.Nt):
-            if self.UA * self.Tloghx[i] != self.QHX1cs[i]:
-                self.UA = self.QHX1cs[i]/self.Tloghx[i]
-            
+            if self.UA[i] * self.Tloghx[i] != self.QHX1cs[i]:
+                self.UA[i] = self.QHX1cs[i]/self.Tloghx[i]
+        self.UA = max(self.UA)
+        
     def checkQHX(self):
 
         mhs = self.hxPinchCon.combinedSource.stream.MassFlowVector
@@ -517,13 +557,13 @@ class HXSimulation():
                         Thsout = self.Thsout[i]
                     else: Thsout = self.Thsout
 
-                    self.bhxhs[i] = self.QHX1cs[i]/(mhs[i]*cphs*(Thsin-Thsout))
-                    self.mhshx1[i] = mhs[i]*self.bhxhs[i]
+                    self.bhxhs[i] = self.QHX1cs[i]/(mhs[i]*cphs*(Thsin-Thsout))*100
+                    self.mhshx1[i] = mhs[i]*self.bhxhs[i]/100
 
                     # CalculateHXoverHS -> Single Value
-                    self.QHX1hs[i] = mhs[i]*self.bhxhs[i]*cphs*dThs[i]
+                    self.QHX1hs[i] = mhs[i]*self.bhxhs[i]*cphs*dThs[i]/100
                     # CalculateHXoverCS -> Single Value
-                    self.QHX1cs[i] = mcs[i]*self.bhxcs[i]*cpcs*dTcs[i]
+                    self.QHX1cs[i] = mcs[i]*self.bhxcs[i]*cpcs*dTcs[i]/100
                 elif self.QHX1hs[i] < self.QHX1cs[i]:
 
                     if type(self.Tcsout)==type([]):
@@ -537,15 +577,15 @@ class HXSimulation():
                     if (mcs[i]*cpcs*(Tcsout-Tcsin)) == 0:
                         self.bhxcs[i] = 0
                     else:
-                        self.bhxcs[i] = self.QHX1hs[i]/(mcs[i]*cpcs*(Tcsout-Tcsin))
+                        self.bhxcs[i] = self.QHX1hs[i]/(mcs[i]*cpcs*(Tcsout-Tcsin))*100
                     
 #                    if type(mcs)==type([]):
-                    self.mcshx1[i] = mcs[i]*self.bhxcs[i]
+                    self.mcshx1[i] = mcs[i]*self.bhxcs[i]/100
 
                     # CalculateHXoverHS -> Single Value
-                    self.QHX1hs[i] = mhs[i]*self.bhxhs[i]*cphs*dThs[i]
+                    self.QHX1hs[i] = mhs[i]*self.bhxhs[i]/100*cphs*dThs[i]
                     # CalculateHXoverCS -> Single Value
-                    self.QHX1cs[i] = mcs[i]*self.bhxcs[i]*cpcs*dTcs[i]
+                    self.QHX1cs[i] = mcs[i]*self.bhxcs[i]/100*cpcs*dTcs[i]
 
                 else:
                     pass
@@ -567,9 +607,12 @@ class HXSimulation():
 
             if self.Thsout[i] < Tcsin + self.dTmin:
                 self.Thsout[i] = Tcsin + self.dTmin
-                self.QHX1hs[i] = mhs[i]*self.bhxhs[i]*cphs*dThs[i]
-                self.bhxcs[i] = self.QHX1hs[i]/(mcs[i]*cpcs*(self.Tcsout[i]-Tcsin))
-                self.mcshx1[i] = mcs[i]*self.bhxcs[i]
+                self.QHX1hs[i] = mhs[i]*self.bhxhs[i]/100*cphs*dThs[i]
+                if (self.Tcsout[i]-Tcsin)==0:
+                    self.bhxcs[i]=0
+                else:
+                    self.bhxcs[i] = self.QHX1hs[i]/(mcs[i]*cpcs*(self.Tcsout[i]-Tcsin))*100
+                self.mcshx1[i] = mcs[i]*self.bhxcs[i]/100
 
     def adaptTcsout(self):
 
@@ -586,14 +629,14 @@ class HXSimulation():
                 Thsin = self.Thsin[i]
             else: Thsin = self.Thsin
 
-            if self.Tcsout[i] < Thsin - self.dTmin:
+            if self.Tcsout[i] > Thsin - self.dTmin:
                 self.Tcsout[i] = Thsin - self.dTmin
-                self.QHX1cs[i] = mcs[i]*self.bhxcs[i]*cpcs*dTcs[i]
+                self.QHX1cs[i] = mcs[i]*self.bhxcs[i]/100*cpcs*dTcs[i]
                 if mhs[i]*cphs*(Thsin-self.Thsout[i]) != 0:
-                    self.bhxhs[i] = self.QHX1cs[i]/(mhs[i]*cphs*(Thsin-self.Thsout[i]))
+                    self.bhxhs[i] = self.QHX1cs[i]/(mhs[i]*cphs*(Thsin-self.Thsout[i]))*100
                 else: self.bhxhs[i] = 0
 
-                self.mhshx1[i] = mhs[i]*self.bhxhs[i]
+                self.mhshx1[i] = mhs[i]*self.bhxhs[i]/100
 
 #    def adaptBhxhs(self):
 #        self.mhshx1 = []
@@ -623,18 +666,25 @@ class HXSimulation():
             if type(self.Tcsin)==type([]):
                 Tcsin = self.Tcsin[i]
             else: Tcsin = self.Tcsin
-
-            mlog = (Thsin-self.Tcsout[i])/(self.Thsout[i]-Tcsin)
-#            print "mlog: " + str(mlog)
-            if mlog < 1:
-                mlog = 1
-            mlog = math.log(mlog)
-#            print "mlog: " + str(mlog)
-            if mlog == 0:
-                self.Tloghx.append(1)
+            
+            if self.QHX1hs != 0:
+                mlog = (Thsin-self.Tcsout[i])/(self.Thsout[i]-Tcsin)
+    #            print "mlog: " + str(mlog)
+                if mlog==1:
+                    self.Tloghx.append(Thsin-self.Tcsout[i])
+                else:
+                    if mlog < 1:
+                        mlog = 1
+                    mlog = math.log(mlog)
+    #            print "mlog: " + str(mlog)
+                    if mlog == 0:
+                        self.Tloghx.append(1)
+                    else:
+                        self.Tloghx.append(((Thsin-self.Tcsout[i])-(self.Thsout[i]-Tcsin))/mlog)
             else:
-                self.Tloghx.append(((Thsin-self.Tcsout[i])-(self.Thsout[i]-Tcsin))/mlog)
-
+                self.Tloghx.append(1)
+                
+                
         self.Q = []
         for elem in self.Tloghx:
             self.Q.append(self.UA*elem)
@@ -647,9 +697,13 @@ class HXSimulation():
         for i in xrange(Status.Nt):
             mhsi = mhs[i]
             dTi = dThs[i]
-            self.QHX1hs.append(mhsi*self.bhxhs[i]*cphs*dTi)
+            self.QHX1hs.append(mhsi*self.bhxhs[i]/100*cphs*dTi)
 #            self.QHX1hs.append(mhs[i]*self.bhxhs*cphs*dThs[i])
 
+# Check einfuehren, ob Thsout richtig, wenn Enthapiy = 0
+        for i in xrange(Status.Nt):
+            if self.QHX1hs[i]==0:
+                self.Thsout[i]=self.Thsin[i]
 
     def calculateHXoverCS(self):
         self.QHX1cs = []
@@ -657,7 +711,12 @@ class HXSimulation():
         cpcs = self.hxPinchCon.combinedSink.stream.SpecHeatCap
         dTcs = self.calculateDTcs()
         for i in xrange(Status.Nt):
-            self.QHX1cs.append(mcs[i]*self.bhxcs[i]*cpcs*dTcs[i])
+            self.QHX1cs.append(mcs[i]*self.bhxcs[i]/100*cpcs*dTcs[i])
+
+# Check einfuehren, ob Thsout richtig, wenn Enthapiy = 0
+        for i in xrange(Status.Nt):
+            if self.QHX1cs[i]==0:
+                self.Tcsout[i]=min(self.Tcsin)
 
     def calculateDThs(self):
         dThs = []
@@ -706,10 +765,10 @@ class HXSimulation():
         if type(self.Tcsout) != type([]):
             if type(self.Thsin) == type([]):
                 for i in xrange(Status.Nt):
-                    if self.Tcsout < self.Thsin[i] - self.dTmin:
+                    if self.Tcsout > self.Thsin[i] - self.dTmin:
                         self.Tcsout = self.Thsin[i] - self.dTmin
             else: 
-                if self.Tcsout < self.Thsin - self.dTmin:
+                if self.Tcsout > self.Thsin - self.dTmin:
                     self.Tcsout = self.Thsin - self.dTmin
         else:
             for i in xrange(Status.Nt):
@@ -717,27 +776,20 @@ class HXSimulation():
                     Thsinv = self.Thsin[i]
                 else: Thsinv = self.Thsin
 
-                if self.Tcsout[i] < Thsinv - self.dTmin:
+                if self.Tcsout[i] > Thsinv - self.dTmin:
                     self.Tcsout[i] = Thsinv - self.dTmin
 
     def calculateTcsoutOverHXStorage(self):
 #        self.Tcsout = []
         mcs = self.hxPinchCon.combinedSink.stream.MassFlowVector
         cpcs = self.hxPinchCon.combinedSink.stream.SpecHeatCap
-        print "overHXStorage Values: "
-#        print self.Tcsin
-#        print type(self.Tcsin[0])
-#        print self.QStorage
-#        print type(self.QStorage[0])
-#        print mcs
-#        print self.bhxcs
-#        print type(self.bhxcs[0])
+
         for i in xrange(Status.Nt):
             if type(self.Tcsin) == type([]):
                 Tcsin = self.Tcsin[i]
             else: Tcsin = self.Tcsin
             if (mcs[i]*cpcs*self.bhxcs[i]) != 0:
-                self.Tcsout[i] = Tcsin + self.QStorage[i]/(mcs[i]*cpcs*self.bhxcs[i])
+                self.Tcsout[i] = Tcsin + self.QStorage[i]/(mcs[i]*cpcs*self.bhxcs[i]/100)
             else:
                 self.Tcsout[i] = Tcsin
                 
@@ -746,7 +798,7 @@ class HXSimulation():
         mcs = self.hxPinchCon.combinedSink.stream.MassFlowVector
         cpcs = self.hxPinchCon.combinedSink.stream.SpecHeatCap
         for i in xrange(Status.Nt):
-            self.Tcsout.append(self.Tcsin + self.QHX1hs[i]/(mcs[i]*cpcs*self.bhxcs[i]))
+            self.Tcsout.append(self.Tcsin + self.QHX1hs[i]/(mcs[i]*cpcs*self.bhxcs[i]/100))
 
     def calculateThsoutOverHX(self):
         self.Thsout = []
@@ -758,13 +810,9 @@ class HXSimulation():
                 Thsin = self.Thsin[i]
             else: Thsin = self.Thsin
 
-#            print str(type(Thsin)) + str(Thsin)
-#            print str(type(self.QHX1cs[i])) + str(self.QHX1cs[i])
-#            print str(type(mhs[i])) + str(mhs[i])
-#            print str(type(cphs)) + str(cphs)
-#            print str(type(self.bhxhs[i])) + str(self.bhxhs[i])
-            if (mhs[i]*cphs*self.bhxhs[i]) != 0:
-                self.Thsout.append(Thsin - self.QHX1cs[i]/(mhs[i]*cphs*self.bhxhs[i]))
+
+            if (mhs[i]*cphs*self.bhxhs[i]/100) != 0:
+                self.Thsout.append(Thsin - self.QHX1cs[i]/(mhs[i]*cphs*self.bhxhs[i]/100))
             else:
                 self.Thsout.append(Thsin)
 
@@ -796,7 +844,7 @@ class HXSimulation():
                 pass
             if type(self.Thsin) == type([]):
                 for i in xrange(Status.Nt):
-                    self.Thsout.append(self.Thsin[i] - self.Q/(mhsAvg*cphs*self.bhxhs[i]))
+                    self.Thsout.append(self.Thsin[i] - self.Q/(mhsAvg*cphs*self.bhxhs[i]/100))
             else:
                 print "bhxhs: " + str(self.bhxhs)
                 print "Q: " + str(self.Q)
@@ -806,7 +854,7 @@ class HXSimulation():
 
 
                 
-                self.Thsout.append(self.Thsin - self.Q/(mhsAvg*cphs*self.bhxhs))
+                self.Thsout.append(self.Thsin - self.Q/(mhsAvg*cphs*self.bhxhs/100))
                 self.Thsout = self.Thsout*Status.Nt
 
 
@@ -819,10 +867,10 @@ class HXSimulation():
                 pass
             if type(self.Tcsin) == type([]):
                 for i in xrange(Status.Nt):
-                    self.Tcsout.append(self.Tcsin[i] + self.Q/(mcsAvg*cpcs*self.bhxcs[i]))
+                    self.Tcsout.append(self.Tcsin[i] + self.Q/(mcsAvg*cpcs*self.bhxcs[i]/100))
             else:
 
-                self.Tcsout.append(self.Tcsin + self.Q/(mcsAvg*cpcs*self.bhxcs[i]))
+                self.Tcsout.append(self.Tcsin + self.Q/(mcsAvg*cpcs*self.bhxcs[i]/100))
                 self.Tcsout = self.Tcsout*Status.Nt
 #            print "Tcsin: " + str(self.Tcsin)
 #            print "mcsAvg: " + str(mcsAvg)
@@ -945,6 +993,18 @@ class HXSimulation():
             else:
                 self.QStorage[i] = self.QHX1hs[i] + realStorageOut[i]
 
+# calculate storage size
+        storagesize = []
+        for i in xrange(Status.Nt):
+            storagesize.append(0)
+            if (self.hxPinchCon.combinedSource.stream.MassFlowVector[i]*self.hxPinchCon.combinedSource.stream.SpecHeatCap*(self.dThs[i]))!=0:
+                storagesize[i]=self.QStorage[i]/(self.hxPinchCon.combinedSource.stream.MassFlowVector[i]\
+                                             *self.hxPinchCon.combinedSource.stream.SpecHeatCap*(self.dThs[i]))
+        self.StorageSize=max(storagesize)
+        
+        self.QHX1hs = self.QStorage
+#        self.StorageSize=50
+        
 #    def calculateTcsoutOverHX(self):
 #        Tcsout = []
 #        mcs = self.hxPinchCon.combinedSink.stream.MassFlowVector

@@ -832,28 +832,36 @@ class ProcessStreams(StreamUtils, StreamSet):
         stream.Type = self.getStreamType(stream.StartTemp.getAvg(), stream.EndTemp.getAvg())
         stream.SpecHeatCap = SpecHeatCap
 #        print "name: " + str(stream.name)
-#        stream.SpecEnthalpy = self.getSpecificEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap)
-#        if val.VOutFlowCycle != None:
-#            stream.MassFlowAvg, stream.MassFlowVector = self.massFlow.getMassFlowWH(stream.FluidDensity, VOutflowCycle = val.VOutFlowCycle)
-#        elif val.mOutFlowNom != None:
-#            stream.MassFlowAvg, stream.MassFlowVector = self.massFlow.getMassFlowWH(stream.FluidDensity, mOutflowNom = val.mOutFlowNom)
-#        else:
-#            stream.MassFlowAvg = 0
-#            stream.MassFlowVector = []
+        stream.SpecEnthalpy = self.getSpecificEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap)
+        if val.VOutFlowCycle != None:
+            stream.MassFlowAvg, stream.MassFlowVector = self.massFlow.getMassFlowWH(stream.FluidDensity, VOutflowCycle = val.VOutFlowCycle)
+        elif val.mOutFlowNom != None:
+            stream.MassFlowAvg, stream.MassFlowVector = self.massFlow.getMassFlowWH(stream.FluidDensity, mOutflowNom = val.mOutFlowNom)
+        else:
+            stream.MassFlowAvg = 0
+            stream.MassFlowVector = []
             
 #       stream.EnthalpyNom, stream.EnthalpyVector = self.getEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap, stream.MassFlowVector, stream.MassFlowAvg)
 
         ProcessID = self.getProcessNr(stream)
-        
-        if val.TCond < val.PTFinal:
-            #in this case desuperheating is definitely  the only waste heat stream:
+        if val.TCond > val.PTOutFlow:
+                #no superheating stream exists
+            #stream.EnthalpyVector=[0]*Status.Nt
+            #ACHTUNG!!! ZU AENDERN
             stream.EnthalpyVector = Status.int.UPH_w_t[stream.DBID]
-        else:
-            stream.EnthalpyVector = Status.int.UPH_w_t[stream.DBID] 
+        else:        
+            if val.TCond < val.PTFinal:
+                #in this case desuperheating is definitely  the only waste heat stream:
+                stream.EnthalpyVector = Status.int.UPH_w_t[stream.DBID]
+            else:
+#                stream.EnthalpyVector = Status.int.UPH_w_t[stream.DBID] 
             #waste heat vector must be corrected
-            #for i in xrange (Status.Nt):
-                
-                #stream.EnthalpyVector[i]=(Status.int.UPH_w_t[stream.DBID][i]-(stream.MassFlowVector[i]*val.XOutFlow*val.LatentHeat)-(stream.MassFlowVector[i]*val.FluidCp*(val.TCond-val.PTFinal)))
+                if val.XOutFlow != None:
+                    for i in xrange (Status.Nt):
+                        stream.EnthalpyVector[i]=(Status.int.UPH_w_t[stream.DBID][i]-(stream.MassFlowVector[i]*val.FluidCp*(val.TCond-val.PTFinal)))                
+                else:
+                    for i in xrange (Status.Nt):      
+                        stream.EnthalpyVector[i]=(Status.int.UPH_w_t[stream.DBID][i]-(stream.MassFlowVector[i]*val.XOutFlow*val.LatentHeat)-(stream.MassFlowVector[i]*val.FluidCp*(val.TCond-val.PTFinal)))
            
         stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, stream.EndTemp, stream.StartTemp)
         stream.MassFlowAvg=max(stream.MassFlowVector)
@@ -877,7 +885,7 @@ class ProcessStreams(StreamUtils, StreamSet):
         """
         val = stream.BaseValues
         stream.FluidDensity = 1000
-        if val.PTOutFlow >= val.TCond:
+        if val.PTOutFlow >= val.TCond and val.TCond > val.PTFinal:
             stream.StartTemp.setAverageTemperature(val.TCond)
             stream.EndTemp.setAverageTemperature(val.TCond-0.1)
         else:
@@ -889,15 +897,15 @@ class ProcessStreams(StreamUtils, StreamSet):
 
         stream.SpecEnthalpy = val.LatentHeat
         stream.SpecHeatCap = stream.SpecEnthalpy*10
-#        stream.MassFlowAvg, stream.MassFlowVector = self.massFlow.getMassFlowWHCond(VOutflowCycle = val.VOutFlowCycle, FluidDensity = stream.FluidDensity, XOutFlow = val.XOutFlow, mOutflowNom = val.mOutFlowNom)
-#        stream.EnthalpyNom, stream.EnthalpyVector = self.getEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap, stream.MassFlowVector, stream.MassFlowAvg)
+        stream.MassFlowAvg, stream.MassFlowVector = self.massFlow.getMassFlowWHCond(VOutflowCycle = val.VOutFlowCycle, FluidDensity = stream.FluidDensity, XOutFlow = val.XOutFlow, mOutflowNom = val.mOutFlowNom)
+        stream.EnthalpyNom, stream.EnthalpyVector = self.getEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap, stream.MassFlowVector, stream.MassFlowAvg)
         ProcessID = self.getProcessNr(stream)
-        if val.PTOutFlow >= val.TCond:
+        if val.PTOutFlow < val.TCond or val.TCond <= val.PTFinal:
             #condensation is relevant
-            stream.EnthalpyVector = Status.int.UPH_w_t[stream.DBID]
-        else:
-            #condensation is not relevant
-			stream.EnthalpyVector = [0]*Status.Nt
+            stream.EnthalpyVector = [0]*Status.Nt
+#        else:
+            #condensation is not relevant, Enthalpy vector stays as calculated
+
                 
         stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, stream.EndTemp, stream.StartTemp)
         stream.MassFlowAvg=max(stream.MassFlowVector)
@@ -927,20 +935,31 @@ class ProcessStreams(StreamUtils, StreamSet):
         stream.Type = self.getStreamType(stream.StartTemp.getAvg(), stream.EndTemp.getAvg())
         stream.SpecHeatCap = val.FluidCp
         stream.SpecEnthalpy = self.getSpecificEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap)
-#        if val.VOutFlowCycle != None:
-#            stream.MassFlowAvg, stream.MassFlowVector = self.massFlow.getMassFlowWH(stream.FluidDensity, VOutflowCycle = val.VOutFlowCycle)
-#        elif val.mOutFlowNom != None:
-#            stream.MassFlowAvg, stream.MassFlowVector = self.massFlow.getMassFlowWH(stream.FluidDensity, mOutflowNom = val.mOutFlowNom)
+        if val.VOutFlowCycle != None:
+            stream.MassFlowAvg, stream.MassFlowVector = self.massFlow.getMassFlowWH(stream.FluidDensity, VOutflowCycle = val.VOutFlowCycle)
+        elif val.mOutFlowNom != None:
+            stream.MassFlowAvg, stream.MassFlowVector = self.massFlow.getMassFlowWH(stream.FluidDensity, mOutflowNom = val.mOutFlowNom)
 #        stream.EnthalpyNom, stream.EnthalpyVector = self.getEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap, stream.MassFlowVector, stream.MassFlowAvg)
         ProcessID = self.getProcessNr(stream)
-        if val.TCond < val.PTOutFlow:
-            #in this case Subcooling is definitely not the only waste heat stream:
-            stream.EnthalpyVector = Status.int.UPH_w_t[stream.DBID] 
-            #for i in xrange (Status.Nt):
-                #stream.EnthalpyVector[i]=(Status.int.UPH_w_t[stream.DBID][i]-(stream.MassFlowVector[i]*val.XOutFlow*val.LatentHeat)-(stream.MassFlowVector[i]*val.VaporCp*(val.PTOutFlow-val.TCond)))
-        else:
+        
+        if val.TCond > val.PTOutFlow:
             #only subcooling exists, waste heat vector can be taken 1:1
-            stream.EnthalpyVector = Status.int.UPH_w_t[stream.DBID]           
+            stream.EnthalpyVector = Status.int.UPH_w_t[stream.DBID]      
+             
+        else:        
+            if val.TCond < val.PTFinal:
+            #no subcooling stream exists
+                stream.EnthalpyVector=[0]*Status.Nt
+            else:
+            #waste heat vector must be corrected
+                if val.XOutFlow != None:
+                    for i in xrange (Status.Nt):
+                        stream.EnthalpyVector[i]=(Status.int.UPH_w_t[stream.DBID][i]-(stream.MassFlowVector[i]*val.VaporCp*(val.PTOutFlow-val.TCond)))            
+                else:
+                    for i in xrange (Status.Nt):      
+                        stream.EnthalpyVector[i]=(Status.int.UPH_w_t[stream.DBID][i]-(stream.MassFlowVector[i]*val.XOutFlow*val.LatentHeat)-(stream.MassFlowVector[i]*val.VaporCp*(val.PTOutFlow-val.TCond)))
+
+        
 
         stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, stream.EndTemp, stream.StartTemp)
         stream.MassFlowAvg=max(stream.MassFlowVector)

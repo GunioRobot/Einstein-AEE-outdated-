@@ -37,7 +37,7 @@
 #==============================================================================
 import wx
 import wx.xrc
-import os
+import os, sys
 import pSQL
 from datetime import *
 from status import Status
@@ -222,7 +222,7 @@ class PanelQ3(wx.Panel):
         self.listBoxProcesses.SetFont(fp.getFont())
         self.Bind(wx.EVT_LISTBOX, self.OnListBoxProcessesClick, self.listBoxProcesses)
 
-        p1 = wx.StaticBitmap(bitmap=wx.Bitmap(os.path.join('img', 'Q3.png'),
+        p1 = wx.StaticBitmap(bitmap=wx.Bitmap(os.path.join(sys.path[0], 'img', 'Q3.png'),
                                              wx.BITMAP_TYPE_PNG),
                                              id= -1,
                                              parent=self.page5,

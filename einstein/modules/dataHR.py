@@ -89,7 +89,8 @@ class HRData:
                         
     def storeHXData(self, HXPinchConnection, QHX_t, UA, Tloghx, \
                     HXTSinkInlet, HXTSinkOutlet, HXTSourceInlet, HXTSourceOutlet,\
-                    inletTSink, outletTSink, HeatFlowPercentSink, inletTSource, outletTSource, HeatFlowPercentSource):
+                    inletTSink, outletTSink, HeatFlowPercentSink, inletTSource, outletTSource, \
+                    HeatFlowPercentSource, StorageSize):
         
         print inletTSink
         print outletTSink
@@ -152,7 +153,7 @@ class HRData:
                "TurnKeyPrice":check(None),
                "OMFix":check(None),
                "OMVar":check(None),
-               "StorageSize":check(None),
+               "StorageSize":check(StorageSize),
                "StreamStatusSource":check(None),
                "StreamStatusSink":check(None),
                "StreamTypeSink":check(None),
