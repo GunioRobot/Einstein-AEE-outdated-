@@ -141,8 +141,16 @@ class ModuleHR(object):
         self.__updateReportData()
         self.__updateCurveData()    
 
+    def updateHXData(self):
+        self.data = Status.int.hrdata
+        self.data.loadDatabaseData()  
+#        self.__updateGridData()
+#        self.__updateReportData()
+#        self.__updateCurveData()  
+
     def __updateGridData(self): 
         try:     
+            print "Grid Data Update"
             dataList = []  
             index = 0
             for hx in self.data.hexers:

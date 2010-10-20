@@ -105,7 +105,7 @@ class HRData:
         combinedSource = HXPinchConnection.combinedSource
         try:      
             sqlQuery = "ProjectID = '%s' AND AlternativeProposalNo = '%s' AND QHeatExchanger_ID = '%s'"%(self.pid,self.ano, HXID)
-            self.hexers.append(Status.DB.qheatexchanger.sql_select(sqlQuery))
+            self.hexers = [Status.DB.qheatexchanger.sql_select(sqlQuery)]
             
             streamQuery = "qheatexchanger_QHeatExchanger_Id = '%s'"%(HXID)
             hxconn = Status.DB.heatexchanger_pinchstream.sql_select(streamQuery)
@@ -134,22 +134,22 @@ class HRData:
         tmphx = {"ProjectID":self.pid,
                "AlternativeProposalNo":self.ano,
                "HXNo":hx[0].HXNo,
-               "HXName":check(str(hx[0].HXName) + str("_new")),
+               "HXName":check(str(hx[0].HXName+ str("_new"))),# 
                "HXType":check(hx[0].HXType),
                "QdotHX":check(max(QHX_t)),
-               "HXLMTD":check(max(Tloghx)),
+               "HXLMTD":check(Tloghx),
                "Area":check(None),
                "QHX":check(sum(QHX_t)),
                "HXSource":check(SourceName),
                "FluidIDSource":check(None),
-               "HXTSourceInlet":check(max(HXTSourceInlet)),
+               "HXTSourceInlet":check(HXTSourceInlet),
                "HXhSourceInlet":check(None),
-               "HXTSourceOutlet":check(max(HXTSourceOutlet)),
+               "HXTSourceOutlet":check(HXTSourceOutlet),
                "HXhSourceOutlet":check(None),
                "HXSink":check(SinkName),
                "FluidIDSink":check(None),
-               "HXTSinkInlet":check(max(HXTSinkInlet)),
-               "HXTSinkOutlet":check(max(HXTSinkOutlet)),
+               "HXTSinkInlet":check(HXTSinkInlet),
+               "HXTSinkOutlet":check(HXTSinkOutlet),
                "TurnKeyPrice":check(None),
                "OMFix":check(None),
                "OMVar":check(None),
@@ -204,8 +204,8 @@ class HRData:
                 Status.int.HXPinchConnection[i].HXID = newHXID
         
 #        # Delete old HXs from DB
-#        delquery = "DELETE FROM qheatexchanger  WHERE ProjectID=%s AND AlternativeProposalNo=%s AND QHeatExchanger_ID = '%s'" % (self.pid,self.ano, HXID)
-#        Status.DB.sql_query(delquery)
+        delquery = "DELETE FROM qheatexchanger  WHERE ProjectID=%s AND AlternativeProposalNo=%s AND QHeatExchanger_ID = '%s'" % (self.pid,self.ano, HXID)
+        Status.DB.sql_query(delquery)
         
         
         

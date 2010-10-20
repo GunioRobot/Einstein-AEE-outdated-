@@ -401,18 +401,14 @@ class HXSimulation():
             self.mod.doHXPostProcessing(self.QHX1cs)
             print "Finished Basic Calculation"
     
-            
-            
-
-    
     
             if len(self.hxPinchCon.sinkstreams)>1:
                 # Insert List of new inlet/outletTemp in the right order
                 # inletTSink = [sinktemp1, sinktemp2, ...]
                 pass
             elif len(self.hxPinchCon.sinkstreams)==1:
-                tcsin = self.getNonZeroAverage(self.Tcsin, self.QHX1cs)
-                tcsout = self.getNonZeroAverage(self.Tcsout, self.QHX1cs)
+                tcsin = round(self.getNonZeroAverage(self.Tcsin, self.QHX1cs),2)
+                tcsout = round(self.getNonZeroAverage(self.Tcsout, self.QHX1cs),2)
                 inletTSink = [tcsin]
                 outletTSink = [tcsout]
                 HeatFlowPercentSink = [sum(self.bhxcs)/len(self.bhxcs)]
@@ -424,8 +420,8 @@ class HXSimulation():
             if len(self.hxPinchCon.sourcestreams)>1:
                 pass
             elif len(self.hxPinchCon.sourcestreams)==1:
-                thsin = self.getNonZeroAverage(self.Thsin, self.QHX1hs)
-                thsout = self.getNonZeroAverage(self.Thsout, self.QHX1hs)
+                thsin = round(self.getNonZeroAverage(self.Thsin, self.QHX1hs),2)
+                thsout = round(self.getNonZeroAverage(self.Thsout, self.QHX1hs),2)
                 inletTSource = [thsin]
                 outletTSource = [thsout]
                 HeatFlowPercentSource = [sum(self.bhxhs)/len(self.bhxhs)]
@@ -435,9 +431,10 @@ class HXSimulation():
                 HeatFlowPercentSource = []
                 
     
-            Status.int.hrdata.storeHXData(self.hxPinchCon, self.QHX1cs, self.UA, self.Tloghx, self.Tcsin, self.Tcsout, 
-                                          self.Thsin, self.Thsout, inletTSink, outletTSink, HeatFlowPercentSink, inletTSource,
+            Status.int.hrdata.storeHXData(self.hxPinchCon, self.QHX1cs, self.UA, max(self.Tloghx), max(self.Tcsin), max(self.Tcsout), 
+                                          max(self.Thsin), max(self.Thsout), inletTSink, outletTSink, HeatFlowPercentSink, inletTSource,
                                           outletTSource, HeatFlowPercentSource, self.StorageSize)
+            
             
 
         elif (self.Thsout == None and self.Tcsout == None) or (self.bhxcs != None and self.bhxhs != None):
@@ -466,7 +463,7 @@ class HXSimulation():
         for i in xrange(Status.Nt):
             if Q[i] != 0:
                 t.append(T[i])
-        
+        if len(t)==0: return 0
         return sum(t)/len(t)
 
     def adaptQHX(self):

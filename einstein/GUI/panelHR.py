@@ -440,7 +440,8 @@ class PanelHR(wx.Panel):
             print "x:" + str(elem.X)
             print "y:" + str(elem.Y)
         self.calculateHX()
-        self.UpdateGrid()           
+#        self.UpdateGrid()           
+        self.fillGrid()
         self.UpdatePlot()          
         self.Show()
         
@@ -467,6 +468,8 @@ class PanelHR(wx.Panel):
                                     hx
                                     )
             hxsim.startSimulation()
+            Status.int.hrdata.loadDatabaseData()
+            self.mod.updateHXData()
             
         
     def initCurves(self):
@@ -515,11 +518,29 @@ class PanelHR(wx.Panel):
         elif stream.Source == STREAMSOURCE[4]:
             calcDistLineStream(stream)
     
+    def fillGrid(self):
+        rows = Status.int.hrdata.hexers
+        for r in xrange(len(rows)):
+            self.grid.SetCellValue(r, 0, str(rows[r]['HXName']))
+            self.grid.SetCellValue(r, 1, str(rows[r]['QdotHX']))
+            self.grid.SetCellValue(r, 2, str(rows[r]['StorageSize']))
+            self.grid.SetCellValue(r, 3, "")
+            self.grid.SetCellValue(r, 4, str(rows[r]['HXTSourceInlet']))
+            self.grid.SetCellValue(r, 5, str(rows[r]['HXTSourceOutlet']))
+            self.grid.SetCellValue(r, 6, "")
+            self.grid.SetCellValue(r, 7, str(rows[r]['HXTSinkInlet']))
+            self.grid.SetCellValue(r, 8, str(rows[r]['HXTSinkOutlet']))
+            self.grid.SetCellValue(r, 9, "")
+            self.grid.SetCellValue(r, 10, "")
+            self.grid.SetCellValue(r, 11, "")
+
     
     def UpdateGrid(self):
         try:
+            print "Keys: ", self.keys[0]
             data = Interfaces.GData[self.keys[0]]
             (rows,cols) = data.shape
+            print "Rows", rows
         except:
             rows = 0
             cols = COLNO

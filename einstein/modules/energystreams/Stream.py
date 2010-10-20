@@ -16,11 +16,7 @@
 TODO:
 
 - rename m_average to m_nom
-x Make PT, PTStartup etc. Temperature Type
-x Delete autoinitprocessing from the StreamSets and create Dataload class (from DB or at runtime from Program -> Status)
-x Fill in operating Hours
-x Change Initialisation of MassFlowCalc in StreamFactory
-x Delete Holidays from MassFlowCalc Initialisation
+
 """
 
 

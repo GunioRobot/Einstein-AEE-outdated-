@@ -199,7 +199,7 @@ def _U(text):
 
 class PanelQ6(wx.Panel):
     def __init__(self, parent, main):
-	self.main = main
+        self.main = main
         self._init_ctrls(parent)
         self.__do_layout()
 
@@ -218,7 +218,7 @@ class PanelQ6(wx.Panel):
 
         self.HXPinch = None
         self.selectedSStream = None
-
+        self.temperatureIsChanged = False
         self._init_HXPinch()
 
         self.fillPage()
@@ -878,10 +878,18 @@ class PanelQ6(wx.Panel):
         else:
             return self.HXPinch.sourcestreams
 
+    def printSinkSourceChange(self):
+        list = []
+        for elem in Status.int.HXPinchConnection:
+             list.append(["HXID:", elem.HXID, "inTSink:", elem.sinkstreams[0].inletTemp, "outTSink:", elem.sinkstreams[0].outletTemp])
+             list.append(["inTSink:", elem.sourcestreams[0].inletTemp, "outTSink:", elem.sourcestreams[0].outletTemp])
+        print list
+             
     def OnListBoxSinkSourceClick(self, event):
+
         stype = self.getActiveTab()
         sstream = self.getActiveStreamType()
-        ids = self.selectedSStream
+        self.selectedSStream = ids = stype.listBox.GetSelection()
         if ids != None and ids != -1 and ids <= stype.listBox.GetCount()-1:
             if stype.rbInletTemp.GetValue():
                 sstream[self.selectedSStream].InTempActive = True
@@ -891,8 +899,6 @@ class PanelQ6(wx.Panel):
                 sstream[self.selectedSStream].OutTempActive = True
             else: sstream[self.selectedSStream].OutTempActive = False
 
-        self.selectedSStream = stype.listBox.GetSelection()
-        
         id = stype.listBox.GetSelection()
 
         if sstream[id].InTempActive:
@@ -916,7 +922,6 @@ class PanelQ6(wx.Panel):
             stype.inletHXChoice.Disable()
             
         stype.enableTempEntry()
-
 
 
         if sstream[id].inletTemp == None:
@@ -945,6 +950,7 @@ class PanelQ6(wx.Panel):
             stype.outletHXChoice.SetStringSelection(self.getHXName(sstream[id].outletHX))
 #            print sstream[id].outletHX
 
+
     def setTempValues(self, stype, sstream):
         pass
 
@@ -955,6 +961,7 @@ class PanelQ6(wx.Panel):
         pass
 
     def OnListBoxHXListboxClick(self, event):
+
         self.HXName = self.listBoxHX.GetStringSelection()
         if self.HXName in self.HXList:
             self.HXNo = self.HXList.index(self.HXName)+1
@@ -977,6 +984,7 @@ class PanelQ6(wx.Panel):
         self.Sink.inletHXChoice.Clear()
         self.Source.outletHXChoice.Clear()
         self.Source.inletHXChoice.Clear()
+
         try:
             HXPinchList = copy.deepcopy(self.HXList)
             HXPinchList.remove(self.HXName)
@@ -989,9 +997,9 @@ class PanelQ6(wx.Panel):
         except:
             #HXPinchList = self.HXList
             pass
-       
         self.loadOnHXChange(self.Sink, self.HXPinch.sinkstreams)
         self.loadOnHXChange(self.Source, self.HXPinch.sourcestreams)
+
 
     def loadOnHXChange(self, stype, sstream):
         stype.disableTempEntry()
@@ -999,8 +1007,10 @@ class PanelQ6(wx.Panel):
         stype.listBox.Clear()
         stype.cbStream.Clear()
         stype.cbStreamType.SetSelection(-1)
+        self.temperatureIsChanged = True
         stype.inletTemp.SetValue('')
         stype.outletTemp.SetValue('')
+        self.temperatureIsChanged = False
         stype.tbPercentHeatFlow.SetValue('')
         stype.outletHXChoice.SetSelection(-1)
         stype.inletHXChoice.SetSelection(-1)
@@ -1008,26 +1018,28 @@ class PanelQ6(wx.Panel):
             stype.listBox.Append(elem.stream.name)
 
     def OnTempInletChange(self, event):
-        stype = self.getActiveTab()
-        sstream = self.getActiveStreamType()
-        id = stype.listBox.GetSelection()
-        if id != -1:
-            if stype.inletTemp.GetValue() != '':
-                sstream[id].inletTemp = float(stype.inletTemp.GetValue())
-            else:
-                sstream[id].inletTemp = stype.inletTemp.GetValue()
-#            sstream[id].outletHX = self.getHXID(stype.outletHXChoice.GetStringSelection())
+        if not self.temperatureIsChanged:
+            stype = self.getActiveTab()
+            sstream = self.getActiveStreamType()
+            id = stype.listBox.GetSelection()
+            if id != -1:
+                if stype.inletTemp.GetValue() != '':
+                    sstream[id].inletTemp = float(stype.inletTemp.GetValue())
+                else:
+                    sstream[id].inletTemp = stype.inletTemp.GetValue()
+    #                sstream[id].outletHX = self.getHXID(stype.outletHXChoice.GetStringSelection())
             
     def OnTempOutletChange(self, event):
-        stype = self.getActiveTab()
-        sstream = self.getActiveStreamType()
-        id = stype.listBox.GetSelection()
-        if id != -1:
-            if stype.outletTemp.GetValue() != '':
-                sstream[id].outletTemp = float(stype.outletTemp.GetValue())
-            else:
-                sstream[id].outletTemp = stype.outletTemp.GetValue()
-#            sstream[id].inletHX = self.getHXID(stype.inletHXChoice.GetStringSelection())
+        if not self.temperatureIsChanged:
+            stype = self.getActiveTab()
+            sstream = self.getActiveStreamType()
+            id = stype.listBox.GetSelection()
+            if id != -1:
+                if stype.outletTemp.GetValue() != '':
+                    sstream[id].outletTemp = float(stype.outletTemp.GetValue())
+                else:
+                    sstream[id].outletTemp = stype.outletTemp.GetValue()
+#                sstream[id].inletHX = self.getHXID(stype.inletHXChoice.GetStringSelection())
 
     def OnPercentHeatFlowChange(self, event):
         stype = self.getActiveTab()
@@ -1074,9 +1086,9 @@ class PanelQ6(wx.Panel):
         return ''
 
     def OnHeatSourceChoice(self, event):
-	# FIXME: HERE I LEFT
-	getProcessIdByName()
-	fillChoice(self.tc6_1.entry,getInflowingStreamNamesFromDB(processId))
+        # FIXME: HERE I LEFT
+        getProcessIdByName()
+        fillChoice(self.tc6_1.entry,getInflowingStreamNamesFromDB(processId))
 
     def OnButtonHXAdd(self, event):
         self.clearHX()
