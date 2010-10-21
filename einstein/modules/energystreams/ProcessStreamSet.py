@@ -296,7 +296,7 @@ class ContinuousMassFlow(ProcessMassFlow):
 
     def getMassFlowWH(self, FluidDensity, VOutflowCycle = None, mOutflowNom = None):
         """
-	Calculate Mass Flow WH
+	    Calculate Mass Flow WH
 
         :param VOutflowCycle: Data base value of VOutflowCycle
         :type  VOutflowCycle: Double
@@ -307,8 +307,6 @@ class ContinuousMassFlow(ProcessMassFlow):
         :rtype: Float List
         """
         
-        print "--------Start MassFlow Waste Heat calculation------"
-
         if VOutflowCycle != None:
             m_average = VOutflowCycle*FluidDensity/(self.periodSchedule.getOperationHoursPerDay()*3600)
         elif mOutflowNom != None:

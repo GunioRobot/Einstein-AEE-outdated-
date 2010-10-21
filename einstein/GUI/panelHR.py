@@ -434,89 +434,18 @@ class PanelHR(wx.Panel):
 #------------------------------------------------------------------------------		
 #   function activated on each entry into the panel from the tree
 #------------------------------------------------------------------------------		
-#        self.mod.initPanel()        # prepares data for plotting
-        self.initCurves()
-        for elem in Status.int.hrdata.curves:
-            print "x:" + str(elem.X)
-            print "y:" + str(elem.Y)
-        self.calculateHX()
+        self.mod.initPanel()        # prepares data for plotting
+#        self.initCurves()
+#        for elem in Status.int.hrdata.curves:
+#            print "x:" + str(elem.X)
+#            print "y:" + str(elem.Y)
+#        self.calculateHX()
 #        self.UpdateGrid()           
         self.fillGrid()
         self.UpdatePlot()          
         self.Show()
         
-    def calculateHX(self):
-        hxcomb = HXCombination()
-        hxcomb.combineAllStreams()
-        print "--------------------COMBINED STREAMS--------------------"
-#        for elem in Status.int.HXPinchConnection:
-#            elem.combinedSink.stream.printStream()
-#            elem.combinedSource.stream.printStream()
-        print "--------------------SIMULATION--------------------------"
 
-        #hxlist =  createHXList()
-        for hx in Status.int.HXPinchConnection:
-            hxes = Status.DB.qheatexchanger.\
-               QHeatExchanger_ID[hx.HXID]
-            hxsim = HXSimulation(hx.combinedSource.inletTemp,\
-                                    hx.combinedSink.inletTemp,\
-                                    hxes[0].QdotHX,\
-                                    hxes[0].QHX,\
-                                    hx.combinedSource.outletTemp,\
-                                    hx.combinedSink.outletTemp,\
-                                    hxes[0].UA,\
-                                    hx
-                                    )
-            hxsim.startSimulation()
-            Status.int.hrdata.loadDatabaseData()
-            self.mod.updateHXData()
-            
-        
-    def initCurves(self):
-        if Status.int.NameGen == None:
-            Status.int.NameGen = NameGeneration()
-            Status.int.NameGen.loadDataFromDB()
-        DB = Status.DB
-        HXIDList = Status.prj.getHXList("QHeatExchanger_ID")
-        Status.int.HXPinchConnection = []
-        for elem in HXIDList:
-            HXPinch = HXPinchConnection(elem)
-            HXPinch.loadFromDB()
-            Status.int.HXPinchConnection.append(HXPinch)
-        
-        
-        if Status.processData.outOfDate == True:
-            Status.processData.createAggregateDemand()
-        for i in xrange(len(Status.int.HXPinchConnection)):
-            for j in xrange(len(Status.int.HXPinchConnection[i].sinkstreams)):
-                stream = Status.int.HXPinchConnection[i].sinkstreams[j].stream
-                self.calcStream(stream)
-                stream.printStream()
-
-            for j in xrange(len(Status.int.HXPinchConnection[i].sourcestreams)):
-                stream = Status.int.HXPinchConnection[i].sourcestreams[j].stream
-                self.calcStream(stream)
-                stream.printStream()
-
-        Status.int.NameGen.calcStreams()
-        Status.int.NameGen.deleteEmptyStreams()
-
-        curvecalc = CurveCalculation()
-        curvecalc.calculate()
-        curvecalc.printResults()
-    
-    def calcStream(self, stream):
-        initStream(stream)
-        if stream.Source == STREAMSOURCE[0]:
-            calcProcessStream(stream)
-        elif stream.Source == STREAMSOURCE[1]:
-            calcProcessStream(stream)
-        elif stream.Source == STREAMSOURCE[2]:
-            calcEquipmentStream(stream)
-        elif stream.Source == STREAMSOURCE[3]:
-            calcWHEEStream(stream)
-        elif stream.Source == STREAMSOURCE[4]:
-            calcDistLineStream(stream)
     
     def fillGrid(self):
         rows = Status.int.hrdata.hexers

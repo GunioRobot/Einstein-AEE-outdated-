@@ -1045,9 +1045,8 @@ class DistLineStreams(StreamUtils, StreamSet):
 
     def calcStreams(self):
         for stream in self.streams:
-            print "--calculate Dist Streams --"
             if stream.DBType == STREAMTYPE[10]:
-                print "--CONDENSATE RECOVERY--"
+#                print "--CONDENSATE RECOVERY--"
                 self.generateCondensateRecoveryStream(stream)
             elif stream.DBType == STREAMTYPE[9]:
                 print "--BOILERFEEDWATER-"
@@ -1087,7 +1086,6 @@ class DistLineStreams(StreamUtils, StreamSet):
         return None
 
     def getEnthalpyVectorCondRec(self, stream):
-        print "--getEnthalpyVector--"
         equip = getEquipListperLine(stream.DBID)
 
 #        massflow = [0]
@@ -1103,7 +1101,7 @@ class DistLineStreams(StreamUtils, StreamSet):
             enthalpy_vector.append((elem/QWHEq)*stream.EnthalpyNom)
         
 #        m_vector = massflow
-        print "--End getEnthalpyVector--"
+
         return enthalpy_vector
 
     def getMassFlowVectorCondRec(self, stream):
@@ -1710,7 +1708,7 @@ class NameGeneration():
 #        self.distline.detailPrint()
 #        self.equipment.detailPrint()
 #        self.whee.detailPrint()
-        self.printStreams()
+#        self.printStreams()
 
     def deleteEmptyStreams(self):
         self.deleteStream(self.process.streams)

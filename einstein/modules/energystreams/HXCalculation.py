@@ -16,20 +16,18 @@ class HXCombination():
         pass
 
 
-    def Start(self):
-        pass
-
 
 
     def combineAllStreams(self):
         for elem in Status.int.HXPinchConnection:
-            print "----------SINKSTREAMS TO COMBINE------------"
+            print "--------------------SINKSTREAMS TO COMBINE----------------------"
             for el in elem.sinkstreams:
                 el.stream.printStream()
-            print "----------SOURCESTREAMS TO COMBINE----------"
+            print "--------------------END SINKSTREAMS-----------------------------"
+            print "--------------------SOURCESTREAMS TO COMBINE--------------------"
             for el in elem.sourcestreams:
                 el.stream.printStream()
-
+            print "--------------------END SOURCESTREAMS---------------------------"
             elem.combinedSink = pinchTemp()
             self.combineStream(elem.combinedSink, elem.sinkstreams)
             pT = elem.combinedSink
@@ -41,18 +39,18 @@ class HXCombination():
             pT.stream.MassFlowAvg = self.combineMassFlowNom(elem.sinkstreams)
 
 
-            print "PercentHeatFlow: " + str(type(elem.sinkstreams[0].percentHeatFlow))
+#            print "PercentHeatFlow: " + str(type(elem.sinkstreams[0].percentHeatFlow))
             if len(elem.sinkstreams)==1:
                 pT.percentHeatFlow = elem.sinkstreams[0].percentHeatFlow
             elif len(elem.sinkstreams)>1:
                 pT.percentHeatFlow = 1
 
-            try:
-                print "InletTemp: " + str(pT.inletTemp[0:100])
-                print "OutletTemp: " + str(pT.outletTemp)
-            except:
-                print "InletTemp: " + str(pT.inletTemp)
-                print "OutletTemp: " + str(pT.outletTemp)
+#            try:
+#                print "InletTemp: " + str(pT.inletTemp[0:100])
+#                print "OutletTemp: " + str(pT.outletTemp)
+#            except:
+#                print "InletTemp: " + str(pT.inletTemp)
+#                print "OutletTemp: " + str(pT.outletTemp)
 
             elem.combinedSink.stream.printStream()
 
@@ -71,13 +69,16 @@ class HXCombination():
             elif len(elem.sourcestreams)>1:
                 pT.percentHeatFlow = 1
 
-            try:
-                print "InletTemp: " + str(pT.inletTemp[0:100])
-                print "OutletTemp: " + str(pT.outletTemp)
-            except:
-                print "InletTemp: " + str(pT.inletTemp)
-                print "OutletTemp: " + str(pT.outletTemp)
+#            try:
+#                print "InletTemp: " + str(pT.inletTemp[0:100])
+#                print "OutletTemp: " + str(pT.outletTemp)
+#            except:
+#                print "InletTemp: " + str(pT.inletTemp)
+#                print "OutletTemp: " + str(pT.outletTemp)
             elem.combinedSource.stream.printStream()
+
+#            print "MassFlowVectorSink: ", str(pT.stream.MassFlowVector[0:200])
+
 
     def combineMassFlowNom(self, sstreams):
         massflow = 0
@@ -103,9 +104,33 @@ class HXCombination():
     def combineStream(self, comb, sstream):
             comb.stream = Stream()
             comb.stream.name = "CombinedStream"
+            print "--------------------BEFORE LOAD----------------------"
+            for el in sstream:
+                el.stream.printStream()
+            print "Comb:"
+            comb.stream.printStream()
+            print "--------------------END BEFORE LOAD-----------------------------"
             self.loadVector(sstream)
+            print "--------------------AFTER LOAD----------------------"
+            for el in sstream:
+                el.stream.printStream()
+            print "Comb:"
+            comb.stream.printStream()
+            print "--------------------END AFTER LOAD-----------------------------"
             comb.stream.EnthalpyVector = self.combineEnthalpy(sstream)
+            print "--------------------AFTER ENTHALPY----------------------"
+            for el in sstream:
+                el.stream.printStream()
+            print "Comb:"
+            comb.stream.printStream()
+            print "--------------------END AFTER ENTHALPY-----------------------------"
             comb.stream.MassFlowVector = self.combineMassFlow(sstream)
+            print "--------------------AFTER MASSFLOW----------------------"
+            for el in sstream:
+                el.stream.printStream()
+            print "Comb:"
+            comb.stream.printStream()
+            print "--------------------END AFTER MASSFLOW-----------------------------"
             comb.stream.SpecHeatCap = self.combineSpecificHeatCap(sstream)
 
     def loadVector(self, sstream):
@@ -127,32 +152,48 @@ class HXCombination():
             print "No EnthalpyVector exists: " + str(pinchstreams[0].stream.name)
             print "Vector: " + str(pinchstreams[0].stream.EnthalpyVector)
             return combH
-            
-        for i in xrange(Status.Nt):
-            combH.append(0)
-            for elem in pinchstreams:
-                stream = elem.stream
-                if elem.stream.HotOrCold == "Sink" or elem.stream.HotOrCold == "Cold":
-                    if elem.outletTemp != None and elem.outletTemp < elem.stream.EndTemp.getAvg():
-                        stream.EnthalpyVector[i] = (stream.EnthalpyVector[i]/(elem.stream.EndTemp.getAvg()-elem.stream.StartTemp.getAvg()))\
-                        *(elem.outletTemp-elem.stream.StartTemp.getAvg())
-                elif elem.stream.HotOrCold == "Source" or elem.stream.HotOrCold == "Hot":
-                    if elem.stream.MassFlowVector[i]!=0:
-                        elem.outletTemp = elem.inletTemp-stream.EnthalpyVector[i]/(elem.stream.MassFlowVector[i]*elem.stream.SpecHeatCap)
+        
+#        print "Len of Elements Pinchstream CombEnthalpy: ", str(len(pinchstreams))
+        
+        if len(pinchstreams)==1:
+            for i in xrange(Status.Nt):
+                st = pinchstreams[0].stream
+                ps = pinchstreams[0]
+                combH.append(0)
+                if st.HotOrCold == "Sink" or st.HotOrCold == "Cold":
+                    if ps.outletTemp != None and ps.outletTemp <= st.EndTemp.getAvg():
+                        pinchstreams[0].stream.EnthalpyVector[i] = (st.EnthalpyVector[i]/(st.EndTemp.getAvg()-st.StartTemp.getAvg()))\
+                        *(ps.outletTemp-st.StartTemp.getAvg())
+                elif st.HotOrCold == "Source" or st.HotOrCold == "Hot":
+                    if st.MassFlowVector[i]!=0:
+                        pinchstreams[0].outletTemp = ps.inletTemp-st.EnthalpyVector[i]/(st.MassFlowVector[i]*st.SpecHeatCap)
                     #else:
-                        #elem.outletTemp = elem.inletTemp
-                    if elem.outletTemp != None and elem.outletTemp < elem.stream.EndTemp.getAvg() and elem.stream.StartTemp.getAvg()!=elem.stream.EndTemp.getAvg():
-                        stream.EnthalpyVector[i] = (stream.EnthalpyVector[i]/(elem.stream.StartTemp.getAvg()-elem.stream.EndTemp.getAvg()))\
-                        *(elem.inletTemp-elem.stream.EndTemp.getAvg())
-#                        print elem.outletTemp, elem.inletTemp
-                combH[i] += stream.EnthalpyVector[i]*(elem.percentHeatFlow/100)
+                        #pinchstreams[0].outletTemp = pinchstreams[0].inletTemp
+                    if ps.outletTemp != None and ps.outletTemp < st.EndTemp.getAvg() and st.StartTemp.getAvg()!=st.EndTemp.getAvg():
+                        pinchstreams[0].stream.EnthalpyVector[i] = (st.EnthalpyVector[i]/(st.StartTemp.getAvg()-st.EndTemp.getAvg()))\
+                        *(ps.inletTemp-st.EndTemp.getAvg())
+#                        print pinchstreams[0].outletTemp, pinchstreams[0].inletTemp
+                combH[i] += st.EnthalpyVector[i]*(ps.percentHeatFlow/100)
+        else:
 
-#        for elem in pinchstreams[0].stream.EnthalpyVector:
-#            comb = 0
-#            for el in pinchstreams:
-#                stream = el.stream
-#                comb += stream.EnthalpyVector
-
+            for i in xrange(Status.Nt):
+                combH.append(0)
+                for elem in pinchstreams:
+                    stream = elem.stream
+                    if elem.stream.HotOrCold == "Sink" or elem.stream.HotOrCold == "Cold":
+                        if elem.outletTemp != None and elem.outletTemp <= elem.stream.EndTemp.getAvg():
+                            stream.EnthalpyVector[i] = (stream.EnthalpyVector[i]/(elem.stream.EndTemp.getAvg()-elem.stream.StartTemp.getAvg()))\
+                            *(elem.outletTemp-elem.stream.StartTemp.getAvg())
+                    elif elem.stream.HotOrCold == "Source" or elem.stream.HotOrCold == "Hot":
+                        if elem.stream.MassFlowVector[i]!=0:
+                            elem.outletTemp = elem.inletTemp-stream.EnthalpyVector[i]/(elem.stream.MassFlowVector[i]*elem.stream.SpecHeatCap)
+                        #else:
+                            #elem.outletTemp = elem.inletTemp
+                        if elem.outletTemp != None and elem.outletTemp < elem.stream.EndTemp.getAvg() and elem.stream.StartTemp.getAvg()!=elem.stream.EndTemp.getAvg():
+                            stream.EnthalpyVector[i] = (stream.EnthalpyVector[i]/(elem.stream.StartTemp.getAvg()-elem.stream.EndTemp.getAvg()))\
+                            *(elem.inletTemp-elem.stream.EndTemp.getAvg())
+    #                        print elem.outletTemp, elem.inletTemp
+                    combH[i] += stream.EnthalpyVector[i]*(elem.percentHeatFlow/100)
 
         return combH
 
@@ -236,7 +277,6 @@ class HXCombination():
         return TOut
 
     def combineMassFlow(self, pinchstreams):
-        print "-----PINCHSTREAMS MASSFLOW-----"
 
         if pinchstreams == None or len(pinchstreams) == 0:
             print "No Pinchstream in Massflow"
@@ -249,24 +289,21 @@ class HXCombination():
             print "Vector: " + str(pinchstreams[0].stream.EnthalpyVector)
             return
 
-
-        combM = []
-        for i in xrange(Status.Nt):
-            combM.append(0)
-            for elem in pinchstreams:
-                stream = elem.stream
-                combM[i] += stream.MassFlowVector[i]*(elem.percentHeatFlow/100)
-
-#        massFlowMatrix = []
-#        for elem in pinchstreams:
-#            massFlowMatrix.append(elem.stream.MassFlowVector)
-#
-#        combm = []
-#        for i in len(massFlowMatrix[0]):
-#            combm.append(0)
-#            for elem in massFlowMatrix:
-#                combm[i] += elem[i]
-
+        if len(pinchstreams) == 1:
+            combM = [x*pinchstreams[0].percentHeatFlow for x in pinchstreams[0].stream.MassFlowVector]
+            
+        else:
+            combM = [None]*Status.Nt
+            
+            for i in xrange(Status.Nt):
+    #            combM.append(0)
+                MassFlow = 0
+                for elem in pinchstreams:
+                    print "MassFlowVector: ", str(elem.stream.MassFlowVector[i])
+                    MassFlow += elem.stream.MassFlowVector[i]*(elem.percentHeatFlow/100)
+                
+                combM[i] = MassFlow 
+    
         return combM
 
 
@@ -354,12 +391,28 @@ class HXSimulation():
 
     def startSimulation(self):
 #        self.getStartQHXVector()
+        self.printCombinedHX()
         self.__checkStartValues()
         self.__doBasicCalculation()
+        
+    def printCombinedHX(self):
+        Sink = self.hxPinchCon.combinedSink
+        Source = self.hxPinchCon.combinedSource
+        self.printHXPinch(Sink)
+        self.printHXPinch(Source)
+        
+    def printHXPinch(self, st):
+        print "InletTemp: ", st.inletTemp
+        print "OutletTemp: ", st.outletTemp
+        print "PercentHeatFlow:", st.percentHeatFlow
+        print "MassFlowVector:", str(st.stream.MassFlowVector[0:100])
+        print "SpecHeatCap:", str(st.stream.SpecHeatCap)
         
         
     def __doBasicCalculation(self):
         if (self.Thsout != None and self.Tcsout != None) or (self.bhxcs == None and self.bhxhs == None):
+            
+            
             print "CheckThsoutVector"
             self.checkThsoutVector()
             self.printBasicValues()
@@ -450,12 +503,14 @@ class HXSimulation():
             #Recalculate:
 
     def printBasicValues(self):
-        print "QHX1hs: " + str(self.QHX1hs)
-        print "QHX1cs: " + str(self.QHX1cs)
-        print "Tcsout: " + str(self.Tcsout)
-        print "Thsout: " + str(self.Thsout)
-        print "bhxcs: " + str(self.bhxcs)
-        print "bhxhs: " + str(self.bhxhs)
+        if self.QHX1hs != None:
+            print "QHX1hs: " + str(self.QHX1hs[0:200])
+        if self.QHX1cs != None:
+            print "QHX1cs: " + str(self.QHX1cs[0:200])
+        print "Tcsout: " + str(self.Tcsout[0:200])
+        print "Thsout: " + str(self.Thsout[0:200])
+        print "bhxcs: " + str(self.bhxcs[0:200])
+        print "bhxhs: " + str(self.bhxhs[0:200])
 #        print "" + str()
 
     def getNonZeroAverage(self, T, Q):
@@ -553,8 +608,11 @@ class HXSimulation():
                     if type(self.Thsout) == type([]):
                         Thsout = self.Thsout[i]
                     else: Thsout = self.Thsout
-
-                    self.bhxhs[i] = self.QHX1cs[i]/(mhs[i]*cphs*(Thsin-Thsout))*100
+                    
+                    if Thsin - Thsout == 0:
+                        self.bhxhs[i] = 0
+                    else:
+                        self.bhxhs[i] = self.QHX1cs[i]/(mhs[i]*cphs*(Thsin-Thsout))*100
                     self.mhshx1[i] = mhs[i]*self.bhxhs[i]/100
 
                     # CalculateHXoverHS -> Single Value
@@ -605,7 +663,7 @@ class HXSimulation():
             if self.Thsout[i] < Tcsin + self.dTmin:
                 self.Thsout[i] = Tcsin + self.dTmin
                 self.QHX1hs[i] = mhs[i]*self.bhxhs[i]/100*cphs*dThs[i]
-                if (self.Tcsout[i]-Tcsin)==0:
+                if (mcs[i]*cpcs*(self.Tcsout[i]-Tcsin))==0:
                     self.bhxcs[i]=0
                 else:
                     self.bhxcs[i] = self.QHX1hs[i]/(mcs[i]*cpcs*(self.Tcsout[i]-Tcsin))*100
@@ -664,7 +722,7 @@ class HXSimulation():
                 Tcsin = self.Tcsin[i]
             else: Tcsin = self.Tcsin
             
-            if self.QHX1hs != 0:
+            if self.QHX1hs[i] != 0:
                 mlog = (Thsin-self.Tcsout[i])/(self.Thsout[i]-Tcsin)
     #            print "mlog: " + str(mlog)
                 if mlog==1:
@@ -691,6 +749,12 @@ class HXSimulation():
         mhs = self.hxPinchCon.combinedSource.stream.MassFlowVector
         cphs = self.hxPinchCon.combinedSource.stream.SpecHeatCap
         dThs = self.calculateDThs()
+        
+        print "mhs: " , str(mhs[0:100])
+        print "cphs: ", str(cphs)
+        print "dThs: ", str(dThs[0:100])
+        print "bhxcs: ", str(self.bhxhs[0:100])
+        
         for i in xrange(Status.Nt):
             mhsi = mhs[i]
             dTi = dThs[i]
@@ -823,9 +887,9 @@ class HXSimulation():
             minOphs = self.hxPinchCon.combinedSource.stream.OperatingHours
             minOpcs = self.hxPinchCon.combinedSink.stream.OperatingHours
             if minOphs > minOpcs:
-                self.Q = self.Energy/minOpcs*1000
+                self.Q = self.Energy/minOpcs
             else:
-                self.Q = self.Energy/minOphs*1000
+                self.Q = self.Energy/minOphs
 
         mhsAvg = self.hxPinchCon.combinedSource.stream.MassFlowAvg
         mcsAvg = self.hxPinchCon.combinedSink.stream.MassFlowAvg

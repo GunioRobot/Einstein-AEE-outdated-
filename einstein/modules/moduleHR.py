@@ -68,26 +68,34 @@
 #   Software Foundation (www.gnu.org).
 #
 #============================================================================== 
-
-import sys, os
-from math import *
-from numpy import *
-
-from einstein.auxiliary.auxiliary import *
+from einstein.GUI.dialogGauge import DialogGauge
+from einstein.GUI.dialog_changeHX import *
 from einstein.GUI.status import *
-from einstein.modules.interfaces import *
-import einstein.modules.matPanel as mP
+from einstein.auxiliary.auxiliary import *
 from einstein.modules.constants import *
-from einstein.modules.messageLogger import *
-from subprocess import *
-
+from einstein.modules.dataHR import *
+from einstein.modules.energystreams import *
+from einstein.modules.energystreams.HXCalculation import *
+from einstein.modules.energystreams.CurveCalculation import *
+from einstein.modules.energystreams.Stream import *
+from einstein.modules.energystreams.StreamConstants import *
+from einstein.modules.energystreams.StreamGeneration import *
 from einstein.modules.exportHR import *
 from einstein.modules.importHR import *
-from einstein.modules.dataHR import *
+from einstein.modules.interfaces import *
+from einstein.modules.messageLogger import *
+from math import *
+from numpy import *
+from subprocess import *
+#from array import array
+import einstein.modules.matPanel as mP
+import sys
+import os
+import copy
 
-from einstein.GUI.dialog_changeHX import *
 
-from einstein.GUI.dialogGauge import DialogGauge
+
+
 
 
 class ModuleHR(object):
@@ -112,7 +120,8 @@ class ModuleHR(object):
 #        self.__updatePanel()
 
 # HS20090530: new version from JR:
-        self.updateData()        
+#        self.updateData()        
+        self.updateHXData()
             
 
     def __updatePanel(self):
@@ -142,8 +151,9 @@ class ModuleHR(object):
         self.__updateCurveData()    
 
     def updateHXData(self):
-        self.data = Status.int.hrdata
-        self.data.loadDatabaseData()  
+#        self.data = Status.int.hrdata
+#        self.data.loadDatabaseData()  
+        self.runHRModule()
 #        self.__updateGridData()
 #        self.__updateReportData()
 #        self.__updateCurveData()  
@@ -216,9 +226,9 @@ class ModuleHR(object):
 
         row = [_("Total"), qdotTotal, " ", " ", qTotal / 1000.0, 100.0]
         dataListReport.append(row)
-        
+#        print dataListReport
         dataReport = array(dataListReport)
-
+        dataReport = dataListReport
         key = "HX%02d" % Status.ANo
 #            print "%s\n"%key,dataReport
         Status.int.setGraphicsData(key, dataReport)
@@ -291,6 +301,7 @@ class ModuleHR(object):
 #        print "end"
 #        print "%s\n"%key,dataReport2
         Status.int.setGraphicsData(key, array(dataReport2))
+#        Status.int.setGraphicsData(key, dataReport2)
         
     def __updateCurveData(self):                 
         # stores data for mathplot in panelHR         
@@ -302,7 +313,7 @@ class ModuleHR(object):
                          
     def runHRDesign(self, exhx=True):        
         dlg = DialogGauge(Status.main, _("EINSTEIN heat recovery module"), _("calculating"))
-        self.__runPE2(redesign=True, concondensation=self.ConCondensation, exhx=exhx)
+#        self.__runPE2(redesign=True, concondensation=self.ConCondensation, exhx=exhx)
         dlg.update(50.0)
         
         self.__doPostProcessing()
@@ -338,11 +349,18 @@ class ModuleHR(object):
     def runHRModule(self, exhx=True):
         dlg = DialogGauge(Status.main, _("EINSTEIN heat recovery module"), _("calculating"))
         redesign_network_flag = None
-        if Status.HRTool == "estimate":
-            self.__estimativeMethod()
-        else:
-            logWarning("Doing the estimative method anyway.")
-            self.__estimativeMethod()
+        
+        self.initCurves()
+        for elem in Status.int.hrdata.curves:
+            print "x:" + str(elem.X)
+            print "y:" + str(elem.Y)
+        self.calculateHX()
+        
+#        if Status.HRTool == "estimate":
+#            self.__estimativeMethod()
+#        else:
+#            logWarning("Doing the estimative method anyway.")
+#            self.__estimativeMethod()
 #            ret = self.__runPE2(redesign = False,concondensation = self.ConCondensation)
 #
 #            if ret == 0:
@@ -355,12 +373,86 @@ class ModuleHR(object):
 
         dlg.update(99.0)
 
-        
-        if Status.HRTool <> "estimate":
-            self.__updatePanel()
+#        if Status.HRTool <> "estimate":
+#            self.__updatePanel()
 
         dlg.Destroy()
+        
+        
+        
+    def calculateHX(self):
+        hxcomb = HXCombination()
+        hxcomb.combineAllStreams()
+        print "--------------------COMBINED STREAMS--------------------"
+#        for elem in Status.int.HXPinchConnection:
+#            elem.combinedSink.stream.printStream()
+#            elem.combinedSource.stream.printStream()
+        print "--------------------SIMULATION--------------------------"
 
+        #hxlist =  createHXList()
+        for hx in Status.int.HXPinchConnection:
+            hxes = Status.DB.qheatexchanger.\
+               QHeatExchanger_ID[hx.HXID]
+            hxsim = HXSimulation(hx.combinedSource.inletTemp,\
+                                    hx.combinedSink.inletTemp,\
+                                    hxes[0].QdotHX,\
+                                    hxes[0].QHX,\
+                                    hx.combinedSource.outletTemp,\
+                                    hx.combinedSink.outletTemp,\
+                                    hxes[0].UA,\
+                                    hx
+                                    )
+            hxsim.startSimulation()
+            Status.int.hrdata.loadDatabaseData()
+            self.data = Status.int.hrdata
+            self.data.loadDatabaseData() 
+            
+        
+    def initCurves(self):
+        if Status.int.NameGen == None:
+            Status.int.NameGen = NameGeneration()
+            Status.int.NameGen.loadDataFromDB()
+        DB = Status.DB
+        HXIDList = Status.prj.getHXList("QHeatExchanger_ID")
+        Status.int.HXPinchConnection = []
+        for elem in HXIDList:
+            HXPinch = HXPinchConnection(elem)
+            HXPinch.loadFromDB()
+            Status.int.HXPinchConnection.append(HXPinch)
+        
+        
+        if Status.processData.outOfDate == True:
+            Status.processData.createAggregateDemand()
+        for i in xrange(len(Status.int.HXPinchConnection)):
+            for j in xrange(len(Status.int.HXPinchConnection[i].sinkstreams)):
+                stream = Status.int.HXPinchConnection[i].sinkstreams[j].stream
+                self.calcStream(stream)
+                stream.printStream()
+
+            for j in xrange(len(Status.int.HXPinchConnection[i].sourcestreams)):
+                stream = Status.int.HXPinchConnection[i].sourcestreams[j].stream
+                self.calcStream(stream)
+                stream.printStream()
+
+        Status.int.NameGen.calcStreams()
+        Status.int.NameGen.deleteEmptyStreams()
+
+        curvecalc = CurveCalculation()
+        curvecalc.calculate()
+        curvecalc.printResults()
+    
+    def calcStream(self, stream):
+        initStream(stream)
+        if stream.Source == STREAMSOURCE[0]:
+            calcProcessStream(stream)
+        elif stream.Source == STREAMSOURCE[1]:
+            calcProcessStream(stream)
+        elif stream.Source == STREAMSOURCE[2]:
+            calcEquipmentStream(stream)
+        elif stream.Source == STREAMSOURCE[3]:
+            calcWHEEStream(stream)
+        elif stream.Source == STREAMSOURCE[4]:
+            calcDistLineStream(stream)
 #----------------------------------------------------------------------------------------------------
 # Internal Calculations
 #----------------------------------------------------------------------------------------------------  

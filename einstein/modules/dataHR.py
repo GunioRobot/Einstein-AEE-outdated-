@@ -109,7 +109,6 @@ class HRData:
             
             streamQuery = "qheatexchanger_QHeatExchanger_Id = '%s'"%(HXID)
             hxconn = Status.DB.heatexchanger_pinchstream.sql_select(streamQuery)
-            
         except:
             return
         
@@ -134,7 +133,7 @@ class HRData:
         tmphx = {"ProjectID":self.pid,
                "AlternativeProposalNo":self.ano,
                "HXNo":hx[0].HXNo,
-               "HXName":check(str(hx[0].HXName+ str("_new"))),# 
+               "HXName":check(str(hx[0].HXName)),# + str("_new")
                "HXType":check(hx[0].HXType),
                "QdotHX":check(max(QHX_t)),
                "HXLMTD":check(Tloghx),

@@ -175,7 +175,7 @@ class CurveCalculation():
         self.__calculateCCCResults()
         
         self.setDataCurves()
-        self.calc()
+#        self.calc()
         
     def printResults(self):
         print "GCC Arrows: "
@@ -395,30 +395,40 @@ class CurveCalculation():
             
         data = Status.int.hrdata
         
-        ccc = Curve()
-        hcc = Curve()
-        gcc = Curve()
-        
-        ccc.Name = "CCC"
-        hcc.Name = "HCC"
-        gcc.Name = "GCC"
-
-        self.appendStartCurve(ccc, self.ccc_arrows)
+        ccc = self.appendCurve(self.ccc_arrows, "CCC")
 #        self.appendEndCurve(ccc, self.ccc_arrows)
-        self.appendStartCurve(hcc, self.hcc_arrows)
+        self.hcc_arrows.reverse()
+        hcc = self.appendCurve(self.hcc_arrows, "HCC")
+#        hcc.Y[-1] = 0
 #        self.appendEndCurve(hcc, self.hcc_arrows)
-        self.appendStartCurve(gcc, self.gcc_arrows)
+        gcc = self.appendCurve(self.gcc_arrows, "GCC")
 #        self.appendEndCurve(gcc, self.gcc_arrows)
         
         data.curves = [ccc, hcc, gcc]
         Status.int.hrdata = data
         
-    def appendCurve(self, curve, curve_arrows):
-        for elem in curve_arrows:
-            curve.X.append(elem.MCP)
-            curve.Y.append(elem.StartTemp)
-            curve.X.append(elem.MCP)
-            curve.Y.append(elem.EndTemp)
+    
+        
+    def appendCurve(self, curve_arrows, Name):
+        
+        curve = Curve(Name)
+        curve.X.append(0)
+        curve.Y.append(curve_arrows[0].StartTemp)
+        
+        for arrow in curve_arrows:
+            curve.X.append(curve.X[-1]+arrow.MCP)
+            curve.Y.append(arrow.StartTemp)
+
+
+        return curve
+    
+#        curve.X.append(0)
+#        curve.Y.append(0)
+#        
+##        print "Cold Curves"
+#        for interval in Intervals:
+#            curve.X.append(curve.X[-1]+interval.H)
+#            curve.Y.append(curve.Y[-1]+abs(interval.StartTemp-interval.EndTemp))
 
     def appendStartCurve(self, curve, curve_arrows):
         for elem in curve_arrows:
@@ -523,7 +533,7 @@ class Interval():
             if abs(stream.StartTemp.getAvg()-stream.EndTemp.getAvg()) != 0:
                 self.H += stream.EnthalpyNom / abs(stream.StartTemp.getAvg()-stream.EndTemp.getAvg()) * abs(self.StartTemp-self.EndTemp)
             
-            print "H: " , str(stream.EnthalpyNom)
+#            print "H: " , str(stream.EnthalpyNom)
 
 if __name__ == "__main__":
     print "Hello World";
