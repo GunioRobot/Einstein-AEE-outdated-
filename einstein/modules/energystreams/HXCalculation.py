@@ -104,19 +104,7 @@ class HXCombination():
     def combineStream(self, comb, sstream):
             comb.stream = Stream()
             comb.stream.name = "CombinedStream"
-            print "--------------------BEFORE LOAD----------------------"
-            for el in sstream:
-                el.stream.printStream()
-            print "Comb:"
-            comb.stream.printStream()
-            print "--------------------END BEFORE LOAD-----------------------------"
             self.loadVector(sstream)
-            print "--------------------AFTER LOAD----------------------"
-            for el in sstream:
-                el.stream.printStream()
-            print "Comb:"
-            comb.stream.printStream()
-            print "--------------------END AFTER LOAD-----------------------------"
             comb.stream.EnthalpyVector = self.combineEnthalpy(sstream)
             print "--------------------AFTER ENTHALPY----------------------"
             for el in sstream:
@@ -125,12 +113,6 @@ class HXCombination():
             comb.stream.printStream()
             print "--------------------END AFTER ENTHALPY-----------------------------"
             comb.stream.MassFlowVector = self.combineMassFlow(sstream)
-            print "--------------------AFTER MASSFLOW----------------------"
-            for el in sstream:
-                el.stream.printStream()
-            print "Comb:"
-            comb.stream.printStream()
-            print "--------------------END AFTER MASSFLOW-----------------------------"
             comb.stream.SpecHeatCap = self.combineSpecificHeatCap(sstream)
 
     def loadVector(self, sstream):
@@ -485,9 +467,9 @@ class HXSimulation():
                 
     
             Status.int.hrdata.storeHXData(self.hxPinchCon, self.QHX1cs, self.UA, max(self.Tloghx), max(self.Tcsin), max(self.Tcsout), 
-                                          max(self.Thsin), max(self.Thsout), inletTSink, outletTSink, HeatFlowPercentSink, inletTSource,
-                                          outletTSource, HeatFlowPercentSource, self.StorageSize)
-            
+                                          max(self.Thsin), max(self.Thsout), inletTSink, outletTSink, round(HeatFlowPercentSink,2), inletTSource,
+                                          outletTSource, round(HeatFlowPercentSource,2), round(self.StorageSize,2))
+            self.startPostProcess()
             
 
         elif (self.Thsout == None and self.Tcsout == None) or (self.bhxcs != None and self.bhxhs != None):
@@ -501,6 +483,38 @@ class HXSimulation():
             self.calculateQStorage()
 
             #Recalculate:
+
+
+    def startPostProcess(self):
+        # Split Stream results
+        
+        bhxhs = sum(self.bhxhs)/len(self.bhxhs)
+        bhxcs = sum(self.bhxcs)/len(self.bhxcs)
+        for i in xrange(len(Status.int.HXPinchConnection)):
+            for j in xrange(len(Status.int.HXPinchConnection[i].sourcestreams)):
+                source = Status.int.HXPinchConnection[i].sourcestreams[j]
+                self.splitStreamResults(Status.int.HXPinchConnection[i].combinedSource, source, bhxcs)
+            
+            for j in xrange(len(Status.int.HXPinchConnection[i].sinkstreams)):
+                sink = Status.int.HXPinchConnection[i].sinkstreams[j]
+                self.splitStreamResults(Status.int.HXPinchConnection[i].combinedSink, sink, bhxhs)
+                
+        
+        for elem in Status.int.HXPinchConnection:
+            elem.deleteFromDB()
+            elem.writeToDB()
+
+        
+    def splitStreamResults(self, combined, hxstream, bhx):
+        
+        hxstream.stream.MassFlowAvg *= bhx
+        hxstream.stream.EnthalpyNom = hxstream.stream.EnthalpyNom*hxstream.stream.SpecHeatCap\
+                *hxstream.stream.MassFlowAvg/(sum(combined.stream.MassFlowVector)\
+                *combined.stream.SpecHeatCap)
+        hxstream.outletTemp = hxstream.inletTemp - \
+                hxstream.stream.EnthalpyNom/(hxstream.stream.MassFlowAvg*hxstream.stream.SpecHeatCap)
+    
+
 
     def printBasicValues(self):
         if self.QHX1hs != None:

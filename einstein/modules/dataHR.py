@@ -133,7 +133,7 @@ class HRData:
         tmphx = {"ProjectID":self.pid,
                "AlternativeProposalNo":self.ano,
                "HXNo":hx[0].HXNo,
-               "HXName":check(str(hx[0].HXName)),# + str("_new")
+               "HXName":check(str(hx[0].HXName)+ str("_new")),# + str("_new")
                "HXType":check(hx[0].HXType),
                "QdotHX":check(max(QHX_t)),
                "HXLMTD":check(Tloghx),
@@ -203,8 +203,8 @@ class HRData:
                 Status.int.HXPinchConnection[i].HXID = newHXID
         
 #        # Delete old HXs from DB
-        delquery = "DELETE FROM qheatexchanger  WHERE ProjectID=%s AND AlternativeProposalNo=%s AND QHeatExchanger_ID = '%s'" % (self.pid,self.ano, HXID)
-        Status.DB.sql_query(delquery)
+#        delquery = "DELETE FROM qheatexchanger  WHERE ProjectID=%s AND AlternativeProposalNo=%s AND QHeatExchanger_ID = '%s'" % (self.pid,self.ano, HXID)
+#        Status.DB.sql_query(delquery)
         
         
         
