@@ -113,11 +113,12 @@ class HRData:
             return
         
         hx = self.hexers[-1]
-        
-        for hxp in Status.int.HXPinchConnection:
-            if hxp.HXID == HXID:
-                activeHX = hxp
-        
+        QHX = sum(QHX_t)
+        for i in xrange(len(Status.int.HXPinchConnection)):
+            if Status.int.HXPinchConnection[i].HXID == HXID:
+                Status.int.HXPinchConnection[i].QHX = QHX
+                activeHX = Status.int.HXPinchConnection[i]
+                
         SourceName = ""
         for stream in activeHX.sourcestreams:
             SourceName += stream.stream.name    
@@ -130,15 +131,17 @@ class HRData:
         
         print "HXNo: ", str(hx.HXNo)
         
+
+        
         tmphx = {"ProjectID":self.pid,
                "AlternativeProposalNo":self.ano,
                "HXNo":hx[0].HXNo,
-               "HXName":check(str(hx[0].HXName)+ str("_new")),# + str("_new")
+               "HXName":check(str(hx[0].HXName)),# + str("_new")
                "HXType":check(hx[0].HXType),
                "QdotHX":check(max(QHX_t)),
                "HXLMTD":check(Tloghx),
                "Area":check(None),
-               "QHX":check(sum(QHX_t)),
+               "QHX":check(QHX),
                "HXSource":check(SourceName),
                "FluidIDSource":check(None),
                "HXTSourceInlet":check(HXTSourceInlet),
@@ -203,8 +206,8 @@ class HRData:
                 Status.int.HXPinchConnection[i].HXID = newHXID
         
 #        # Delete old HXs from DB
-#        delquery = "DELETE FROM qheatexchanger  WHERE ProjectID=%s AND AlternativeProposalNo=%s AND QHeatExchanger_ID = '%s'" % (self.pid,self.ano, HXID)
-#        Status.DB.sql_query(delquery)
+        delquery = "DELETE FROM qheatexchanger  WHERE ProjectID=%s AND AlternativeProposalNo=%s AND QHeatExchanger_ID = '%s'" % (self.pid,self.ano, HXID)
+        Status.DB.sql_query(delquery)
         
         
         

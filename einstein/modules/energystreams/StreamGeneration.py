@@ -925,6 +925,7 @@ class ProcessStreams(StreamUtils, StreamSet):
         Generate Waste heat below Cond Stream
         TODO Correct to Waste Heat
         """
+        stream.CalculationMethod = "WasteHeatBelowCond"
         val = stream.BaseValues
         stream.FluidDensity = val.FluidDensity
         if val.TCond < val.PTOutFlow:
@@ -1097,8 +1098,11 @@ class DistLineStreams(StreamUtils, StreamSet):
         schedule=Status.int.QWHEq_t[self.getEquipmentNr(equip[0])]
         QWHEq=max(schedule)
         enthalpy_vector=[]
-        for elem in schedule:
-            enthalpy_vector.append((elem/QWHEq)*stream.EnthalpyNom)
+        if QWHEq == 0:
+            enthalpy_vector = [stream.EnthalpyNom]*Status.Nt
+        else:
+            for elem in schedule:
+                enthalpy_vector.append((elem/QWHEq)*stream.EnthalpyNom)
         
 #        m_vector = massflow
 
@@ -1499,10 +1503,11 @@ class EquipmentStreams(StreamUtils, StreamSet):
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
         stream.HotOrCold = self.getHotCold(stream)
         #stream.OperatingHours = #ccheckEq.py - self.HPerYearEq1
-        if sum(stream.EnthalpyVector)==0:
+#        print "EnthalpyVector: ", str(stream.EnthalpyVector[0:200])
+        if sum(stream.EnthalpyVector)==0 or max(stream.EnthalpyVector) == 0:
             stream.OperatingHours=0
         else:
-            stream.OperatingHours = sum(stream.EnthalpyVector)/max(stream.EnthalpyVector)
+                stream.OperatingHours = sum(stream.EnthalpyVector)/max(stream.EnthalpyVector)
         
     def getOperatingHoursEq(self, stream):
         equipments = Status.prj.getEquipments()
@@ -1630,7 +1635,10 @@ class EquipmentStreams(StreamUtils, StreamSet):
         
 #calculation based on QWHEq_t--> recalculation to schedule and then multpilied by enthalpy
         for elem in Status.int.QWHEq_t[self.getEquipmentID(stream)]:
-            stream.EnthalpyVector.append(((elem/Status.TimeStep)/(enthalpy_nominal))*stream.EnthalpyNom)
+            if enthalpy_nominal == 0:
+                stream.EnthalpyVector.append(0)
+            else:    
+                stream.EnthalpyVector.append(((elem/Status.TimeStep)/(enthalpy_nominal))*stream.EnthalpyNom)
         return stream.EnthalpyVector
 
     def getMassFlowVectorCombAir(self, stream):
@@ -1708,7 +1716,7 @@ class NameGeneration():
 #        self.distline.detailPrint()
 #        self.equipment.detailPrint()
 #        self.whee.detailPrint()
-#        self.printStreams()
+        self.printStreams()
 
     def deleteEmptyStreams(self):
         self.deleteStream(self.process.streams)

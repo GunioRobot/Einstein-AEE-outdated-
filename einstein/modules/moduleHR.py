@@ -414,9 +414,10 @@ class ModuleHR(object):
             Status.int.NameGen.loadDataFromDB()
         DB = Status.DB
         HXIDList = Status.prj.getHXList("QHeatExchanger_ID")
+        HXNameList = Status.prj.getHXList("HXName")
         Status.int.HXPinchConnection = []
-        for elem in HXIDList:
-            HXPinch = HXPinchConnection(elem)
+        for i in xrange(len(HXIDList)):
+            HXPinch = HXPinchConnection(HXIDList[i], HXNameList[i])
             HXPinch.loadFromDB()
             Status.int.HXPinchConnection.append(HXPinch)
         
@@ -766,7 +767,7 @@ class ModuleHR(object):
         self.__storeResults(UPHProc_Tt, QHXProc_Tt, QWHAmb_Tt)
             
     def doHXPostProcessing(self, QHX_t):
-        TempDist = Status.processData.createTempDistHX(8, 322, "cooling")
+        TempDist = Status.processData.createTempDistHX(8, 322, "heating")
         
         UPH_Tt = Status.int.UPHTotal_Tt
         QHX_Tt = Status.int.calcQ_Tt(QHX_t, TempDist)

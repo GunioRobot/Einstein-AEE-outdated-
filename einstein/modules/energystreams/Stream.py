@@ -68,6 +68,7 @@ class Stream():
     DBType = None
     activ = True
     HXSource = None
+    CalculationMethod = None
         
     def __init__(self, MediumID=None, StartTemp=None, EndTemp=None):
         self.ProcessID = None
@@ -129,6 +130,7 @@ class Stream():
         print "Fluid Density", self.FluidDensity
         print "ID: ", self.id
         print "Operating Hours: ", self.OperatingHours
+        print "Calculation Method: ", self.CalculationMethod
         print
 
 class HXPinchConnection():
@@ -136,12 +138,14 @@ class HXPinchConnection():
     sinkstreams = []
     sourcestreams = []
     HXID = None
+    Name = ""
     combinedSink = None
     combinedSource = None
     StorageSize = None
 
-    def __init__(self, HXID):
+    def __init__(self, HXID, Name):
         self.HXID = HXID
+        self.Name = Name
         self.sinkstreams = []
         self.sourcestreams = []
         self.combinedSink = None

@@ -55,9 +55,12 @@ from einstein.modules.interfaces import *
 from einstein.modules.messageLogger import *
 from einstein.modules.modules import Modules
 from matplotlib.ticker import MaxNLocator
+
 from numCtrl import *
 from pylab import *
 import einstein.modules.matPanel as Mp
+import numpy as np
+import matplotlib.pyplot as plt
 import wx
 import wx.grid
 
@@ -158,55 +161,151 @@ def drawFigure(self):
     except:
         pass
 
+class nextTuple():
+    tup = ()
+    def __init__(self, tup):
+        self.tup = tup
 
+    def getNext(self, tup):
+        li = []
+        for i in xrange(len(self.tup)):
+            li.append(self.tup[i]+tup[i])
+        self.tup = tuple(li)
+        return self.tup
+    
+
+class Color():
+    colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w'] 
+    colorindex = -1
+    
+    def __init__(self):
+        self.colorindex = -1
+    
+    def nextColor(self):
+        self.colorindex = (self.colorindex+1)%len(self.colors)
+        return self.colors[self.colorindex]
+    
+def QHXDistribution(Tin, Tout, QHX, lowTBorder, highTBorder):
+    """
+    Tin: 
+    Tout:
+    QHX: 
+    lowTBorder: low Temperature Border
+    highTBorder: high Temperature Border
+    """
+    
+    if Tin > lowTBorder and Tout < highTBorder:
+        return (QHX)/1000
+    elif Tin < lowTBorder and Tout > highTBorder:
+        return (QHX*(highTBorder-lowTBorder)/(Tout-Tin))/1000
+    elif Tin < lowTBorder and Tout > lowTBorder and Tout < highTBorder:
+        return (QHX*(Tout-lowTBorder)/(Tout-Tin))/1000
+    elif Tin > lowTBorder and Tin < highTBorder and Tout > highTBorder:
+        return (QHX*(highTBorder-Tin)/(Tout-Tin))/1000
+    else: return 0
+    
 def drawFigure2( self ):
     """Draw data."""
     if not hasattr( self, 'subplot' ):
         self.subplot = self.figure.add_subplot( 121 )
-    if not hasattr(self, 'subplot2'):
-        self.subplot2 = self.figure.add_subplot(122)
+#    if not hasattr(self, 'subplot2'):
+#        self.subplot2 = self.figure.add_subplot(122)
     self.figure.subplots_adjust(left=spacing_left, right=spacing_right, bottom=spacing_bottom, top=spacing_top, wspace=spacing_w)
-   
-    if not hasattr(Status.int, 'hrdata'):
-        return
-    
-    if not hasattr(Status.int.hrdata, 'QD_T'):
-        return        
-    data = Status.int.hrdata.QD_T             
-    if (len(data)==0):
-        return    
-                 
-    min_ = 100000
-    max_ = 0
-    
-    X = xrange(0, 406, 5)      
-    Y = data[:]   
-    for i in range(0,len(Y)): #scale to MWh
-        Y[i]=Y[i]/1000.0
-         
-    self.subplot = self.figure.add_subplot(121)
-    self.subplot.plot(X,Y,'b',label ="QD_T")    
-    self.subplot.legend(loc = 0)                             
-    self.subplot.axis([min(X),max(X),min(Y),max(Y)*1.1])   
-    self.subplot.set_ylabel(_U('Energy [MWh]'))
-    self.subplot.set_xlabel(_U('Temperature [C]'))
-    
-    if not hasattr(Status.int.hrdata, 'QA_T'):
-        return    
-    data = Status.int.hrdata.QA_T              
-    min_ = 100000
-    max_ = 0
-                    
-    X = xrange(0, 406, 5)      
-    Y = data[:] 
-    for i in range(0,len(Y)): #scale to MWh
-        Y[i]=Y[i]/1000.0                    
 
-    self.subplot2.plot(X,Y,'r',label ="QA_T")    
-    self.subplot2.legend(loc = 0)                             
-    self.subplot2.axis([min(X),max(X),min(Y),max(Y)*1.1])   
-    self.subplot2.set_ylabel(_U('Energy [MWh]'))
-    self.subplot2.set_xlabel(_U('Temperature [C]'))  
+
+    col = Color()
+    xticks = []
+    N = len(Status.int.HXPinchConnection)
+    ind = np.arange(N)
+    width = 0.35
+    Distribution = []
+    # Tin, Tout, QHX, lowTBorder, highTBorder
+    
+#        def bar(self, left, height, width=0.8, bottom=None,
+#            color=None, edgecolor=None, linewidth=None,
+#            yerr=None, xerr=None, ecolor=None, capsize=3,
+#            align='edge', orientation='vertical', log=False,
+#            **kwargs
+#            ):
+    
+    for hx in Status.int.HXPinchConnection:
+        xticks.append(hx.Name)
+        Distribution.append([QHXDistribution(hx.combinedSink.inletTemp, hx.combinedSink.outletTemp, hx.QHX,   0,  40),
+                             QHXDistribution(hx.combinedSink.inletTemp, hx.combinedSink.outletTemp, hx.QHX,  40,  80),
+                             QHXDistribution(hx.combinedSink.inletTemp, hx.combinedSink.outletTemp, hx.QHX,  80, 120),
+                             QHXDistribution(hx.combinedSink.inletTemp, hx.combinedSink.outletTemp, hx.QHX, 120, 400)
+                             ])
+
+    p = []
+    data = []
+    
+    for i in xrange(len(Distribution[0])):
+        data.append([])
+        for elem in Distribution:
+            data[i].append(elem[0])
+            del elem[0]
+    Distribution = data
+        
+    if len(Distribution)==1:
+        p.append(self.subplot.bar(ind, tuple(Distribution[0]), width, color=col.nextColor()))
+    elif len(Distribution)<=2:
+        p.append(self.subplot.bar(ind, tuple(Distribution[0]), width, color=col.nextColor()))
+        p.append(self.subplot.bar(ind, tuple(Distribution[1]), width, color=col.nextColor(), bottom=Distribution[0]))
+    elif len(Distribution)>2:
+        nT = nextTuple(Distribution[1])
+        p.append(self.subplot.bar(ind, tuple(Distribution[0]), width, color=col.nextColor()))
+        p.append(self.subplot.bar(ind, tuple(Distribution[1]), width, color=col.nextColor(), bottom=Distribution[0]))
+        for i in xrange(2, len(Distribution)):
+            p.append(self.subplot.bar(ind, Distribution[i], width, color=col.nextColor()), bottom=nT.getNext(Distribution[i-1]))  
+    
+    self.subplot.ylabel('Heat Exchangers')
+    self.subplot.xlabel('Energy [Mwh/a]')
+    self.subplot.title('Energy gain from HX by Temperature')
+    self.subplot.xticks(ind+width/2., xticks )
+    self.subplot.yticks(np.arange(0,Status.int.HXPinchConnection[0].QHX,Status.int.HXPinchConnection[0].QHX/10))
+    self.subplot.legend( p, ('QHX 0-40°C', 'QHX 40-80°C', 'QHX 80-120°C', 'QHX 120-400°C') )
+
+   
+#    if not hasattr(Status.int, 'hrdata'):
+#        return
+#    
+#    if not hasattr(Status.int.hrdata, 'QD_T'):
+#        return        
+#    data = Status.int.hrdata.QD_T             
+#    if (len(data)==0):
+#        return    
+#                 
+#    min_ = 100000
+#    max_ = 0
+#    
+#    X = xrange(0, 406, 5)      
+#    Y = data[:]   
+#    for i in range(0,len(Y)): #scale to MWh
+#        Y[i]=Y[i]/1000.0
+#         
+#    self.subplot = self.figure.add_subplot(121)
+#    self.subplot.plot(X,Y,'b',label ="QD_T")    
+#    self.subplot.legend(loc = 0)                             
+#    self.subplot.axis([min(X),max(X),min(Y),max(Y)*1.1])   
+#    self.subplot.set_ylabel(_U('Energy [MWh]'))
+#    self.subplot.set_xlabel(_U('Temperature [C]'))
+#    
+#    if not hasattr(Status.int.hrdata, 'QA_T'):
+#        return    
+#    data = Status.int.hrdata.QA_T              
+#    min_ = 100000
+#    max_ = 0
+#                    
+#    X = xrange(0, 406, 5)      
+#    Y = data[:] 
+#    for i in range(0,len(Y)): #scale to MWh
+#        Y[i]=Y[i]/1000.0                    
+#
+#    self.subplot2.plot(X,Y,'r',label ="QA_T")    
+#    self.subplot2.legend(loc = 0)                             
+#    self.subplot2.axis([min(X),max(X),min(Y),max(Y)*1.1])   
+#    self.subplot2.set_ylabel(_U('Energy [MWh]'))
+#    self.subplot2.set_xlabel(_U('Temperature [C]'))  
 
 
 class HRPlotPanelHCG (wx.Panel):

@@ -226,9 +226,10 @@ class PanelQ6(wx.Panel):
     def _init_HXPinch(self):
         DB = Status.DB
         HXIDList = Status.prj.getHXList("QHeatExchanger_ID")
+        HXNames = Status.prj.getHXList("HXName")
         Status.int.HXPinchConnection = []
-        for elem in HXIDList:
-            HXPinch = HXPinchConnection(elem)
+        for i in xrange(len(HXIDList)):
+            HXPinch = HXPinchConnection(HXIDList[i], HXNames[i])
             HXPinch.loadFromDB()
             Status.int.HXPinchConnection.append(HXPinch)
 
