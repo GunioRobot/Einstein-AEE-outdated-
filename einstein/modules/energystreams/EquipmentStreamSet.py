@@ -98,7 +98,7 @@ class EquipmentStreamSet(StreamSet):
 
         stream.HeatTransferCoeff = self.getHeatTransferCoefficient(self.FluidDensity)
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
-        stream.HotOrCold = self.getHotCold(stream.EnthalpyNom)
+        stream.HotColdType = self.getHotCold(stream.EnthalpyNom)
         stream.OperatingHours = self.getOperatingHours()
         self.FeedWaterStream.append(stream)
 
@@ -123,7 +123,7 @@ class EquipmentStreamSet(StreamSet):
 
         stream.HeatTransferCoeff = self.getHeatTransferCoefficient(self.FluidDensity)
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
-        stream.HotOrCold = self.getHotCold(stream.EnthalpyNom)
+        stream.HotColdType = self.getHotCold(stream.EnthalpyNom)
         #stream.OperatingHours = #ccheckEq.py - self.HPerYearEq1
         self.ExhaustGasStream.append(stream)
 
@@ -155,7 +155,7 @@ class EquipmentStreamSet(StreamSet):
         #stream.EnthalpyNom, stream.EnthalpyVector = self.getEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap, stream.MassFlowVector, stream.MassFlowAvg)
         stream.HeatTransferCoeff = self.getHeatTransferCoefficient(self.FluidDensity)
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
-        stream.HotOrCold = self.getHotCold(stream.EnthalpyNom)
+        stream.HotColdType = self.getHotCold(stream.EnthalpyNom)
         #stream.OperatingHours = self.getOperatingHours() ccheckEq.py - self.HPerYearEq1
         self.ExhaustGasCondStream.append(stream)
 
@@ -182,7 +182,7 @@ class EquipmentStreamSet(StreamSet):
         stream.EnthalpyNom, stream.EnthalpyVector = self.getEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap, stream.MassFlowVector, stream.MassFlowAvg)
         stream.HeatTransferCoeff = self.getHeatTransferCoefficient(stream.FluidDensity)
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
-        stream.HotOrCold = self.getHotCold(stream.EnthalpyNom)
+        stream.HotColdType = self.getHotCold(stream.EnthalpyNom)
         #stream.OperatingHours = #from ccheckEq.py - self.HPerYearEq1
         self.CombustionAirStream.append(stream)
 

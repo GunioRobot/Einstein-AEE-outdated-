@@ -339,7 +339,7 @@ class StreamUtils():
         print "EndTemp: ", str(stream.EndTemp.getAvg())
         print "StreamType: ", str(stream.Type)
         print "Heat Capacity: ", str(stream.HeatCap)
-        print "Hot/Cold: ", stream.HotOrCold
+        print "Hot/Cold: ", stream.HotColdType
         print "Enthalpy Nominal: ", stream.EnthalpyNom
         print "Enthalpy Vector: ", hEList
         print "MassFlow Avg", stream.MassFlowAvg
@@ -452,14 +452,14 @@ class ProcessStreams(StreamUtils, StreamSet):
                 fluidId = process['ProcMedDBFluid_id']
                 stream = self.__createBasicStream(name+'_StartUp', ProcID, source, fluidId)
                 stream.DBType = STREAMTYPE[0]
-                stream.HotOrCold = 'Sink'
+                stream.HotColdType = 'Sink'
                 self.loadValues(stream, process, None)
                 self.streams.append(stream)
                 for instream in streams_in:
                     fluidId = instream['dbfluid_id']
                     stream = self.__createBasicStream(name+str(streamNr)+'_Circulation', ProcID, source, fluidId)
                     stream.DBType = STREAMTYPE[1]
-                    stream.HotOrCold = 'Sink'
+                    stream.HotColdType = 'Sink'
                     self.loadValues(stream, process, instream, 'in')
                     self.streams.append(stream)
                     streamNr+=1
@@ -472,43 +472,43 @@ class ProcessStreams(StreamUtils, StreamSet):
                     if XOutFlow > 0 or PTFinal < TCond:
                         streamAC = self.__createBasicStream(name+'_WasteHeat_AboveCond', ProcID, source, FluidID)
                         streamAC.DBType = STREAMTYPE[3]
-                        streamAC.HotOrCold = 'Source'
+                        streamAC.HotColdType = 'Source'
                         self.loadValues(streamAC, process, outstream, 'out')
                         streamBC = self.__createBasicStream(name+'_WasteHeat_BelowCond', ProcID, source, FluidID)
                         streamBC.DBType = STREAMTYPE[5]
-                        streamBC.HotOrCold = 'Source'
+                        streamBC.HotColdType = 'Source'
                         self.loadValues(streamBC, process, outstream, 'out')
                         streamC = self.__createBasicStream(name+'_WasteHeat_Cond', ProcID, source, FluidID)
                         streamC.DBType = STREAMTYPE[4]
-                        streamC.HotOrCold = 'Source'
+                        streamC.HotColdType = 'Source'
                         self.loadValues(streamC, process, outstream, 'out')
                         for elem in [streamAC, streamC, streamBC]:
                             self.streams.append(elem)
                     else:
                         streamWH = self.__createBasicStream(name+'_WasteHeat', ProcID, source, FluidID)
                         streamWH.DBType = STREAMTYPE[12]
-                        streamWH.HotOrCold = 'Source'
+                        streamWH.HotColdType = 'Source'
                         self.loadValues(streamWH, process, outstream, 'out')
                         self.streams.append(streamWH)
 
                 stream = self.__createBasicStream(name+'_Maintainance', ProcID, source, fluidId)
                 stream.DBType = STREAMTYPE[2]
-                stream.HotOrCold = 'Sink'
+                stream.HotColdType = 'Sink'
                 self.loadValues(stream, process, None)
                 self.streams.append(stream)
             else:
                 fluidId = process['ProcMedDBFluid_id']
                 streamStUp = self.__createBasicStream(name+'_StartUp', ProcID, source, fluidId)
                 streamStUp.DBType = STREAMTYPE[0]
-                streamStUp.HotOrCold = 'Sink'
+                streamStUp.HotColdType = 'Sink'
                 self.loadValues(streamStUp, process, None)
                 streamCirc = self.__createBasicStream(name+'_Circulation', ProcID, source, fluidId)
                 streamCirc.DBType = STREAMTYPE[1]
-                streamCirc.HotOrCold = 'Sink'
+                streamCirc.HotColdType = 'Sink'
                 self.loadValues(streamCirc, process, None)
                 streamMain = self.__createBasicStream(name+'_Maintainance', ProcID, source, fluidId)
                 streamMain.DBType = STREAMTYPE[2]
-                streamMain.HotOrCold = 'Sink'
+                streamMain.HotColdType = 'Sink'
                 self.loadValues(streamMain, process, None)
 
                 XOutFlow = process['XOutFlow']
@@ -518,15 +518,15 @@ class ProcessStreams(StreamUtils, StreamSet):
                 if XOutFlow > 0 or PTFinal < TCond:
                     streamAC = self.__createBasicStream(name+ '_WasteHeat_AboveCond', ProcID, source, fluidId)
                     streamAC.DBType = STREAMTYPE[3]
-                    streamAC.HotOrCold = 'Source'
+                    streamAC.HotColdType = 'Source'
                     self.loadValues(streamAC, process, None)
                     streamBC = self.__createBasicStream(name+ '_WasteHeat_BelowCond', ProcID, source, fluidId)
                     streamBC.DBType = STREAMTYPE[5]
-                    streamBC.HotOrCold = 'Source'
+                    streamBC.HotColdType = 'Source'
                     self.loadValues(streamBC, process, None)
                     streamC = self.__createBasicStream(name+ '_WasteHeat_Cond', ProcID, source, fluidId)
                     streamC.DBType = STREAMTYPE[4]
-                    streamC.HotOrCold = 'Source'
+                    streamC.HotColdType = 'Source'
                     self.loadValues(streamC, process, None)
 
                     for elem in [streamStUp, streamCirc, streamMain, streamAC, streamC, streamBC]:
@@ -535,7 +535,7 @@ class ProcessStreams(StreamUtils, StreamSet):
                 else:
                     streamWH = self.__createBasicStream(name+'_WasteHeat', ProcID, source, fluidId)
                     streamWH.DBType = STREAMTYPE[12]
-                    streamWH.HotOrCold = 'Source'
+                    streamWH.HotColdType = 'Source'
                     self.loadValues(streamWH, process, None)
 
                     for elem in [streamStUp, streamCirc, streamMain, streamWH]:
@@ -689,7 +689,7 @@ class ProcessStreams(StreamUtils, StreamSet):
             
         stream.HeatTransferCoeff = self.getHeatTransferCoefficient(stream.FluidDensity)
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
-        stream.HotOrCold = self.getHotCold(stream)
+        stream.HotColdType = self.getHotCold(stream)
         if sum(stream.EnthalpyVector)==0:
             stream.OperatingHours=0
         else:
@@ -754,7 +754,7 @@ class ProcessStreams(StreamUtils, StreamSet):
 
         stream.HeatTransferCoeff = self.getHeatTransferCoefficient(val.FluidDensity)
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
-        stream.HotOrCold = self.getHotCold(stream)
+        stream.HotColdType = self.getHotCold(stream)
         
 #        stream.OperatingHours = self.massFlow.periodSchedule.getInflowHoursPerYear()
         if sum(stream.EnthalpyVector)==0:
@@ -794,7 +794,7 @@ class ProcessStreams(StreamUtils, StreamSet):
 #        stream.MassFlowAvg, stream.MassFlowVector = self.massFlow.getMassFlowOp(stream.Enthalpy, stream.SpecHeatCap)
         stream.HeatTransferCoeff = 5000
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
-        stream.HotOrCold = self.getHotCold(stream)
+        stream.HotColdType = self.getHotCold(stream)
 #        stream.OperatingHours = self.periodSchedule.getOperationHoursPerYear()
         if sum(stream.EnthalpyVector)==0:
             stream.OperatingHours=0
@@ -871,7 +871,7 @@ class ProcessStreams(StreamUtils, StreamSet):
         else:
             stream.HeatTransferCoeff = 100
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
-        stream.HotOrCold = self.getHotCold(stream)
+        stream.HotColdType = self.getHotCold(stream)
 #        stream.OperatingHours = self.periodSchedule.getOutflowHoursPerYear()
         if sum(stream.EnthalpyVector)==0:
             stream.OperatingHours=0
@@ -912,7 +912,7 @@ class ProcessStreams(StreamUtils, StreamSet):
         stream.EnthalpyNom=max(stream.EnthalpyVector)
         stream.HeatTransferCoeff = 10000
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
-        stream.HotOrCold = self.getHotCold(stream)
+        stream.HotColdType = self.getHotCold(stream)
 #        stream.OperatingHours = self.periodSchedule.getOutflowHoursPerYear()
         if sum(stream.EnthalpyVector)==0:
             stream.OperatingHours=0
@@ -967,7 +967,7 @@ class ProcessStreams(StreamUtils, StreamSet):
         stream.EnthalpyNom=max(stream.EnthalpyVector)
         stream.HeatTransferCoeff = 5000
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
-        stream.HotOrCold = self.getHotCold(stream)
+        stream.HotColdType = self.getHotCold(stream)
 #        stream.OperatingHours = self.periodSchedule.getOutflowHoursPerYear()
         if sum(stream.EnthalpyVector)==0:
             stream.OperatingHours=0
@@ -1003,11 +1003,11 @@ class DistLineStreams(StreamUtils, StreamSet):
             name = str(line['Pipeduct'])
             DistID = line['QDistributionHC_ID']
 #            streamBFW = self.__createBasicDistStream(name+'_BoilerFeedWater', DistID, fluidID)
-#            streamBFW.HotOrCold = 'Sink'
+#            streamBFW.HotColdType = 'Sink'
 #            streamBFW.DBType = STREAMTYPE[9]
 #            self.loadValues(streamBFW, line, DB)
             streamCR = self.__createBasicDistStream(name+'_CondensateRecovery', DistID, fluidID)
-            streamCR.HotOrCold = 'Source'
+            streamCR.HotColdType = 'Source'
             streamCR.DBType = STREAMTYPE[10]
             self.loadValues(streamCR, line, DB)
 #            for elem in [streamBFW, streamCR]:
@@ -1075,7 +1075,7 @@ class DistLineStreams(StreamUtils, StreamSet):
 
         stream.HeatTransferCoeff = self.getHeatTransferCoefficient(stream.FluidDensity)
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
-        stream.HotOrCold = self.getHotCold(stream)
+        stream.HotColdType = self.getHotCold(stream)
 #        stream.OperatingHours = self.getOperatingHours()
         if sum(stream.EnthalpyVector)==0:
             stream.OperatingHours=0
@@ -1179,7 +1179,7 @@ class WHEEStreams(StreamUtils, StreamSet):
             fluidID = whee['WHEEMedium']
             wheeID = whee['QWasteHeatElEquip_ID']
             stream = self.__createBasicWHEEStream(name+'_SensibleHeat', wheeID, fluidID)
-            stream.HotOrCold = 'Source'
+            stream.HotColdType = 'Source'
             stream.DBType = STREAMTYPE[11]
             self.loadValues(stream, whee, DB)
             self.streams.append(stream)
@@ -1232,7 +1232,7 @@ class WHEEStreams(StreamUtils, StreamSet):
         stream.HeatTransferCoeff = self.getHeatTransferCoefficient(stream.FluidDensity)
         stream.SpecHeatCap = self.getWasteHeatSpecificCapacity(stream)
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
-        stream.HotOrCold = self.getHotCold(stream)
+        stream.HotColdType = self.getHotCold(stream)
 #        stream.OperatingHours = self.getOperatingHours(stream)
         if sum(stream.EnthalpyVector)==0:
             stream.OperatingHours=0
@@ -1355,11 +1355,11 @@ class EquipmentStreams(StreamUtils, StreamSet):
             elif etype == equipTypes["burner (direct heating)"] or etype == equipTypes["burner (indirect heating)"]: # burner
                 fID = equipment['DBFuel_id']
                 streamCA = self.__createBasicEquipStream(name+'_CombustionAir', eID, fID)
-                streamCA.HotOrCold = 'Sink'
+                streamCA.HotColdType = 'Sink'
                 streamCA.DBType = STREAMTYPE[8]
                 self.loadValues(streamCA, equipment, DB)
                 streamEG = self.__createBasicEquipStream(name+'_ExhaustGas', eID, fID)
-                streamEG.HotOrCold = 'Source'
+                streamEG.HotColdType = 'Source'
                 streamEG.DBType = STREAMTYPE[6]
                 self.loadValues(streamEG, equipment, DB)
                 for elem in [streamCA, streamEG]:
@@ -1417,15 +1417,15 @@ class EquipmentStreams(StreamUtils, StreamSet):
     def appendFullEquip(self, name, eID, equipe, DB):
         fID = equipe['DBFuel_id']
         streamCA = self.__createBasicEquipStream(name+'_CombustionAir', eID, fID)
-        streamCA.HotOrCold = 'Sink'
+        streamCA.HotColdType = 'Sink'
         streamCA.DBType = STREAMTYPE[8]
         self.loadValues(streamCA, equipe, DB)
         streamEG = self.__createBasicEquipStream(name+'_ExhaustGas', eID, fID)
-        streamEG.HotOrCold = 'Source'
+        streamEG.HotColdType = 'Source'
         streamEG.DBType = STREAMTYPE[6]
         self.loadValues(streamEG, equipe, DB)
 #        streamBFW = self.__createBasicEquipStream(name+'_BoilerFeedWater', eID, fID)
-#        streamBFW.HotOrCold = 'Sink'
+#        streamBFW.HotColdType = 'Sink'
 #        streamBFW.DBType = STREAMTYPE[9]
 #        self.loadValues(streamBFW, equipe, DB)
 #        for elem in [streamCA, streamEG, streamBFW]:
@@ -1469,7 +1469,7 @@ class EquipmentStreams(StreamUtils, StreamSet):
 
         stream.HeatTransferCoeff = self.getHeatTransferCoefficient(val.FluidDensity)
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
-        stream.HotOrCold = self.getHotCold(stream)
+        stream.HotColdType = self.getHotCold(stream)
 #        stream.OperatingHours = self.getOperatingHours()
         if sum(stream.EnthalpyVector)==0:
             stream.OperatingHours=0
@@ -1501,7 +1501,7 @@ class EquipmentStreams(StreamUtils, StreamSet):
 
         stream.HeatTransferCoeff = self.getHeatTransferCoefficient(stream.FluidDensity)
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
-        stream.HotOrCold = self.getHotCold(stream)
+        stream.HotColdType = self.getHotCold(stream)
         #stream.OperatingHours = #ccheckEq.py - self.HPerYearEq1
 #        print "EnthalpyVector: ", str(stream.EnthalpyVector[0:200])
         if sum(stream.EnthalpyVector)==0 or max(stream.EnthalpyVector) == 0:
@@ -1560,7 +1560,7 @@ class EquipmentStreams(StreamUtils, StreamSet):
         #stream.EnthalpyNom, stream.EnthalpyVector = self.getEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap, stream.MassFlowVector, stream.MassFlowAvg)
         stream.HeatTransferCoeff = self.getHeatTransferCoefficient(stream.FluidDensity)
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
-        stream.HotOrCold = self.getHotCold(stream)
+        stream.HotColdType = self.getHotCold(stream)
         #stream.OperatingHours = self.getOperatingHours() ccheckEq.py - self.HPerYearEq1
         if sum(stream.EnthalpyVector)==0:
             stream.OperatingHours=0
@@ -1617,7 +1617,7 @@ class EquipmentStreams(StreamUtils, StreamSet):
 
         stream.HeatTransferCoeff = self.getHeatTransferCoefficient(stream.FluidDensity)
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
-        stream.HotOrCold = self.getHotCold(stream)
+        stream.HotColdType = self.getHotCold(stream)
         #stream.OperatingHours = #from ccheckEq.py - self.HPerYearEq1
         if sum(stream.EnthalpyVector)==0:
             stream.OperatingHours=0

@@ -145,11 +145,11 @@ class HXCombination():
                 st = pinchstreams[0].stream
                 ps = pinchstreams[0]
                 combH.append(0)
-                if st.HotOrCold == "Sink" or st.HotOrCold == "Cold":
+                if st.HotColdType == "Sink" or st.HotColdType == "Cold":
                     if ps.outletTemp != None and ps.outletTemp <= st.EndTemp.getAvg():
                         pinchstreams[0].stream.EnthalpyVector[i] = (st.EnthalpyVector[i]/(st.EndTemp.getAvg()-st.StartTemp.getAvg()))\
                         *(ps.outletTemp-st.StartTemp.getAvg())
-                elif st.HotOrCold == "Source" or st.HotOrCold == "Hot":
+                elif st.HotColdType == "Source" or st.HotColdType == "Hot":
                     if st.MassFlowVector[i]!=0:
                         pinchstreams[0].outletTemp = ps.inletTemp-st.EnthalpyVector[i]/(st.MassFlowVector[i]*st.SpecHeatCap)
                     #else:
@@ -165,11 +165,11 @@ class HXCombination():
                 combH.append(0)
                 for elem in pinchstreams:
                     stream = elem.stream
-                    if elem.stream.HotOrCold == "Sink" or elem.stream.HotOrCold == "Cold":
+                    if elem.stream.HotColdType == "Sink" or elem.stream.HotColdType == "Cold":
                         if elem.outletTemp != None and elem.outletTemp <= elem.stream.EndTemp.getAvg():
                             stream.EnthalpyVector[i] = (stream.EnthalpyVector[i]/(elem.stream.EndTemp.getAvg()-elem.stream.StartTemp.getAvg()))\
                             *(elem.outletTemp-elem.stream.StartTemp.getAvg())
-                    elif elem.stream.HotOrCold == "Source" or elem.stream.HotOrCold == "Hot":
+                    elif elem.stream.HotColdType == "Source" or elem.stream.HotColdType == "Hot":
                         if elem.stream.MassFlowVector[i]!=0:
                             elem.outletTemp = elem.inletTemp-stream.EnthalpyVector[i]/(elem.stream.MassFlowVector[i]*elem.stream.SpecHeatCap)
                         #else:
@@ -494,8 +494,11 @@ class HXSimulation():
     def startPostProcess(self):
         # Split Stream results
         
-        bhxhs = sum(self.bhxhs)/len(self.bhxhs)
-        bhxcs = sum(self.bhxcs)/len(self.bhxcs)
+ #       bhxhs = sum(self.bhxhs)/len(self.bhxhs)
+ #       bhxcs = sum(self.bhxcs)/len(self.bhxcs)
+        
+        bhxhs = round(self.getNonZeroAverage(self.bhxhs, self.QHX1hs),2)
+        bhxcs = round(self.getNonZeroAverage(self.bhxcs, self.QHX1cs),2)
         for i in xrange(len(Status.int.HXPinchConnection)):
             for j in xrange(len(Status.int.HXPinchConnection[i].sourcestreams)):
                 source = Status.int.HXPinchConnection[i].sourcestreams[j]
@@ -513,17 +516,25 @@ class HXSimulation():
         
     def splitStreamResults(self, combined, hxstream, bhx):
         
-        hxstream.stream.MassFlowAvg *= bhx
+        hxstream.stream.MassFlowAvg *= bhx/100
+        hxstream.stream.EnthalpyNom=max(self.QHX1hs)
+        combinedMassFlowAvg=0
+        combinedMassFlowAvg = round(self.getNonZeroAverage(combined.stream.MassFlowVector, self.QHX1cs),2)
+        
         if (sum(combined.stream.MassFlowVector)*combined.stream.SpecHeatCap) == 0:
             hxstream.stream.EnthalpyNom = 0
         else: 
             hxstream.stream.EnthalpyNom = hxstream.stream.EnthalpyNom*hxstream.stream.SpecHeatCap\
-                *hxstream.stream.MassFlowAvg/(sum(combined.stream.MassFlowVector)\
+                *hxstream.stream.MassFlowAvg/(combinedMassFlowAvg\
                 *combined.stream.SpecHeatCap)
         if (hxstream.stream.MassFlowAvg*hxstream.stream.SpecHeatCap) == 0:
             hxstream.outletTemp = 0
         else:
-            hxstream.outletTemp = hxstream.inletTemp - \
+            if hxstream.stream.HotColdType == "Cold" or hxstream.stream.HotColdType == "Sink":
+                hxstream.outletTemp = hxstream.inletTemp + \
+                hxstream.stream.EnthalpyNom/(hxstream.stream.MassFlowAvg*hxstream.stream.SpecHeatCap)
+            else:
+                hxstream.outletTemp = hxstream.inletTemp - \
                 hxstream.stream.EnthalpyNom/(hxstream.stream.MassFlowAvg*hxstream.stream.SpecHeatCap)
     
 

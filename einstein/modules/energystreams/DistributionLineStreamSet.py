@@ -57,7 +57,7 @@ class DistributionLineStreamSet(StreamSet):
         stream.EnthalpyNom, stream.EnthalpyVector = self.getEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap, stream.MassFlowVector, stream.MassFlowAvg)
         stream.HeatTransferCoeff = self.getHeatTransferCoefficient(stream.FluidDensity)
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
-        stream.HotOrCold = self.getHotCold(stream.EnthalpyNom)
+        stream.HotColdType = self.getHotCold(stream.EnthalpyNom)
         #stream.OperatingHours = self.getOperatingHours()
         self.CondRecoveryStream.append(stream)
 

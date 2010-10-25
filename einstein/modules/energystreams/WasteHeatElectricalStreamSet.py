@@ -62,7 +62,7 @@ class WasteHeatElectricalStreamSet(StreamSet):
         stream.HeatTransferCoeff = self.getHeatTransferCoefficient(stream.FluidDensity)
         stream.SpecHeatCap = self.getWasteHeatSpecificCapacity(stream)
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
-        stream.HotOrCold = self.getHotCold(stream.EnthalpyNom)
+        stream.HotColdType = self.getHotCold(stream.EnthalpyNom)
         #stream.OperatingHours = whee.HPerDayWHEE*whee.NDaysWHEE from processess.py (get Data from DB)
         self.sensHeatStream.append(stream)
 
@@ -101,7 +101,7 @@ class WasteHeatElectricalStreamSet(StreamSet):
         stream.HeatTransferCoeff = self.getHeatTransferCoefficient(stream.FluidDensity)
         stream.SpecHeatCap = self.getWasteHeatSpecificCapacity(stream)
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
-        stream.HotOrCold = self.getHotCold(stream.EnthalpyNom)
+        stream.HotColdType = self.getHotCold(stream.EnthalpyNom)
         #stream.OperatingHours = whee.HPerDayWHEE*whee.NDaysWHEE from processess.py (get Data from DB)
         self.condHeatStream.append(stream)
 

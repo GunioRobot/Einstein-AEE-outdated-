@@ -135,9 +135,9 @@ class CurveCalculation():
         self.HotStreams = []
         self.ColdStreams = []
         for stream in streams:
-            if stream.HotOrCold == "Hot" or stream.HotOrCold == "Source":
+            if stream.HotColdType == "Hot" or stream.HotColdType == "Source":
                 self.HotStreams.append(stream)
-            elif stream.HotOrCold == "Cold" or stream.HotOrCold == "Sink":
+            elif stream.HotColdType == "Cold" or stream.HotColdType == "Sink":
                 self.ColdStreams.append(stream)
             else:
                 print "Cant find Stream hot or Cold Type"
@@ -203,7 +203,7 @@ class CurveCalculation():
         startTemp = stream.StartTemp.getAvg()
         endTemp = stream.EndTemp.getAvg()
 
-        print stream.name, startTemp, endTemp, stream.HeatCap, stream.HotOrCold
+        print stream.name, startTemp, endTemp, stream.HeatCap, stream.HotColdType
         if(not self.sort_for_section.containsKey(startTemp)):
             self.sort_for_section.append(startTemp, current_pos)
 
@@ -214,7 +214,7 @@ class CurveCalculation():
         startTemp = stream.StartTemp.getAvg()
         endTemp = stream.EndTemp.getAvg()
 
-        if stream.HotOrCold == "Hot" or stream.HotOrCold == "Source":
+        if stream.HotColdType == "Hot" or stream.HotColdType == "Source":
             if not self.sections_only_hot.containsKey(endTemp):
                 self.sections_only_hot.append(endTemp, current_pos)
 
@@ -234,8 +234,8 @@ class CurveCalculation():
 
         for i in xrange(self.sort_for_section.count):
             if self.sort_for_section.Keys(i) != old_temp:
-                if self.streams[self.sort_for_section.Values(i)].HotOrCold == "Cold" or \
-                    self.streams[self.sort_for_section.Values(i)].HotOrCold == "Sink":
+                if self.streams[self.sort_for_section.Values(i)].HotColdType == "Cold" or \
+                    self.streams[self.sort_for_section.Values(i)].HotColdType == "Sink":
                     self.sections_cold.append(self.sort_for_section.Keys(i))
                     self.sections_hot.append(self.sort_for_section.Keys(i) + self.dTmin)
                 else:
@@ -254,7 +254,7 @@ class CurveCalculation():
             cp_hot = 0
 
             for j in xrange(len(self.streams)):
-                if self.streams[j].HotOrCold == "Hot" or self.streams[j].HotOrCold == "Source":
+                if self.streams[j].HotColdType == "Hot" or self.streams[j].HotColdType == "Source":
                     if self.streams[j].StartTemp.getAvg() > self.sections_only_hot.Keys(i-1) and \
                         self.streams[j].EndTemp.getAvg() < self.sections_only_hot.Keys(i):
                         cp_hot += self.streams[j].HeatCap
@@ -267,7 +267,7 @@ class CurveCalculation():
             cp_cold = 0
 
             for j in xrange(len(self.streams)):
-                if self.streams[j].HotOrCold == "Cold" or self.streams[j].HotOrCold == "Sink":
+                if self.streams[j].HotColdType == "Cold" or self.streams[j].HotColdType == "Sink":
                     if self.streams[j].EndTemp.getAvg() > self.sections_only_cold.Keys(i-1) and \
                         self.streams[j].StartTemp.getAvg() < self.sections_only_cold.Keys(i):
                         cp_cold += self.streams[j].HeatCap
@@ -282,7 +282,7 @@ class CurveCalculation():
             cp_cold = 0
 
             for j in xrange(len(self.streams)):
-                if self.streams[j].HotOrCold == "Cold" or self.streams[j].HotOrCold == "Sink":
+                if self.streams[j].HotColdType == "Cold" or self.streams[j].HotColdType == "Sink":
                     if self.streams[j].EndTemp.getAvg() > self.sections_cold[i-1] and \
                         self.streams[j].StartTemp.getAvg() < self.sections_cold[i]:
                         cp_cold += self.streams[j].HeatCap

@@ -826,9 +826,9 @@ class PanelQ6(wx.Panel):
 
     def appendStreamNames(self, streamList, stype):
         for el in streamList:
-            if el.HotOrCold == 'Cold' or el.HotOrCold == 'Sink':
+            if el.HotColdType == 'Cold' or el.HotColdType == 'Sink':
                 self.Sink.cbStream.Append(el.name, self.Sink)
-            elif el.HotOrCold == 'Hot' or el.HotOrCold == 'Source':
+            elif el.HotColdType == 'Hot' or el.HotColdType == 'Source':
                 self.Source.cbStream.Append(el.name, self.Source)
 
 
@@ -848,9 +848,9 @@ class PanelQ6(wx.Panel):
         for elem in streamList:
             if elem.name == selectedStream:
                 pinch.stream = elem
-                if elem.HotOrCold == 'Cold' or elem.HotOrCold == 'Sink':
+                if elem.HotColdType == 'Cold' or elem.HotColdType == 'Sink':
                     self.HXPinch.sinkstreams.append(pinch)
-                elif elem.HotOrCold == 'Hot' or elem.HotOrCold == 'Source':
+                elif elem.HotColdType == 'Hot' or elem.HotColdType == 'Source':
                     self.HXPinch.sourcestreams.append(pinch)
                 stype.listBox.Append(elem.name)
 
@@ -865,7 +865,9 @@ class PanelQ6(wx.Panel):
 
         del sstream[stype.listBox.GetSelection()]
         stype.listBox.Delete(stype.listBox.GetSelection())
+        self.setStreamChoiceEmpty(stype)
 
+    def setStreamChoiceEmpty(self, stype):
         stype.inletTemp.SetValue('')
         stype.outletTemp.SetValue('')
         stype.inletHXChoice.SetSelection(-1)
@@ -1096,6 +1098,8 @@ class PanelQ6(wx.Panel):
 
     def OnButtonHXDelete(self, event):
         Status.prj.deleteHX(self.HXID)
+        self.setStreamChoiceEmpty(self.getActiveTab())
+        self.getActiveTab().listBox.Clear()
         self.clearHX()
         self.fillPage()
         event.Skip()

@@ -50,7 +50,7 @@ class Stream():
     EndTemp = None
     Type = None
     HeatCap = None
-    HotOrCold = None
+    HotColdType = None
     MassFlowAvg = None
     MassFlowVector = None
     SpecHeatCap = None
@@ -77,7 +77,7 @@ class Stream():
         self.EndTemp = Temperature()
         self.Type = None
         self.HeatCap = None
-        self.HotOrCold = None
+        self.HotColdType = None
         self.MassFlowAvg = None
         self.MassFlowVector = None
         self.SpecHeatCap = None
@@ -119,7 +119,7 @@ class Stream():
         print "EndTemp: ", str(self.EndTemp.getAvg())
         print "selfType: ", str(self.Type)
         print "Heat Capacity: ", str(self.HeatCap)
-        print "Hot/Cold: ", self.HotOrCold
+        print "Hot/Cold: ", self.HotColdType
         print "Enthalpy Nominal: ", self.EnthalpyNom
         print "Enthalpy Vector: ", str(self.EnthalpyVector)
         print "MassFlow Avg: ", self.MassFlowAvg
@@ -170,7 +170,7 @@ class HXPinchConnection():
         
 
         stream['name'] = check(elem.stream.name)
-        stream['Hot_Cold'] = check(elem.stream.HotOrCold)
+        stream['Hot_Cold'] = check(elem.stream.HotColdType)
         stream['Type'] = check(elem.stream.Type)
 
         stream['source_id'] = check(elem.stream.DBID)
@@ -260,7 +260,7 @@ class HXPinchConnection():
                 
                 stream = Stream()
                 stream.name = pstream['name']
-                stream.HotOrCold = pstream['Hot_Cold']
+                stream.HotColdType = pstream['Hot_Cold']
                 stream.Type = pstream['Type']
                 stream.HeatCap = pstream['HeatCapacity']
                 stream.MassFlowAvg = pstream['MassFlowNom']
@@ -277,9 +277,9 @@ class HXPinchConnection():
                 stream.DBType = pstream['StreamType']
                 pinch.stream = stream
 
-                if pinch.stream.HotOrCold == 'Cold' or pinch.stream.HotOrCold == 'Sink':
+                if pinch.stream.HotColdType == 'Cold' or pinch.stream.HotColdType == 'Sink':
                     self.sinkstreams.append(pinch)
-                elif pinch.stream.HotOrCold == 'Hot' or pinch.stream.HotOrCold == 'Source':
+                elif pinch.stream.HotColdType == 'Hot' or pinch.stream.HotColdType == 'Source':
                     self.sourcestreams.append(pinch)
 #                StreamGeneration.loadStreamData(stream)
 

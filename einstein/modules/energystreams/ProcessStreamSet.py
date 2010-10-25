@@ -105,7 +105,7 @@ class ProcessStreamSet(StreamSet):
 
         stream.HeatTransferCoeff = self.getHeatTransferCoefficient(self.FluidDensity)
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
-        stream.HotOrCold = self.getHotCold(stream.EnthalpyNom)
+        stream.HotColdType = self.getHotCold(stream.EnthalpyNom)
         stream.OperatingHours = self.massFlow.getStUpOperatingHours()
         self.StUpStream.append(stream)
 #------------------------------------------------------------------------------
@@ -126,7 +126,7 @@ class ProcessStreamSet(StreamSet):
         stream.EnthalpyNom, stream.EnthalpyVector = self.getEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap, stream.MassFlowVector, stream.MassFlowAvg)
         stream.HeatTransferCoeff = self.getHeatTransferCoefficient(self.FluidDensity)
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
-        stream.HotOrCold = self.getHotCold(stream.EnthalpyNom)
+        stream.HotColdType = self.getHotCold(stream.EnthalpyNom)
         operatingHours = self.periodSchedule.getInflowHoursPerYear()
         self.CircStream.append(stream)
 
@@ -147,7 +147,7 @@ class ProcessStreamSet(StreamSet):
         stream.MassFlowAvg, stream.MassFlowVector = self.massFlow.getMassFlowOp(stream.Enthalpy, stream.SpecHeatCap)
         stream.HeatTransferCoeff = 5000
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
-        stream.HotOrCold = self.getHotCold(stream.EnthalpyNom)
+        stream.HotColdType = self.getHotCold(stream.EnthalpyNom)
         stream.OperatingHours = self.periodSchedule.getOperationHoursPerYear()
         self.MaintainanceStream.append(stream)
 
@@ -171,7 +171,7 @@ class ProcessStreamSet(StreamSet):
         stream.EnthalpyNom, stream.EnthalpyVector = self.getEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap, stream.MassFlowVector, stream.MassFlowAvg)
         stream.HeatTransferCoeff = 100
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
-        stream.HotOrCold = self.getHotCold(stream.EnthalpyNom)
+        stream.HotColdType = self.getHotCold(stream.EnthalpyNom)
         stream.OperatingHours = self.periodSchedule.getOutflowHoursPerYear()
         self.WasteHeatAC.append(stream)
 
@@ -192,7 +192,7 @@ class ProcessStreamSet(StreamSet):
         stream.EnthalpyNom, stream.EnthalpyVector = self.getEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap, stream.MassFlowVector, stream.MassFlowAvg)
         stream.HeatTransferCoeff = 10000
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
-        stream.HotOrCold = self.getHotCold(stream.EnthalpyNom)
+        stream.HotColdType = self.getHotCold(stream.EnthalpyNom)
         stream.OperatingHours = self.periodSchedule.getOutflowHoursPerYear()
         self.WasteHeatC.append(stream)
 
@@ -215,7 +215,7 @@ class ProcessStreamSet(StreamSet):
         stream.EnthalpyNom, stream.EnthalpyVector = self.getEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap, stream.MassFlowVector, stream.MassFlowAvg)
         stream.HeatTransferCoeff = 5000
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
-        stream.HotOrCold = self.getHotCold(stream.EnthalpyNom)
+        stream.HotColdType = self.getHotCold(stream.EnthalpyNom)
         stream.OperatingHours = self.periodSchedule.getOutflowHoursPerYear()
         self.WasteHeatBC.append(stream)
 
