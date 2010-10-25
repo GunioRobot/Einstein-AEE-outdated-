@@ -275,7 +275,7 @@ class HXCombination():
             return
 
         if len(pinchstreams) == 1:
-            combM = [x*pinchstreams[0].percentHeatFlow for x in pinchstreams[0].stream.MassFlowVector]
+            combM = [x*pinchstreams[0].percentHeatFlow/100 for x in pinchstreams[0].stream.MassFlowVector]
             
         else:
             combM = [None]*Status.Nt
