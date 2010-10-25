@@ -51,6 +51,8 @@ class HRData:
     hexers  = []
     streams = []
     curves  = []   
+    sinkName = []
+    sourceName = []
     
     def __init__(self,pid,ano):        
         self.pid = pid
@@ -58,7 +60,9 @@ class HRData:
         print "NEW HR DATA "+str(self.pid)+ " " +str(self.ano)
         hexers  = []
         streams = []
-        curves  = []   
+        curves  = []
+        self.sinkName = []
+        self.sourceName = []   
         
     def loadDatabaseData(self):
         self.__loadHEX()
@@ -111,6 +115,12 @@ class HRData:
             hxconn = Status.DB.heatexchanger_pinchstream.sql_select(streamQuery)
         except:
             return
+        
+        self.sinkName.append(self.getCombinedStreamName(HXPinchConnection.sinkstreams))
+        self.sourceName.append(self.getCombinedStreamName(HXPinchConnection.sourcestreams))
+#        self.hexers[-1][0]['ColdMedium'] = self.getCombinedStreamName(HXPinchConnection.sinkstreams)
+#        self.hexers[-1][0]['HotMedium'] = self.getCombinedStreamName(HXPinchConnection.sourcestreams)
+        
         
         hx = self.hexers[-1]
         QHX = sum(QHX_t)
@@ -209,7 +219,16 @@ class HRData:
         delquery = "DELETE FROM qheatexchanger  WHERE ProjectID=%s AND AlternativeProposalNo=%s AND QHeatExchanger_ID = '%s'" % (self.pid,self.ano, HXID)
         Status.DB.sql_query(delquery)
         
-        
+    def getCombinedStreamName(self, stream):
+        if len(stream)==1:
+            return stream[0].stream.name
+        elif len(stream) > 1:
+            name = "Combined ("
+            for elem in stream:
+                name = name + elem.stream.name + ", "
+            name = name[0:-1] + ")"
+            return name
+        return ""     
         
                    
     def __storeNewHX(self,listofhexdata):   
