@@ -69,36 +69,58 @@ class Stream():
     activ = True
     HXSource = None
     CalculationMethod = None
+    StreamOrigin = None
         
-    def __init__(self, MediumID=None, StartTemp=None, EndTemp=None):
+    def __init__(self, MediumID=None, StartTemp=None, EndTemp=None, HeatCap=None, 
+                 HotColdType=None, MassFlowAvg=None, SpecHeatCap=None, SpecEnthalpy=None,
+                 EnthalpyNom=None, HeatTransferCoeff=None, FluidDensity=None, OperatingHours=None,
+                 id=None, name=None, Source=None, BaseValues=None, DBID=None, DBType=None):
         self.ProcessID = None
-        self.MediumID = None
-        self.StartTemp = Temperature()
-        self.EndTemp = Temperature()
+        self.MediumID = MediumID
+        self.StartTemp = Temperature(AverageTemp=StartTemp)
+        self.EndTemp = Temperature(AverageTemp=EndTemp)
         self.Type = None
-        self.HeatCap = None
-        self.HotColdType = None
-        self.MassFlowAvg = None
+        self.HeatCap = HeatCap
+        self.HotColdType = HotColdType
+        self.MassFlowAvg = MassFlowAvg
         self.MassFlowVector = None
-        self.SpecHeatCap = None
-        self.SpecEnthalpy = None
+        self.SpecHeatCap = SpecHeatCap
+        self.SpecEnthalpy = SpecEnthalpy
         self.EnthalpyVector = None
-        self.EnthalpyNom = None
-        self.HeatTransferCoeff = None
-        self.FluidDensity = None
-        self.OperatingHours = None
-        self.id = uuid.uuid4()
-        self.name = ""
-        self.Source = None
-        self.BaseValues = None
-        self.DBID = None
-        self.DBType = None
+        self.EnthalpyNom = EnthalpyNom
+        self.HeatTransferCoeff = HeatTransferCoeff
+        self.FluidDensity = FluidDensity
+        self.OperatingHours = OperatingHours
+        if id != None:
+            self.id = id
+        else: self.id = uuid.uuid4()
+        if name != None:
+            self.name = name
+        else: self.name = ""
+        self.Source = Source
+        self.BaseValues = BaseValues
+        self.DBID = DBID
+        self.DBType = DBType
         self.activ = True
         self.HXSource = None
 #        self.percentHeatFlow = None
 
         # HeatExchanger : SplitFactor
         self.HeatExchangerConnection = {}
+
+
+    def copyStreamAttributes(self, stream):
+        self.HeatCap=stream.HeatCap
+        self.HotColdType=stream.HotColdType
+        self.MassFlowAvg=stream.MassFlowAvg
+        self.SpecHeatCap=stream.SpecHeatCap 
+        self.SpecEnthalpy=stream.SpecEnthalpy
+        self.FluidDensity=stream.FluidDensity 
+        self.OperatingHours=stream.OperatingHours
+        self.Source=stream.Source 
+        self.BaseValues=stream.BaseValues
+        self.DBID=stream.DBID 
+        self.DBType=stream.DBType
 
 
     def writeToDB(self):

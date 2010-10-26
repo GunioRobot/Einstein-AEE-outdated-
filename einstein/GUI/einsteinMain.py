@@ -153,6 +153,7 @@ from einstein.GUI.status import Status #processing status of the tool
 from einstein.modules.energystreams.EquipmentStreamSet import *
 from einstein.modules.energystreams.Stream import *
 from einstein.modules.energystreams.HXCalculation import *
+from einstein.modules.energystreams.HXProposal import *
 
 def _U(text):
     try:
@@ -596,13 +597,17 @@ class EinsteinFrame(wx.Frame):
 #        ex = ExportProject(pid=Status.PId)
 
 # DO CURVE CALCULATION
-#        if Status.processData.outOfDate == True:
-#            Status.processData.createAggregateDemand()
-#        Status.int.NameGen.calcStreams()
+        if Status.processData.outOfDate == True:
+            Status.processData.createAggregateDemand()
+        Status.int.NameGen.calcStreams()
 #        curvecalc = CurveCalculation()
 #        curvecalc.calculate()
 #        curvecalc.printResults()
-        Status.mod.moduleHR.doHXPostProcessing()
+#        Status.mod.moduleHR.doHXPostProcessing()
+        hxp = HXProposal(20, False, 5)
+        hxp.start()
+        hxp.printSplittedStreams()
+        
 
 
     def OnMenuImportProject(self, event):
