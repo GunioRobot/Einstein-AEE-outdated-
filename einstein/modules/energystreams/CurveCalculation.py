@@ -49,6 +49,7 @@ class CurveCalculation():
         self.ccc_arrows = []
         self.hcc_arrows = []
         self.signal_pinch_temp = True
+        self.pinch_temperature = -999
 #        self.__getStreams()
 
     def __getStreams(self):
@@ -311,14 +312,17 @@ class CurveCalculation():
             self.heat_output.append(self.pre_heat_output[i] + minimum_heat_input)
 
     def __calculatePinchTemperature(self):
+        print self.heat_input
+        print self.heat_output
         for i in xrange(len(self.heat_output)):
             if i+1 < len(self.heat_input):
                 if self.heat_output[i]==0 and self.heat_input[i+1] == 0:
                     index = len(self.sections_hot) - 1 - (i+1)
-                    pinch_temperature = (self.sections_hot[index] + self.sections_cold[index]) / 2
+                    self.pinch_temperature = (self.sections_hot[index] + self.sections_cold[index]) / 2
 
                     if self.signal_pinch_temp:
                         pass
+        print "Pinch Temperature: ", str(self.pinch_temperature)
 
     def __calculateGCCArrows(self):
         temperature_index = len(self.sections_hot) - 1
