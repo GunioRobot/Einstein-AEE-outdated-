@@ -9,12 +9,15 @@ class HXProposal():
     streams_above_pinch = []
     consider_existing_hx = False
     pinch_temperature = -999
+    pinch_temperature_lower = -994
+    pinch_temperature_upper = -999
     dT = 5
     
-    def __init__(self, pinch_temperature, consider_existing_hx = False, dT=5 ):
+    def __init__(self, pinch_temperature_upper, pinch_temperature_lower, consider_existing_hx = False, dT=5 ):
         self.streams_below_pinch = []
         self.streams_above_pinch = []
-        self.pinch_temperature = pinch_temperature
+        self.pinch_temperature_upper = pinch_temperature_upper
+        self.pinch_temperature_lower = pinch_temperature_lower
         self.consider_existing_hx = consider_existing_hx
         self.dT = dT
         self.__getStreams()

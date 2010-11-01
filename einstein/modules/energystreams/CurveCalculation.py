@@ -75,10 +75,13 @@ class CurveCalculation():
         self.calculateVectors(self.ColdIntervals)
         self.calculateVectors(self.HotIntervals)
         
-        curveCCC = self.setColdCurves(self.ColdIntervals)
-        curveHCC = self.setHotCurves(self.HotIntervals)
-        curveGCC = Curve("HCC")
-        Status.int.hrdata.curves = [curveCCC, curveHCC, curveGCC]
+        self.CCC = self.setColdCurves(self.ColdIntervals)
+        self.HCC = self.setHotCurves(self.HotIntervals)
+        self.GCC = Curve("HCC")
+        if Status.int.hrdata == None:
+            Status.int.hrdata = HRData(Status.PId,Status.ANo)
+        
+        Status.int.hrdata.curves = [self.CCC, self.HCC, self.GCC]
         
     def setHotCurves(self, Intervals):
         curve = Curve("HCC")
@@ -157,6 +160,104 @@ class CurveCalculation():
         
         return Intervals
     
+    def shiftCurve(self, x_curve, y_curve, x_shift, y_shift):
+        for i in xrange(len(x_curve)):
+            x_curve[i] += x_shift
+        for i in xrange(len(y_curve)):
+            y_curve[i] += y_shift
+    
+    
+    def shift(self, x_static, y_static, x_shift, y_shift, dT):
+        pinchtemp = -999
+        index = -1
+        for i in xrange(len(x_shift)-0): #-0
+            shift, index = self.shiftPointToVector(x_static, y_static, x_shift[i], y_shift[i], dT)
+            #print "Shift:", str(shift), "on x = ", str(x_shift[i]), "and y = ", str(y_shift[i])
+            if shift > 0:
+                self.shiftCurve(x_shift, y_shift, shift, 0)
+            shift, index = self.shiftPointToVector(x_static, y_static, x_shift[i], y_shift[i], dT)
+            if shift > 0:
+                self.shiftCurve(x_shift, y_shift, shift, 0)
+            if shift !=0:
+                pinchtemp = y_shift[i]
+                index = i
+            #print x_shift, y_shift        
+        #print pinchtemp
+        return pinchtemp
+    
+    def shiftPointToVector(self, x_vector, y_vector, x_point, y_point, dT):
+
+        #print
+        index = self.findCorrespondingLineIndexForX(x_point, x_vector)
+        #print "index:", str(index)
+        #print "from:", "(", str(x_vector[index]), "/", str(y_vector[index]), ")", "to:", "(", str(x_vector[index+1]), "/", str(y_vector[index+1]), ")"
+        #print "x_point/y_point:", "(", str(x_point), "/", str(y_point), ")"
+    
+        if index == -1:
+            return 0, 0
+    
+        if x_point == x_vector[index] and y_point == y_vector[index]:
+            return 0, 0
+    
+        # Calculate Vector
+        xv = x_vector[index+1] - x_vector[index]
+        yv = y_vector[index+1] - y_vector[index]
+    
+        #print "index:", str(index)
+        #print "xv/yv:", "(", str(xv), "/", str(yv), ")"
+        
+        # Get coordinates relativ to zero (zero is the starting point of the vector)
+        xpn = x_point - x_vector[index]
+        ypn = y_point - y_vector[index]
+    
+        #print "xpn/ypn:", "(", str(xpn), "/", str(ypn), ")"
+    
+        # Shorten vector to length xp-xn
+        xk = abs(xv-xpn)
+        yk = xk*yv/xv
+    
+        #print "xk/yk:", "(", str(xk), "/", str(yk), ")"
+    
+        # Move point to xpn = xv
+        xz = xpn-xk
+        yz = ypn-yk
+    
+        #print "xz/yz:", "(", str(xz), "/", str(yz), ")"
+    
+        if yz >= ypn:
+            # do move to pinch temp
+            
+            return 0, -1
+        else:
+            xe = ypn*xv/yv
+            ye = ypn
+            #print "xe/ye:", "(", str(xe), "/", str(ye), ")"
+            return x_vector[index]+xe-x_point, 0
+    
+    def findCorrespondingLineIndexForX(self, x_point, x_vector):
+        index = -1
+        for i in xrange(len(x_vector)-1):
+            if x_point < x_vector[i+1]:
+                index=i
+                break
+        return index
+    
+    def shiftTemperatures(self, x_hcc, y_hcc, x_ccc, y_ccc, dT):
+        self.shiftCurve(x_hcc, y_hcc, 0, dT/2)
+        self.shiftCurve(x_ccc, y_ccc, 0, -dT/2)
+    
+    def shiftToPinch(self, dT):
+        xh = self.HCC.X
+        yh = self.HCC.Y
+        xc = self.CCC.X
+        yc = self.CCC.Y
+        
+        self.shiftCurve(xc, yc, -xc[0], 0)
+        self.pinch_temperature = self.shift(xh, yh, xc, yc, dT)
+        self.pinchupper = self.pinch_temperature + dT/2
+        self.pinchlower = self.pinch_temperature - dT/2
+        self.shiftTemperatures(xh, yh, xc, yc, dT)
+    
     
     def calculate(self):
         self.__getStreams()
@@ -176,9 +277,24 @@ class CurveCalculation():
         self.__calculateCCCResults()
         
         self.setDataCurves()
-#        self.calc()
+        self.calc()
         
     def printResults(self):
+        print "Sort Section", str(self.sort_for_section)
+        print "Sections only hot", str(self.sections_only_hot)
+        print "Sections only cold", str(self.sections_only_cold)
+        print "Sections Hot" , str(self.sections_hot)
+        print "Sections Cold" , str(self.sections_cold)
+        print "Hot cp Section" , str(self.hot_cp_section)
+        print "Cold cp Section" , str(self.cold_cp_section)
+        print "only hot cp" , str(self.only_hot_cp_section)
+        print "only cold cp" , str(self.only_cold_cp_section)
+        print "diff" , str(self.difference)
+        print "pre heat input" , str(self.pre_heat_input)
+        print "pre heat output" , str(self.pre_heat_output)
+        print "heat input" , str(self.heat_input)
+        print "heat output" , str(self.heat_output)
+        
         print "GCC Arrows: "
         for elem in self.gcc_arrows:
             print elem.MCP, elem.StartTemp, elem.EndTemp, elem.Direction, elem.StartMcpPoint, elem.kw
@@ -519,6 +635,13 @@ class SortedList():
     def Values(self, i):
         return self.list[i].Value
 
+    def __repr__(self):
+        replist=[]
+        for elem in self.list:
+            replist.append((elem.Key, elem.Value))
+        return repr(replist)
+
+
 class Interval():
     
     StartTemp = None
@@ -533,9 +656,19 @@ class Interval():
 
     def calculateCP(self):
         self.H = 0
+        dT = 0
         for stream in self.Streams:
+#            self.H+=stream.EnthalpyNom
+#            dT+= abs(stream.StartTemp.getAvg()-stream.EndTemp.getAvg())
+#        self.H = (self.H * abs(self.StartTemp-self.EndTemp))/dT
+        
+#            self.H += stream.EnthalpyNom
             if abs(stream.StartTemp.getAvg()-stream.EndTemp.getAvg()) != 0:
-                self.H += stream.EnthalpyNom / abs(stream.StartTemp.getAvg()-stream.EndTemp.getAvg()) * abs(self.StartTemp-self.EndTemp)
+                k= (stream.EnthalpyNom * abs(self.StartTemp-self.EndTemp))/abs(stream.StartTemp.getAvg()-stream.EndTemp.getAvg())
+                
+            
+#            if abs(stream.StartTemp.getAvg()-stream.EndTemp.getAvg()) != 0:
+#                self.H += stream.EnthalpyNom / abs(stream.StartTemp.getAvg()-stream.EndTemp.getAvg()) * abs(self.StartTemp-self.EndTemp)
             
 #            print "H: " , str(stream.EnthalpyNom)
 

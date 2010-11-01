@@ -981,7 +981,7 @@ class PanelQ6(wx.Panel):
 
         if self.HXPinch == None:
             self.HXPinch = HXPinchConnection(self.HXID)
-            Status.int.HXPinchConnection.append(self.HXPinch)
+            Status.int.HXPinchConnection.append(self.HXPinch, self.HXName)
 
         self.Sink.outletHXChoice.Clear()
         self.Sink.inletHXChoice.Clear()

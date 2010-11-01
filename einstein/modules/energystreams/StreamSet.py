@@ -154,7 +154,7 @@ class StreamSet():
         :returns: Double
         """
         #print EndTemp, StartTemp, SpecHeatCap
-        return (EndTemp-StartTemp)*SpecHeatCap
+        return abs(EndTemp-StartTemp)*SpecHeatCap
 
 
 #    def getMassFlowOp(self, Enthalpy, SpecHeatCap):

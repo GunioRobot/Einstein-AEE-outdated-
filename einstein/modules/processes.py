@@ -358,11 +358,11 @@ class Processes(object):
         """
         HeatFlow can be UPHm, UPHs, QWHEE, QWH
         """
-
+        hours_nominal=0.1
         list = []
         for elem in schedule:
 #            try:
-            list.append(elem*HeatFlow)
+            list.append(elem*HeatFlow/Status.Nt)
 #            except: list.append(-1)
         HeatFlow_t.append(list)
 
