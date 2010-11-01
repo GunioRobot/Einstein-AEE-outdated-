@@ -440,7 +440,7 @@ class ModuleHR(object):
 
         curvecalc = CurveCalculation()
         curvecalc.calculate()
-#        curvecalc.shiftToPinch(5)
+        curvecalc.shiftToPinch(5)
         curvecalc.printResults()
     
     def calcStream(self, stream):

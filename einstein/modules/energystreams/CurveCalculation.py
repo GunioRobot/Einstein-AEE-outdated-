@@ -69,9 +69,12 @@ class CurveCalculation():
         self.ColdIntervals = self.getTemperatureLevels(self.ColdStreams)
         self.HotIntervals = self.getTemperatureLevels(self.HotStreams)
 
+        print "HotIntervals: ", str(self.HotIntervals)
+        print "ColdIntervals: ", str(self.ColdIntervals)
+        
         self.fillTemperatureLevelsCS(self.ColdIntervals, self.ColdStreams)
         self.fillTemperatureLevelsHS(self.HotIntervals, self.HotStreams)
-
+        
         self.calculateVectors(self.ColdIntervals)
         self.calculateVectors(self.HotIntervals)
         
@@ -664,7 +667,7 @@ class Interval():
         
 #            self.H += stream.EnthalpyNom
             if abs(stream.StartTemp.getAvg()-stream.EndTemp.getAvg()) != 0:
-                k= (stream.EnthalpyNom * abs(self.StartTemp-self.EndTemp))/abs(stream.StartTemp.getAvg()-stream.EndTemp.getAvg())
+                self.H += (stream.EnthalpyNom * abs(self.StartTemp-self.EndTemp))/abs(stream.StartTemp.getAvg()-stream.EndTemp.getAvg())
                 
             
 #            if abs(stream.StartTemp.getAvg()-stream.EndTemp.getAvg()) != 0:
