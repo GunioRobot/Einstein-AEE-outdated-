@@ -314,6 +314,12 @@ class ModuleHR(object):
     def runHRDesign(self, exhx=True):        
         dlg = DialogGauge(Status.main, _("EINSTEIN heat recovery module"), _("calculating"))
 #        self.__runPE2(redesign=True, concondensation=self.ConCondensation, exhx=exhx)
+        pinchupper = self.curvecalc.pinchupper
+        pinchlower = self.curvecalc.pinchlower
+        hxp = HXProposal(pinchupper, pinchlower, exhx, 5)
+        hxp.start()
+        hxp.printSplittedStreams()
+        
         dlg.update(50.0)
         
         self.__doPostProcessing()
@@ -438,10 +444,10 @@ class ModuleHR(object):
         Status.int.NameGen.calcStreams()
         Status.int.NameGen.deleteEmptyStreams()
 
-        curvecalc = CurveCalculation()
-        curvecalc.calculate()
-        curvecalc.shiftToPinch(5)
-        curvecalc.printResults()
+        self.curvecalc = CurveCalculation()
+        self.curvecalc.calculate()
+        self.curvecalc.shiftToPinch(5)
+        self.curvecalc.printResults()
     
     def calcStream(self, stream):
         initStream(stream)

@@ -178,12 +178,12 @@ class CurveCalculation():
             #print "Shift:", str(shift), "on x = ", str(x_shift[i]), "and y = ", str(y_shift[i])
             if shift > 0:
                 self.shiftCurve(x_shift, y_shift, shift, 0)
+                pinchtemp = y_shift[i]
+                #print pinchtemp
+                index = i
             shift, index = self.shiftPointToVector(x_static, y_static, x_shift[i], y_shift[i], dT)
             if shift > 0:
                 self.shiftCurve(x_shift, y_shift, shift, 0)
-            if shift !=0:
-                pinchtemp = y_shift[i]
-                index = i
             #print x_shift, y_shift        
         #print pinchtemp
         return pinchtemp

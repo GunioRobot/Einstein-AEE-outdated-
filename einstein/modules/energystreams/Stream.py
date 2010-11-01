@@ -70,6 +70,7 @@ class Stream():
     HXSource = None
     CalculationMethod = None
     StreamOrigin = None
+    splitted = False
         
     def __init__(self, MediumID=None, StartTemp=None, EndTemp=None, HeatCap=None, 
                  HotColdType=None, MassFlowAvg=None, SpecHeatCap=None, SpecEnthalpy=None,
@@ -121,6 +122,7 @@ class Stream():
         self.BaseValues=stream.BaseValues
         self.DBID=stream.DBID 
         self.DBType=stream.DBType
+        self.origin = stream.name
 
 
     def writeToDB(self):
