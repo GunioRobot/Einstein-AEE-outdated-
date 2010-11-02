@@ -9,7 +9,8 @@ STREAMSOURCE = ["PROCESSBATCH",
                 "PROCESSCONTINUOUS",
                 "EQUIPMENT",
                 "WHEE",
-                "DISTRIBUTIONLINE"]
+                "DISTRIBUTIONLINE",
+                "HXPROPOSAL"]
 
 STREAMTYPE = ["STARTUP",                #0
               "CIRCULATION",            #1
@@ -23,8 +24,8 @@ STREAMTYPE = ["STARTUP",                #0
               "BOILERFEEDWATER",        #9
               "CONDENSATERECOVERY",     #10
               "SENSIBLEHEAT",           #11
-              "WASTEHEAT"]              #12
-
+              "WASTEHEAT",              #12
+              "HXPROPOSAL"]
               
 if __name__ == "__main__":
     print "Hello World";

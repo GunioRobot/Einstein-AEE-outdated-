@@ -97,7 +97,7 @@ class Stream():
         else: self.id = uuid.uuid4()
         if name != None:
             self.name = name
-        else: self.name = ""
+        else: self.name = "stream"
         self.Source = Source
         self.BaseValues = BaseValues
         self.DBID = DBID
@@ -210,8 +210,8 @@ class HXPinchConnection():
         stream = {}
         hxpinch = {}
 
-        
-
+        print elem
+        print elem.stream
         stream['name'] = check(elem.stream.name)
         stream['Hot_Cold'] = check(elem.stream.HotColdType)
         stream['Type'] = check(elem.stream.Type)

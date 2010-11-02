@@ -161,11 +161,13 @@ class HXProposal():
             hconn = pinchTemp()
             cconn = pinchTemp()
             
-            hconn.stream = self.match_above_hot
-            cconn.stream = self.match_above_cold
+            hconn.stream = self.match_above_hot[i]
+            cconn.stream = self.match_above_cold[i]
             
             hxpinch.sinkstreams.append(cconn)
             hxpinch.sourcestreams.append(hconn)
+            
+            hxpinch.writeToDB()
             
             Status.int.HXPinchConnection.append(hxpinch)
             
@@ -176,16 +178,35 @@ class HXProposal():
             hconn = pinchTemp()
             cconn = pinchTemp()
             
-            hconn.stream = self.match_below_cold
-            cconn.stream = self.match_below_cold
+            hconn.stream = self.match_below_cold[i]
+            cconn.stream = self.match_below_cold[i]
             
             hxpinch.sinkstreams.append(cconn)
             hxpinch.sourcestreams.append(hconn)            
             
+            hxpinch.writeToDB()
             
             Status.int.HXPinchConnection.append(hxpinch)
         
+    def insertStream(self, stream):
         
+        stream['name'] = check(stream.name)
+        stream['Hot_Cold'] = check(stream.HotColdType)
+        stream['Type'] = check(stream.Type)
+
+        stream['source_id'] = check(stream.DBID)
+        stream['source_type'] = check(stream.Source)
+
+        stream['medium_id'] = check(stream.MediumID)
+        stream['StartTemp'] = check(stream.StartTemp.getAvg())
+        stream['EndTemp'] = check(stream.EndTemp.getAvg())
+        stream['StreamType'] = check(stream.DBType)
+        stream['HeatCapacity'] = check(stream.HeatCap)
+        stream['MassFlowNom'] = check(stream.MassFlowAvg)
+        stream['SpecHeatCapacity'] = check(stream.SpecHeatCap)
+        stream['SpecEnthalpy'] = check(stream.SpecEnthalpy)
+        stream['EnthalpyNom'] = check(stream.EnthalpyNom)
+        stream['HeatTransferCoeff'] = check(stream.HeatTransferCoeff)
         
     def createNewHX(self, name):
         tmphx = {"ProjectID":Status.PId,
