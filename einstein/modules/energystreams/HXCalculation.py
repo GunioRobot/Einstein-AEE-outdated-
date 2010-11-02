@@ -521,7 +521,7 @@ class HXSimulation():
         combinedMassFlowAvg=0
         combinedMassFlowAvg = round(self.getNonZeroAverage(combined.stream.MassFlowVector, self.QHX1cs),2)
         
-        if (sum(combined.stream.MassFlowVector)*combined.stream.SpecHeatCap) == 0:
+        if (combinedMassFlowAvg*combined.stream.SpecHeatCap) == 0:
             hxstream.stream.EnthalpyNom = 0
         else: 
             hxstream.stream.EnthalpyNom = hxstream.stream.EnthalpyNom*hxstream.stream.SpecHeatCap\
