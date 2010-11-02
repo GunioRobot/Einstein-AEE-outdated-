@@ -1,4 +1,5 @@
 from einstein.modules.energystreams.Stream import *
+from einstein.GUI.status import *
 
 __author__="Andre Rattinger"
 __date__ ="$01.08.2010 11:43:11$"
@@ -42,7 +43,11 @@ class HXProposal():
     def start(self):
         self.__splitAboveBelowPinch()
         self.sortStreams()
-        self.matchStreams()
+        self.printToSplit()
+        self.matchStreamsAbovePinch()
+        self.matchStreamsBelowPinch()
+        self.printSplits()
+        self.convertMatchesToHX()
     
     def sortStreams(self):
         self.streams_above_pinch_cold = self.sortStreamWithMCP(self.streams_above_pinch_cold)
@@ -56,28 +61,11 @@ class HXProposal():
     
     
         self.matchStreams(self.streams_above_pinch_cold, self.streams_above_pinch_hot, self.match_above_cold, self.match_above_hot)
-    def matchStreams(self):
+    def matchStreamsAbovePinch(self):
         """
         match Streams
         """
-        
-        print "--------------------- STREAMS TO SPLIT -------------------"
-        print "Above pinch cold"
-        for elem in self.streams_above_pinch_cold:
-            print elem
-        print "Above pinch hot"
-        for elem in self.streams_above_pinch_hot:
-            print elem
-        print "Below pinch cold"
-        for elem in self.streams_below_pinch_cold:
-            print elem
-        print "Below pinch hot"
-        for elem in self.streams_below_pinch_hot:
-            print elem
-        
-        print "----------------------------------------------------------"
         # ABOVE PINCH
-        
         MAXRUN = len(self.streams_above_pinch_hot)*2
         run = 0
         while len(self.streams_above_pinch_cold) > 0 and len(self.streams_above_pinch_hot) > 0:
@@ -118,7 +106,8 @@ class HXProposal():
                 self.streams_above_pinch_hot.append(hs2)
                 self.sortStreamWithMCP(self.streams_above_pinch_hot)
         
-        
+           
+    def matchStreamsBelowPinch(self):
         # BELOW PINCH
         MAXRUN = len(self.streams_below_pinch_hot)*2
         run = 0
@@ -163,10 +152,70 @@ class HXProposal():
                 
                 self.streams_below_pinch_cold.append(cs2)
                 self.sortStreamWithMCP(self.streams_below_pinch_cold)
+                    
+    def convertMatchesToHX(self):
+        
+        for i in xrange(len(self.match_above_cold)):
+            HXID = self.createNewHX("HX_AbovePinch_" +  str(i))
+            hxpinch = HXPinchConnection(HXID, "HX_AbovePinch_" +  str(i))
+            hconn = pinchTemp()
+            cconn = pinchTemp()
+            
+            hconn.stream = self.match_above_hot
+            cconn.stream = self.match_above_cold
+            
+            hxpinch.sinkstreams.append(cconn)
+            hxpinch.sourcestreams.append(hconn)
+            
+            Status.int.HXPinchConnection.append(hxpinch)
+            
+        
+        for i in xrange(len(self.match_below_cold)):
+            HXID = self.createNewHX("HX_BelowPinch_" +  str(i))
+            hxpinch = HXPinchConnection(HXID, "HX_BelowPinch_" +  str(i))
+            hconn = pinchTemp()
+            cconn = pinchTemp()
+            
+            hconn.stream = self.match_below_cold
+            cconn.stream = self.match_below_cold
+            
+            hxpinch.sinkstreams.append(cconn)
+            hxpinch.sourcestreams.append(hconn)            
+            
+            
+            Status.int.HXPinchConnection.append(hxpinch)
         
         
         
-    
+    def createNewHX(self, name):
+        tmphx = {"ProjectID":Status.PId,
+               "AlternativeProposalNo":Status.ANo,
+               "HXName":check(str(name))
+               }
+        
+        qhxTable = Status.DB.qheatexchanger
+        HXID = qhxTable.insert(tmphx)
+        
+        return HXID
+        
+    def printToSplit(self):
+        print "--------------------- STREAMS TO SPLIT -------------------"
+        print "Above pinch cold"
+        for elem in self.streams_above_pinch_cold:
+            print elem
+        print "Above pinch hot"
+        for elem in self.streams_above_pinch_hot:
+            print elem
+        print "Below pinch cold"
+        for elem in self.streams_below_pinch_cold:
+            print elem
+        print "Below pinch hot"
+        for elem in self.streams_below_pinch_hot:
+            print elem
+        
+        print "----------------------------------------------------------"
+        
+    def printSplits(self):
         print "------------------Split finished-----------------------"
         print "Above pinch cold"
         for elem in self.streams_above_pinch_cold:
@@ -197,7 +246,7 @@ class HXProposal():
             print elem
         print "-------------------------------------------------------"
         
-    
+        
     def printSplittedStreams(self):
         pass
 #        print "----------Streams Above Pinch----------"

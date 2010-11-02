@@ -1113,7 +1113,7 @@ class PanelQ6(wx.Panel):
             return
 
         hxes = Status.DB.qheatexchanger.HXName[check(hxName)].ProjectID[Status.PId].AlternativeProposalNo[Status.ANo]
-	if len(hxes) == 0:
+        if len(hxes) == 0:
             hx = Status.prj.addHXDummy()
             self.HXName = hxName
         elif len(hxes) == 1:
