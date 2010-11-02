@@ -61,6 +61,7 @@ from pylab import *
 import einstein.modules.matPanel as Mp
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
 import wx
 import wx.grid
 
@@ -181,6 +182,9 @@ class Color():
     def __init__(self):
         self.colorindex = -1
     
+    def getCurrentColor(self):
+        return self.colors[self.colorindex]
+    
     def nextColor(self):
         self.colorindex = (self.colorindex+1)%len(self.colors)
         return self.colors[self.colorindex]
@@ -239,6 +243,8 @@ def drawFigure2( self ):
     p = []
     data = []
     
+    self.patchlist = []
+    
     for i in xrange(len(Distribution[0])):
         data.append([])
         for elem in Distribution:
@@ -248,22 +254,33 @@ def drawFigure2( self ):
         
     if len(Distribution)==1:
         p.append(self.subplot.bar(ind, tuple(Distribution[0]), width, color=col.nextColor()))
+        self.patchlist.append(Patch(facecolor=col.getCurrentColor()))
     elif len(Distribution)<=2:
         p.append(self.subplot.bar(ind, tuple(Distribution[0]), width, color=col.nextColor()))
+        self.patchlist.append(Patch(facecolor=col.getCurrentColor()))
         p.append(self.subplot.bar(ind, tuple(Distribution[1]), width, color=col.nextColor(), bottom=Distribution[0]))
+        self.patchlist.append(Patch(facecolor=col.getCurrentColor()))
     elif len(Distribution)>2:
         nT = nextTuple(Distribution[1])
         p.append(self.subplot.bar(ind, tuple(Distribution[0]), width, color=col.nextColor()))
+        self.patchlist.append(Patch(facecolor=col.getCurrentColor()))
         p.append(self.subplot.bar(ind, tuple(Distribution[1]), width, color=col.nextColor(), bottom=Distribution[0]))
+        self.patchlist.append(Patch(facecolor=col.getCurrentColor()))
         for i in xrange(2, len(Distribution)):
-            p.append(self.subplot.bar(ind, Distribution[i], width, color=col.nextColor()), bottom=nT.getNext(Distribution[i-1]))  
+            p.append(self.subplot.bar(ind, Distribution[i], width, color=col.nextColor(), bottom=nT.getNext(Distribution[i-1])))  
+            self.patchlist.append(Patch(facecolor=col.getCurrentColor()))
     
-    self.subplot.ylabel('Heat Exchangers')
-    self.subplot.xlabel('Energy [Mwh/a]')
-    self.subplot.title('Energy gain from HX by Temperature')
-    self.subplot.xticks(ind+width/2., xticks )
-    self.subplot.yticks(np.arange(0,Status.int.HXPinchConnection[0].QHX,Status.int.HXPinchConnection[0].QHX/10))
-    self.subplot.legend( p, ('QHX 0-40°C', 'QHX 40-80°C', 'QHX 80-120°C', 'QHX 120-400°C') )
+    self.subplot.set_ylabel(_U('Heat Exchangers'))
+    self.subplot.set_xlabel(_U('Energy [Mwh/a]'))
+    self.subplot.set_title(_U('Energy gain from HX by Temperature'))
+    self.subplot.set_xticks(ind+width/2., xticks )
+    #self.subplot.set_yticks(np.arange(0,Status.int.HXPinchConnection[0].QHX,Status.int.HXPinchConnection[0].QHX/10))
+    
+    #self.subplot.legend(loc = 0)
+    self.subplot.legend( self.patchlist, (_U('QHX 0-40°C'), _U('QHX 40-80°C'), _U('QHX 80-120°C'), _U('QHX 120-400°C')), 'best' )
+#legend( (line1, line2, line3),
+#        ('label1', 'label2', 'label3'),
+#        loc=0)
 
    
 #    if not hasattr(Status.int, 'hrdata'):
