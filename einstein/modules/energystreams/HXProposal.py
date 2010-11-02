@@ -41,7 +41,7 @@ class HXProposal():
             
     def start(self):
         self.__splitAboveBelowPinch()
-        self.sortStreamsPerMCP()
+        self.sortStreams()
         self.matchStreams()
     
     def sortStreams(self):
@@ -54,7 +54,29 @@ class HXProposal():
         return sorted(streamlist, key=lambda stream: stream.MassFlowAvg*stream.SpecHeatCap)
         
     
+    
+        self.matchStreams(self.streams_above_pinch_cold, self.streams_above_pinch_hot, self.match_above_cold, self.match_above_hot)
     def matchStreams(self):
+        """
+        match Streams
+        """
+        
+        print "--------------------- STREAMS TO SPLIT -------------------"
+        print "Above pinch cold"
+        for elem in self.streams_above_pinch_cold:
+            print elem
+        print "Above pinch hot"
+        for elem in self.streams_above_pinch_hot:
+            print elem
+        print "Below pinch cold"
+        for elem in self.streams_below_pinch_cold:
+            print elem
+        print "Below pinch hot"
+        for elem in self.streams_below_pinch_hot:
+            print elem
+        
+        print "----------------------------------------------------------"
+        # ABOVE PINCH
         
         MAXRUN = len(self.streams_above_pinch_hot)*2
         run = 0
@@ -79,24 +101,113 @@ class HXProposal():
             # Check: mcp_hot < mcp_cold
             if mcp_hot <= mcp_cold:
                 # match
-                self.match_above_cold.append(self.streams_above_pinch_cold[i])
+                self.match_above_cold.append(self.streams_above_pinch_cold[index])
                 self.match_above_hot.append(self.streams_above_pinch_hot[-1])
                 del self.streams_above_pinch_cold[i]
                 del self.streams_above_pinch_hot[-1]
             else:
-                pass
+                hs2 = Stream()
+                hs2.copyStream(self.streams_above_pinch_hot[-1])
+                cs1 = self.streams_above_pinch_cold[index]
+                self.streams_above_pinch_hot[-1].MassFlowAvg = cs1.MassFlowAvg \
+                    * cs1.SpecHeatCap / self.streams_above_pinch_hot[-1].SpecHeatCap  
+                
+                hs1 = self.streams_above_pinch_hot[-1]
+                hs2.MassFlowAvg -= hs1.MassFlowAvg
+                hs2.SpecHeatCap -= hs1.SpecHeatCap
+                self.streams_above_pinch_hot.append(hs2)
+                self.sortStreamWithMCP(self.streams_above_pinch_hot)
+        
+        
+        # BELOW PINCH
+        MAXRUN = len(self.streams_below_pinch_hot)*2
+        run = 0
+        while len(self.streams_below_pinch_cold) > 0 and len(self.streams_below_pinch_hot) > 0:
+            if run >= MAXRUN:
+                break
+            run +=1
+            # Select Hot Stream with maximal m*cp
+            hs = self.streams_below_pinch_hot[-1]
+            mcp_hot = hs.MassFlowAvg * hs.SpecHeatCap
+            # Find cold stream with closest m*cp value
+            index = -1
+            diff = 1e10 
+            for i in xrange(len(self.streams_below_pinch_cold)):
+                mcp_cold = self.streams_below_pinch_cold[i].MassFlowAvg * self.streams_below_pinch_cold[i].SpecHeatCap 
+                if abs(mcp_hot - mcp_cold) < diff:
+                    diff = abs(mcp_hot-mcp_cold)
+                    index = i
+        
+            mcp_cold = self.streams_below_pinch_cold[index].MassFlowAvg * self.streams_below_pinch_cold[index].SpecHeatCap 
+            
+            # Check: mcp_hot < mcp_cold
+            if mcp_hot >= mcp_cold:
+                # match
+                self.match_below_cold.append(self.streams_below_pinch_cold[index])
+                self.match_below_hot.append(self.streams_below_pinch_hot[-1])
+                del self.streams_below_pinch_cold[i]
+                del self.streams_below_pinch_hot[-1]
+            else:
+                cs2 = Stream()
+                cs2.copyStream(self.streams_below_pinch_cold[index])
+                hs1 = self.streams_below_pinch_hot[-1]
+                
+                self.streams_below_pinch_cold[index].MassFlowAvg = hs1.MassFlowAvg \
+                    * hs1.SpecHeatCap / self.streams_below_pinch_cold[index].SpecHeatCap  
+                
+                cs1 = self.streams_below_pinch_cold[index]
+                
+                #cs2.MassFlowAvg -= cs1.MassFlowAvg
+                #cs2.SpecHeatCap -= cs1.SpecHeatCap
+                cs2.MassFlowAvg = (cs2.MassFlowAvg*cs2.SpecHeatCap - cs1.MassFlowAvg*cs1.SpecHeatCap)/ cs2.SpecHeatCap
+                
+                self.streams_below_pinch_cold.append(cs2)
+                self.sortStreamWithMCP(self.streams_below_pinch_cold)
+        
+        
+        
+    
+        print "------------------Split finished-----------------------"
+        print "Above pinch cold"
+        for elem in self.streams_above_pinch_cold:
+            print elem
+        print "Above pinch hot"
+        for elem in self.streams_above_pinch_hot:
+            print elem
+        print "Below pinch cold"
+        for elem in self.streams_below_pinch_cold:
+            print elem
+        print "Below pinch hot"
+        for elem in self.streams_below_pinch_hot:
+            print elem
+        print "------------Matches--------------"
+        print "Above: "
+        print "Cold:"
+        for elem in self.match_above_cold:
+            print elem
+        print "Hot:"
+        for elem in self.match_above_hot:
+            print elem
+        print "Below:"
+        print "Cold:"
+        for elem in self.match_below_cold:
+            print elem
+        print "Hot:"
+        for elem in self.match_below_hot:
+            print elem
+        print "-------------------------------------------------------"
         
     
     def printSplittedStreams(self):
-        
-        print "----------Streams Above Pinch----------"
-        for stream in self.streams_above_pinch:
-            stream.printStream()
-        print "----------End Stream Above Pinch-------"
-        print "----------Streams Below Pinch----------"
-        for stream in self.streams_below_pinch:
-            stream.printStream()
-        print "----------End Stream Below Pinch-------"            
+        pass
+#        print "----------Streams Above Pinch----------"
+#        for stream in self.streams_above_pinch:
+#            stream.printStream()
+#        print "----------End Stream Above Pinch-------"
+#        print "----------Streams Below Pinch----------"
+#        for stream in self.streams_below_pinch:
+#            stream.printStream()
+#        print "----------End Stream Below Pinch-------"            
             
         
     

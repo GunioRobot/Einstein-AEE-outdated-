@@ -75,8 +75,9 @@ from einstein.auxiliary.auxiliary import *
 from einstein.modules.constants import *
 from einstein.modules.dataHR import *
 from einstein.modules.energystreams import *
-from einstein.modules.energystreams.HXCalculation import *
 from einstein.modules.energystreams.CurveCalculation import *
+from einstein.modules.energystreams.HXCalculation import *
+from einstein.modules.energystreams.HXProposal import *
 from einstein.modules.energystreams.Stream import *
 from einstein.modules.energystreams.StreamConstants import *
 from einstein.modules.energystreams.StreamGeneration import *
@@ -87,11 +88,11 @@ from einstein.modules.messageLogger import *
 from math import *
 from numpy import *
 from subprocess import *
-#from array import array
-import einstein.modules.matPanel as mP
-import sys
-import os
 import copy
+import einstein.modules.matPanel as mP
+import os
+import sys
+#from array import array
 
 
 

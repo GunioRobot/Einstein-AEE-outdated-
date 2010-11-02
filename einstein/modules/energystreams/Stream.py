@@ -108,6 +108,10 @@ class Stream():
 
         # HeatExchanger : SplitFactor
         self.HeatExchangerConnection = {}
+        self.origin = None
+
+    def __repr__(self):
+        return repr((self.name, self.MassFlowAvg, self.SpecHeatCap, self.MassFlowAvg*self.SpecHeatCap, self.origin))
 
 
     def copyStreamAttributes(self, stream):
@@ -124,6 +128,21 @@ class Stream():
         self.DBType=stream.DBType
         self.origin = stream.name
 
+    def copyStream(self, stream):
+        self.StartTemp=stream.StartTemp
+        self.EndTemp=stream.EndTemp
+        self.HeatCap=stream.HeatCap
+        self.HotColdType=stream.HotColdType
+        self.MassFlowAvg=stream.MassFlowAvg
+        self.SpecHeatCap=stream.SpecHeatCap 
+        self.SpecEnthalpy=stream.SpecEnthalpy
+        self.FluidDensity=stream.FluidDensity 
+        self.OperatingHours=stream.OperatingHours
+        self.Source=stream.Source 
+        self.BaseValues=stream.BaseValues
+        self.DBID=stream.DBID 
+        self.DBType=stream.DBType
+        self.origin = stream.name
 
     def writeToDB(self):
         pass
