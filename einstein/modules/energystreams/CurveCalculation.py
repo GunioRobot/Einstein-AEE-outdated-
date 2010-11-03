@@ -265,21 +265,21 @@ class CurveCalculation():
     def calculate(self):
         self.__getStreams()
 
-        self.__collectTemperaturesFromStreamForCalculation()
-        self.__seperateToCorrectSectionByTemperature()
-        self.__calculateMCPforHCC()
-        self.__calculateMCPforCCC()
-        self.__calculateStreamDataEntryTable()
-        self.__calculatePreHeatInputOutput()
-        self.__calculatePinchTemperature()
-        self.__calculateGCCArrows()
-        self.__calculateHCCArrows()
-        self.__calculateCCCArrows()
-        self.__calculateGCCResults()
-        self.__calculateHCCResults()
-        self.__calculateCCCResults()
-        
-        self.setDataCurves()
+#        self.__collectTemperaturesFromStreamForCalculation()
+#        self.__seperateToCorrectSectionByTemperature()
+#        self.__calculateMCPforHCC()
+#        self.__calculateMCPforCCC()
+#        self.__calculateStreamDataEntryTable()
+#        self.__calculatePreHeatInputOutput()
+#        self.__calculatePinchTemperature()
+#        self.__calculateGCCArrows()
+#        self.__calculateHCCArrows()
+#        self.__calculateCCCArrows()
+#        self.__calculateGCCResults()
+#        self.__calculateHCCResults()
+#        self.__calculateCCCResults()
+#        
+#        self.setDataCurves()
         self.calc()
         
     def printResults(self):

@@ -23,6 +23,7 @@ class HXCombination():
 
     def combineAllStreams(self):
         for elem in Status.int.HXPinchConnection:
+            print elem.HXID, elem.Name
             print "--------------------SINKSTREAMS TO COMBINE----------------------"
             for el in elem.sinkstreams:
                 el.stream.printStream()

@@ -1,16 +1,15 @@
-# To change this template, choose Tools | Templates
-# and open the template in the editor.
+
 
 __author__="Andre Rattinger"
 __date__ ="$09.09.2010 10:52:25$"
 
 
-STREAMSOURCE = ["PROCESSBATCH",
-                "PROCESSCONTINUOUS",
-                "EQUIPMENT",
-                "WHEE",
-                "DISTRIBUTIONLINE",
-                "HXPROPOSAL"]
+STREAMSOURCE = ["PROCESSBATCH",         #0
+                "PROCESSCONTINUOUS",    #1
+                "EQUIPMENT",            #2
+                "WHEE",                 #3
+                "DISTRIBUTIONLINE",     #4
+                "HXPROPOSAL"]           #5
 
 STREAMTYPE = ["STARTUP",                #0
               "CIRCULATION",            #1
@@ -25,7 +24,7 @@ STREAMTYPE = ["STARTUP",                #0
               "CONDENSATERECOVERY",     #10
               "SENSIBLEHEAT",           #11
               "WASTEHEAT",              #12
-              "HXPROPOSAL"]
+              "HXPROPOSAL"]             #13
               
 if __name__ == "__main__":
     print "Hello World";

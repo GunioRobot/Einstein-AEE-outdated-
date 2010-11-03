@@ -1,5 +1,6 @@
 from einstein.modules.energystreams.Stream import *
 from einstein.GUI.status import *
+from einstein.modules.energystreams.StreamConstants import *
 
 __author__="Andre Rattinger"
 __date__ ="$01.08.2010 11:43:11$"
@@ -160,9 +161,19 @@ class HXProposal():
             hxpinch = HXPinchConnection(HXID, "HX_AbovePinch_" +  str(i))
             hconn = pinchTemp()
             cconn = pinchTemp()
+            hconn.percentHeatFlow = 100
+            cconn.percentHeatFlow = 100
+            hconn.inletTemp = self.match_above_hot[i].StartTemp.getAvg()
+            hconn.outletTemp = self.match_above_cold[i].EndTemp.getAvg()
+
+            cconn.inletTemp = self.match_above_hot[i].StartTemp.getAvg()
+            cconn.outletTemp = self.match_above_cold[i].EndTemp.getAvg()
             
             hconn.stream = self.match_above_hot[i]
             cconn.stream = self.match_above_cold[i]
+            
+            hconn = self.setStreamData(hconn)
+            cconn = self.setStreamData(cconn)
             
             hxpinch.sinkstreams.append(cconn)
             hxpinch.sourcestreams.append(hconn)
@@ -177,16 +188,32 @@ class HXProposal():
             hxpinch = HXPinchConnection(HXID, "HX_BelowPinch_" +  str(i))
             hconn = pinchTemp()
             cconn = pinchTemp()
-            
-            hconn.stream = self.match_below_cold[i]
+            hconn.percentHeatFlow = 100
+            cconn.percentHeatFlow = 100
+            hconn.inletTemp = self.match_below_hot[i].StartTemp.getAvg()
+            hconn.outletTemp = self.match_below_cold[i].EndTemp.getAvg()
+
+            cconn.inletTemp = self.match_below_hot[i].StartTemp.getAvg()
+            cconn.outletTemp = self.match_below_cold[i].EndTemp.getAvg()
+                        
+            hconn.stream = self.match_below_hot[i]
             cconn.stream = self.match_below_cold[i]
             
+            hconn = self.setStreamData(hconn)
+            cconn = self.setStreamData(cconn)
+       
             hxpinch.sinkstreams.append(cconn)
             hxpinch.sourcestreams.append(hconn)            
             
             hxpinch.writeToDB()
             
             Status.int.HXPinchConnection.append(hxpinch)
+        
+    def setStreamData(self, conn):
+        conn.stream.Source = STREAMSOURCE[5]
+        conn.stream.DBType = STREAMTYPE[13]
+        conn.stream.MassFlowVector = [conn.stream.MassFlowAvg]*Status.Nt
+        return conn
         
     def insertStream(self, stream):
         

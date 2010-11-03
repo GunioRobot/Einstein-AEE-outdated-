@@ -690,7 +690,7 @@ class ProcessStreams(StreamUtils, StreamSet):
         stream.HeatTransferCoeff = self.getHeatTransferCoefficient(stream.FluidDensity)
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
         stream.HotColdType = self.getHotCold(stream)
-        if sum(stream.EnthalpyVector)==0:
+        if max(stream.EnthalpyVector)==0:
             stream.OperatingHours=0
         else:
             stream.OperatingHours = sum(stream.EnthalpyVector)/max(stream.EnthalpyVector)
@@ -757,7 +757,7 @@ class ProcessStreams(StreamUtils, StreamSet):
         stream.HotColdType = self.getHotCold(stream)
         
 #        stream.OperatingHours = self.massFlow.periodSchedule.getInflowHoursPerYear()
-        if sum(stream.EnthalpyVector)==0:
+        if max(stream.EnthalpyVector)==0:
             stream.OperatingHours=0
         else:
             stream.OperatingHours = sum(stream.EnthalpyVector)/max(stream.EnthalpyVector)
@@ -796,7 +796,7 @@ class ProcessStreams(StreamUtils, StreamSet):
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
         stream.HotColdType = self.getHotCold(stream)
 #        stream.OperatingHours = self.periodSchedule.getOperationHoursPerYear()
-        if sum(stream.EnthalpyVector)==0:
+        if max(stream.EnthalpyVector)==0:
             stream.OperatingHours=0
         else:
             stream.OperatingHours = sum(stream.EnthalpyVector)/max(stream.EnthalpyVector)
@@ -873,7 +873,7 @@ class ProcessStreams(StreamUtils, StreamSet):
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
         stream.HotColdType = self.getHotCold(stream)
 #        stream.OperatingHours = self.periodSchedule.getOutflowHoursPerYear()
-        if sum(stream.EnthalpyVector)==0:
+        if max(stream.EnthalpyVector)==0:
             stream.OperatingHours=0
         else:
             stream.OperatingHours = sum(stream.EnthalpyVector)/max(stream.EnthalpyVector)
@@ -914,7 +914,7 @@ class ProcessStreams(StreamUtils, StreamSet):
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
         stream.HotColdType = self.getHotCold(stream)
 #        stream.OperatingHours = self.periodSchedule.getOutflowHoursPerYear()
-        if sum(stream.EnthalpyVector)==0:
+        if max(stream.EnthalpyVector)==0:
             stream.OperatingHours=0
         else:
             stream.OperatingHours = sum(stream.EnthalpyVector)/max(stream.EnthalpyVector)
@@ -969,7 +969,7 @@ class ProcessStreams(StreamUtils, StreamSet):
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
         stream.HotColdType = self.getHotCold(stream)
 #        stream.OperatingHours = self.periodSchedule.getOutflowHoursPerYear()
-        if sum(stream.EnthalpyVector)==0:
+        if max(stream.EnthalpyVector)==0:
             stream.OperatingHours=0
         else:
             stream.OperatingHours = sum(stream.EnthalpyVector)/max(stream.EnthalpyVector)
@@ -1077,7 +1077,7 @@ class DistLineStreams(StreamUtils, StreamSet):
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
         stream.HotColdType = self.getHotCold(stream)
 #        stream.OperatingHours = self.getOperatingHours()
-        if sum(stream.EnthalpyVector)==0:
+        if max(stream.EnthalpyVector)==0:
             stream.OperatingHours=0
         else:
             stream.OperatingHours = sum(stream.EnthalpyVector)/max(stream.EnthalpyVector)
@@ -1234,7 +1234,7 @@ class WHEEStreams(StreamUtils, StreamSet):
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
         stream.HotColdType = self.getHotCold(stream)
 #        stream.OperatingHours = self.getOperatingHours(stream)
-        if sum(stream.EnthalpyVector)==0:
+        if max(stream.EnthalpyVector)==0:
             stream.OperatingHours=0
         else:
             stream.OperatingHours = sum(stream.EnthalpyVector)/max(stream.EnthalpyVector)
@@ -1471,7 +1471,7 @@ class EquipmentStreams(StreamUtils, StreamSet):
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
         stream.HotColdType = self.getHotCold(stream)
 #        stream.OperatingHours = self.getOperatingHours()
-        if sum(stream.EnthalpyVector)==0:
+        if max(stream.EnthalpyVector)==0:
             stream.OperatingHours=0
         else:
             stream.OperatingHours = sum(stream.EnthalpyVector)/max(stream.EnthalpyVector)
@@ -1562,7 +1562,7 @@ class EquipmentStreams(StreamUtils, StreamSet):
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
         stream.HotColdType = self.getHotCold(stream)
         #stream.OperatingHours = self.getOperatingHours() ccheckEq.py - self.HPerYearEq1
-        if sum(stream.EnthalpyVector)==0:
+        if max(stream.EnthalpyVector)==0:
             stream.OperatingHours=0
         else:
             stream.OperatingHours = sum(stream.EnthalpyVector)/max(stream.EnthalpyVector)
@@ -1619,7 +1619,7 @@ class EquipmentStreams(StreamUtils, StreamSet):
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
         stream.HotColdType = self.getHotCold(stream)
         #stream.OperatingHours = #from ccheckEq.py - self.HPerYearEq1
-        if sum(stream.EnthalpyVector)==0:
+        if max(stream.EnthalpyVector)==0:
             stream.OperatingHours=0
         else:
             stream.OperatingHours = sum(stream.EnthalpyVector)/max(stream.EnthalpyVector)
