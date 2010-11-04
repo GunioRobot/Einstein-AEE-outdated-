@@ -127,6 +127,8 @@ class Stream():
         self.DBID=stream.DBID 
         self.DBType=stream.DBType
         self.origin = stream.name
+        self.EnthalpyNom = stream.EnthalpyNom
+        self.HeatTransferCoeff = stream.HeatTransferCoeff
 
     def copyStream(self, stream):
         self.StartTemp=stream.StartTemp
@@ -143,6 +145,9 @@ class Stream():
         self.DBID=stream.DBID 
         self.DBType=stream.DBType
         self.origin = stream.name
+        self.EnthalpyNom = stream.EnthalpyNom
+        self.HeatTransferCoeff = stream.HeatTransferCoeff
+
 
     def writeToDB(self):
         pass

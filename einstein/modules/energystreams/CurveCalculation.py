@@ -54,7 +54,7 @@ class CurveCalculation():
 
     def __getStreams(self):
         try:
-            self.streams = Status.int.NameGen.getAllStreams()
+            self.streams = Status.int.StreamGen.getAllStreams()
         except:
             self.streams = []
         

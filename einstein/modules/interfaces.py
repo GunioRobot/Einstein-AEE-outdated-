@@ -172,7 +172,7 @@ class Interfaces(object):
 
 
     HXPinchConnection = []
-    NameGen = None
+    StreamGen = None
     hrdata = None
 #..........................................................................
 # DATA BLOCK 2: graphics data dictionary for graphics on panels

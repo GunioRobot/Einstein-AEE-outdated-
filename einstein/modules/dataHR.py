@@ -144,8 +144,8 @@ class HRData:
 
         
         tmphx = {"ProjectID":self.pid,
-               "AlternativeProposalNo":self.ano,
-               "HXNo":hx[0].HXNo,
+               "AlternativeProposalNo":check(self.ano),
+               "HXNo":check(hx[0].HXNo),
                "HXName":check(str(hx[0].HXName)),# + str("_new")
                "HXType":check(hx[0].HXType),
                "QdotHX":check(max(QHX_t)),

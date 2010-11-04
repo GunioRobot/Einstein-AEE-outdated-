@@ -21,6 +21,21 @@ from StreamConstants import *
 DEBUG = 0
 DETAILEDOUTPUT = 0
 
+def nom(v, x):
+    m = max(v)
+    if m != 0:
+        for i in xrange(len(v)):
+            v[i]= v[i]/float(m)*x
+    return v
+
+def nomEnthalpyAndMassFlow(stream):
+    if stream.EnthalpyNom != None:
+        stream.EnthalpyVector = nom(stream.EnthalpyVector, stream.EnthalpyNom)
+
+    if stream.MassFlowAvg != None:
+        stream.MassFlowVector = nom(stream.MassFlowVector, stream.MassFlowAvg)
+
+
 def calcProcessStream(stream):
     process = ProcessStreams()
     process.streams.append(stream)
@@ -56,13 +71,15 @@ def calcEquipmentStream(stream):
     if DETAILEDOUTPUT == 1:
         print "Stream After Equipment Calculation"
         stream.printStream()
+        
+def calcProposedStream(stream):
+    stream.MassFlowVector = [stream.MassFlowAvg]*Status.Nt
 
 def setCalcMethod(StreamGeneration, stream):
     if stream.Source == STREAMSOURCE[0]:
         StreamGeneration.setBatchCalc()
     elif stream.Source == STREAMSOURCE[1]:
         StreamGeneration.setContinuousCalc()
-
         
 def loadStreamData(stream):
     if stream.DBType == STREAMTYPE[0]:
@@ -152,7 +169,6 @@ def loadStreamData(stream):
         pStreams.streams.append(stream)
         return pStreams.streams[0]
 
-
 def getProcess(DBID):
     PId = Status.PId
     ANo = Status.ANo
@@ -164,7 +180,6 @@ def getProcess(DBID):
         if DBID == proc.QProcessData_ID:
             process = proc
     return process
-
 
 def getEquipment(DBID):
     PId = Status.PId
@@ -305,7 +320,6 @@ def initStream(stream):
         return stream
 
 
-
 class StreamUtils():
     def getStreams(self):
         pass
@@ -386,19 +400,20 @@ class ProcessStreams(StreamUtils, StreamSet):
         self.streams = []
         self.processes = None
 
-        self.periodSchedule = self.createTestSchedule()
+#        self.periodSchedule = self.createTestSchedule()
+        self.periodSchedule = None
         self.batchCalc = BatchMassFlow(self.periodSchedule)
         self.continuousCalc = ContinuousMassFlow(self.periodSchedule)
         self.massFlow = None
 
-    def createTestSchedule(self):
-        stepUpProfile = profiles.WeeklyProfile("stepUpProfile", weekday=dict(zip(profiles.weekdays, len(profiles.weekdays)*[True])))
-        stepUpProfile.addInterval(time(10,0), time(12,0),  50)
-        stepUpProfile.addInterval(time(12,0), time(14,0), 100)
-        stepUpSchedule = schedules.PeriodSchedule("stepUpSchedule", startup=1.7, inflow=1.7,  outflow=1.7)
-
-        stepUpSchedule.addPeriodProfile(start=date(2009, 1, 1), stop=date(2009,12,31), step=1, scale=100, profile=stepUpProfile)
-        return stepUpSchedule
+#    def createTestSchedule(self):
+#        stepUpProfile = profiles.WeeklyProfile("stepUpProfile", weekday=dict(zip(profiles.weekdays, len(profiles.weekdays)*[True])))
+#        stepUpProfile.addInterval(time(10,0), time(12,0),  50)
+#        stepUpProfile.addInterval(time(12,0), time(14,0), 100)
+#        stepUpSchedule = schedules.PeriodSchedule("stepUpSchedule", startup=1.7, inflow=1.7,  outflow=1.7)
+#
+#        stepUpSchedule.addPeriodProfile(start=date(2009, 1, 1), stop=date(2009,12,31), step=1, scale=100, profile=stepUpProfile)
+#        return stepUpSchedule
 
 
     def getStreams(self):
@@ -670,15 +685,18 @@ class ProcessStreams(StreamUtils, StreamSet):
         stream.EndTemp.setAverageTemperature(val.PT)
         stream.Type = self.getStreamType(stream.StartTemp.getAvg(), stream.EndTemp.getAvg())
         stream.SpecHeatCap = val.FluidCp
-        stream.SpecEnthalpy = self.getSpecificEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap)
-#        stream.MassFlowAvg = self.massFlow.getMassFlowStUpNom(val.VolProcMed, val.FluidDensity)
-#        stream.EnthalpyNom = self.getEnthalpyNom(stream.EndTemp, stream.StartTemp, stream.SpecHeatCap, stream.MassFlowAvg)
-#        try:
-#        ProcessID = self.getProcessNr(stream)
+        stream.SpecEnthalpy = self.getSpecificEnthalpy(stream.EndTemp.getAvg(), 
+                                                       stream.StartTemp.getAvg(), 
+                                                       stream.SpecHeatCap)
         stream.EnthalpyVector = []
-#        print "Status.int.UPH: " + str(Status.int.UPH_s_t)
         stream.EnthalpyVector = Status.int.UPH_s_t[stream.DBID]
-        stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, stream.EndTemp, stream.StartTemp)
+
+
+        stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, 
+                                                       stream.SpecHeatCap, 
+                                                       stream.EndTemp, 
+                                                       stream.StartTemp)
+        nomEnthalpyAndMassFlow(stream)
         stream.MassFlowAvg=max(stream.MassFlowVector)
         stream.EnthalpyNom=max(stream.EnthalpyVector)
         #stream.EnthalpyNom, stream.EnthalpyVector = self.getEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap, stream.MassFlowVector, stream.MassFlowAvg)
@@ -705,7 +723,8 @@ class ProcessStreams(StreamUtils, StreamSet):
         stream.EnthalpyVector = Status.int.UPH_s_t[stream.DBID]
 
     def getMassFlowVectorStUp(self, stream):
-        return self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, stream.EndTemp, stream.StartTemp)
+        return self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, \
+                                      stream.EndTemp, stream.StartTemp)
 
     def test_stream(self, stream):
         if stream.OperatingHours == None:
@@ -737,20 +756,21 @@ class ProcessStreams(StreamUtils, StreamSet):
         stream.EndTemp.setAverageTemperature(val.PT)
         stream.Type = self.getStreamType(stream.StartTemp.getAvg(), stream.EndTemp.getAvg())
         stream.SpecHeatCap = val.FluidCp
-        stream.SpecEnthalpy = self.getSpecificEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap)
+        stream.SpecEnthalpy = self.getSpecificEnthalpy(stream.EndTemp.getAvg(), 
+                                                       stream.StartTemp.getAvg(), 
+                                                       stream.SpecHeatCap)
 
-#        stream.MassFlowAvg = self.massFlow.getMassFlowCircNom(val.FluidDensity, val.VInFlowCycle, val.mInFlowNom, val.VInFlowDay, val.HperDay)
-#        stream.EnthalpyNom = self.getEnthalpyNom(stream.EndTemp, stream.StartTemp, stream.SpecHeatCap, stream.MassFlowAvg)
-
-#        try:
-#        ProcessID = self.getProcessNr(stream)
         stream.EnthalpyVector = Status.int.UPH_c_t[stream.DBID]
-        stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, stream.EndTemp, stream.StartTemp)
+
+
+        stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, 
+                                                       stream.SpecHeatCap, 
+                                                       stream.EndTemp, 
+                                                       stream.StartTemp)
+        
+        nomEnthalpyAndMassFlow(stream)
         stream.MassFlowAvg=max(stream.MassFlowVector)
         stream.EnthalpyNom=max(stream.EnthalpyVector)
-#        except:
-#            stream.EnthalpyVector = []
-#            stream.MassFlowVector = []
 
         stream.HeatTransferCoeff = self.getHeatTransferCoefficient(val.FluidDensity)
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
@@ -767,7 +787,10 @@ class ProcessStreams(StreamUtils, StreamSet):
         stream.EnthalpyVector = Status.int.UPH_c_t[stream.DBID]
 
     def getMassFlowVectorCirc(self, stream):
-        stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, stream.EndTemp, stream.StartTemp)
+        stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, 
+                                                       stream.SpecHeatCap, 
+                                                       stream.EndTemp, 
+                                                       stream.StartTemp)
 
 
     def generateMaintainanceStream(self, stream):
@@ -776,22 +799,24 @@ class ProcessStreams(StreamUtils, StreamSet):
         stream.StartTemp.setAverageTemperature(val.PT)
         stream.EndTemp.setAverageTemperature(val.PT+0.1)
         stream.FluidDensity = val.FluidDensityWater
-        stream.Type = self.getProcessStreamType(stream.StartTemp.getAvg(), stream.EndTemp.getAvg())
+        stream.Type = self.getProcessStreamType(stream.StartTemp.getAvg(), 
+                                                stream.EndTemp.getAvg())
         stream.SpecHeatCap = 3600
-        stream.SpecEnthalpy = self.getSpecificEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap)
+        stream.SpecEnthalpy = self.getSpecificEnthalpy(stream.EndTemp.getAvg(), 
+                                                       stream.StartTemp.getAvg(), 
+                                                       stream.SpecHeatCap)
 
-#        stream.EnthalpyNom = val.Qdot_m
-#        stream.MassFlowAvg = self.massFlow.getMassFlowOpNom(stream.EnthalpyNom, stream.SpecHeatCap, stream.StartTemp.getAvg(), stream.EndTemp.getAvg())
-#        try:
-        ProcessID = self.getProcessNr(stream)
         stream.EnthalpyVector = Status.int.UPH_m_t[stream.DBID]
-        stream.MassFlowVector = self.massFlow.getMassFlowOpVector(stream.EnthalpyVector, stream.SpecHeatCap, stream.StartTemp.getAvg(), stream.EndTemp.getAvg())
+
+        stream.MassFlowVector = self.massFlow.getMassFlowOpVector(stream.EnthalpyVector, 
+                                                                  stream.SpecHeatCap, 
+                                                                  stream.StartTemp.getAvg(), 
+                                                                  stream.EndTemp.getAvg())
+        nomEnthalpyAndMassFlow(stream)
         stream.MassFlowAvg=max(stream.MassFlowVector)
         stream.EnthalpyNom=max(stream.EnthalpyVector)
-#        except:
-#            pass
 
-#        stream.MassFlowAvg, stream.MassFlowVector = self.massFlow.getMassFlowOp(stream.Enthalpy, stream.SpecHeatCap)
+
         stream.HeatTransferCoeff = 5000
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
         stream.HotColdType = self.getHotCold(stream)
@@ -806,7 +831,10 @@ class ProcessStreams(StreamUtils, StreamSet):
         stream.EnthalpyVector = Status.int.UPH_m_t[stream.DBID]
 
     def getMassFlowVectorMaintain(self, stream):
-        stream.MassFlowVector = self.massFlow.getMassFlowOpVector(stream.EnthalpyVector, stream.SpecHeatCap, stream.StartTemp.getAvg(), stream.EndTemp.getAvg())
+        stream.MassFlowVector = self.massFlow.getMassFlowOpVector(stream.EnthalpyVector, 
+                                                                  stream.SpecHeatCap, 
+                                                                  stream.StartTemp.getAvg(), 
+                                                                  stream.EndTemp.getAvg())
 
 
     def generateWHAboveCondStream(self, stream, SpecHeatCap, HeatTransferCoeff = None):
@@ -832,14 +860,16 @@ class ProcessStreams(StreamUtils, StreamSet):
         stream.Type = self.getStreamType(stream.StartTemp.getAvg(), stream.EndTemp.getAvg())
         stream.SpecHeatCap = SpecHeatCap
 #        print "name: " + str(stream.name)
-        stream.SpecEnthalpy = self.getSpecificEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap)
-        if val.VOutFlowCycle != None:
-            stream.MassFlowAvg, stream.MassFlowVector = self.massFlow.getMassFlowWH(stream.FluidDensity, VOutflowCycle = val.VOutFlowCycle)
-        elif val.mOutFlowNom != None:
-            stream.MassFlowAvg, stream.MassFlowVector = self.massFlow.getMassFlowWH(stream.FluidDensity, mOutflowNom = val.mOutFlowNom)
-        else:
-            stream.MassFlowAvg = 0
-            stream.MassFlowVector = []
+        stream.SpecEnthalpy = self.getSpecificEnthalpy(stream.EndTemp.getAvg(), 
+                                                       stream.StartTemp.getAvg(), 
+                                                       stream.SpecHeatCap)
+#        if val.VOutFlowCycle != None:
+#            stream.MassFlowAvg, stream.MassFlowVector = self.massFlow.getMassFlowWH(stream.FluidDensity, VOutflowCycle = val.VOutFlowCycle)
+#        elif val.mOutFlowNom != None:
+#            stream.MassFlowAvg, stream.MassFlowVector = self.massFlow.getMassFlowWH(stream.FluidDensity, mOutflowNom = val.mOutFlowNom)
+#        else:
+#            stream.MassFlowAvg = 0
+#            stream.MassFlowVector = []
             
 #       stream.EnthalpyNom, stream.EnthalpyVector = self.getEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap, stream.MassFlowVector, stream.MassFlowAvg)
 
@@ -858,12 +888,21 @@ class ProcessStreams(StreamUtils, StreamSet):
             #waste heat vector must be corrected
                 if val.XOutFlow != None:
                     for i in xrange (Status.Nt):
-                        stream.EnthalpyVector[i]=(Status.int.UPH_w_t[stream.DBID][i]-(stream.MassFlowVector[i]*val.FluidCp*(val.TCond-val.PTFinal)))                
+                        stream.EnthalpyVector[i]=(Status.int.UPH_w_t[stream.DBID][i]-\
+                                                  (stream.MassFlowVector[i]*val.FluidCp*(val.TCond-val.PTFinal)))                
                 else:
                     for i in xrange (Status.Nt):      
-                        stream.EnthalpyVector[i]=(Status.int.UPH_w_t[stream.DBID][i]-(stream.MassFlowVector[i]*val.XOutFlow*val.LatentHeat)-(stream.MassFlowVector[i]*val.FluidCp*(val.TCond-val.PTFinal)))
+                        stream.EnthalpyVector[i]=(Status.int.UPH_w_t[stream.DBID][i]-\
+                                                  (stream.MassFlowVector[i]*val.XOutFlow*val.LatentHeat)\
+                                                  -(stream.MassFlowVector[i]*val.FluidCp*(val.TCond-val.PTFinal)))
            
-        stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, stream.EndTemp, stream.StartTemp)
+        stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, 
+                                                       stream.SpecHeatCap, 
+                                                       stream.EndTemp, 
+                                                       stream.StartTemp)
+        
+        nomEnthalpyAndMassFlow(stream)
+        
         stream.MassFlowAvg=max(stream.MassFlowVector)
         stream.EnthalpyNom=max(stream.EnthalpyVector)
         if HeatTransferCoeff == None:
@@ -897,8 +936,8 @@ class ProcessStreams(StreamUtils, StreamSet):
 
         stream.SpecEnthalpy = val.LatentHeat
         stream.SpecHeatCap = stream.SpecEnthalpy*10
-        stream.MassFlowAvg, stream.MassFlowVector = self.massFlow.getMassFlowWHCond(VOutflowCycle = val.VOutFlowCycle, FluidDensity = stream.FluidDensity, XOutFlow = val.XOutFlow, mOutflowNom = val.mOutFlowNom)
-        stream.EnthalpyNom, stream.EnthalpyVector = self.getEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap, stream.MassFlowVector, stream.MassFlowAvg)
+#        stream.MassFlowAvg, stream.MassFlowVector = self.massFlow.getMassFlowWHCond(VOutflowCycle = val.VOutFlowCycle, FluidDensity = stream.FluidDensity, XOutFlow = val.XOutFlow, mOutflowNom = val.mOutFlowNom)
+#        stream.EnthalpyNom, stream.EnthalpyVector = self.getEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap, stream.MassFlowVector, stream.MassFlowAvg)
         ProcessID = self.getProcessNr(stream)
         if val.PTOutFlow < val.TCond or val.TCond <= val.PTFinal:
             #condensation is relevant
@@ -907,7 +946,14 @@ class ProcessStreams(StreamUtils, StreamSet):
             #condensation is not relevant, Enthalpy vector stays as calculated
 
                 
-        stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, stream.EndTemp, stream.StartTemp)
+        stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, 
+                                                       stream.SpecHeatCap, 
+                                                       stream.EndTemp, 
+                                                       stream.StartTemp)
+        
+        nomEnthalpyAndMassFlow(stream)
+
+        
         stream.MassFlowAvg=max(stream.MassFlowVector)
         stream.EnthalpyNom=max(stream.EnthalpyVector)
         stream.HeatTransferCoeff = 10000
@@ -935,11 +981,13 @@ class ProcessStreams(StreamUtils, StreamSet):
         stream.EndTemp.setAverageTemperature(val.PTFinal)
         stream.Type = self.getStreamType(stream.StartTemp.getAvg(), stream.EndTemp.getAvg())
         stream.SpecHeatCap = val.FluidCp
-        stream.SpecEnthalpy = self.getSpecificEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap)
-        if val.VOutFlowCycle != None:
-            stream.MassFlowAvg, stream.MassFlowVector = self.massFlow.getMassFlowWH(stream.FluidDensity, VOutflowCycle = val.VOutFlowCycle)
-        elif val.mOutFlowNom != None:
-            stream.MassFlowAvg, stream.MassFlowVector = self.massFlow.getMassFlowWH(stream.FluidDensity, mOutflowNom = val.mOutFlowNom)
+        stream.SpecEnthalpy = self.getSpecificEnthalpy(stream.EndTemp.getAvg(), 
+                                                       stream.StartTemp.getAvg(), 
+                                                       stream.SpecHeatCap)
+#        if val.VOutFlowCycle != None:
+#            stream.MassFlowAvg, stream.MassFlowVector = self.massFlow.getMassFlowWH(stream.FluidDensity, VOutflowCycle = val.VOutFlowCycle)
+#        elif val.mOutFlowNom != None:
+#            stream.MassFlowAvg, stream.MassFlowVector = self.massFlow.getMassFlowWH(stream.FluidDensity, mOutflowNom = val.mOutFlowNom)
 #        stream.EnthalpyNom, stream.EnthalpyVector = self.getEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap, stream.MassFlowVector, stream.MassFlowAvg)
         ProcessID = self.getProcessNr(stream)
         
@@ -955,14 +1003,24 @@ class ProcessStreams(StreamUtils, StreamSet):
             #waste heat vector must be corrected
                 if val.XOutFlow != None:
                     for i in xrange (Status.Nt):
-                        stream.EnthalpyVector[i]=(Status.int.UPH_w_t[stream.DBID][i]-(stream.MassFlowVector[i]*val.VaporCp*(val.PTOutFlow-val.TCond)))            
+                        stream.EnthalpyVector[i]=(Status.int.UPH_w_t[stream.DBID][i]-\
+                                                  (stream.MassFlowVector[i]*val.VaporCp*\
+                                                   (val.PTOutFlow-val.TCond)))            
                 else:
                     for i in xrange (Status.Nt):      
-                        stream.EnthalpyVector[i]=(Status.int.UPH_w_t[stream.DBID][i]-(stream.MassFlowVector[i]*val.XOutFlow*val.LatentHeat)-(stream.MassFlowVector[i]*val.VaporCp*(val.PTOutFlow-val.TCond)))
+                        stream.EnthalpyVector[i]=(Status.int.UPH_w_t[stream.DBID][i]-\
+                                                  (stream.MassFlowVector[i]*val.XOutFlow*val.LatentHeat)-\
+                                                  (stream.MassFlowVector[i]*val.VaporCp*(val.PTOutFlow-val.TCond)))
 
         
 
-        stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, stream.EndTemp, stream.StartTemp)
+        stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, 
+                                                       stream.SpecHeatCap, 
+                                                       stream.EndTemp, 
+                                                       stream.StartTemp)
+        
+        nomEnthalpyAndMassFlow(stream)
+
         stream.MassFlowAvg=max(stream.MassFlowVector)
         stream.EnthalpyNom=max(stream.EnthalpyVector)
         stream.HeatTransferCoeff = 5000
@@ -1042,8 +1100,6 @@ class DistLineStreams(StreamUtils, StreamSet):
 #        print DistribCircFlow, PercentRecirc
 #        print TreturnDistrib, Tfeedup, ToutDistrib
 
-
-
     def calcStreams(self):
         for stream in self.streams:
             if stream.DBType == STREAMTYPE[10]:
@@ -1051,7 +1107,6 @@ class DistLineStreams(StreamUtils, StreamSet):
                 self.generateCondensateRecoveryStream(stream)
             elif stream.DBType == STREAMTYPE[9]:
                 print "--BOILERFEEDWATER-"
-
 
     def generateCondensateRecoveryStream(self, stream):
         """
@@ -1065,13 +1120,22 @@ class DistLineStreams(StreamUtils, StreamSet):
         stream.EndTemp.setAverageTemperature(val.Tfeedup)
         stream.Type = self.getStreamType(stream.StartTemp.getAvg(), stream.EndTemp.getAvg())
         stream.SpecHeatCap = val.FluidCp
-        stream.SpecEnthalpy = self.getSpecificEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap)
-
+        stream.SpecEnthalpy = self.getSpecificEnthalpy(stream.EndTemp.getAvg(), 
+                                                       stream.StartTemp.getAvg(), 
+                                                       stream.SpecHeatCap)
+        
+#        nomEnthalpyAndMassFlow(stream)
         
         stream.MassFlowAvg  = self.getCondrecMassFlow(val.DistribCircFlow, val.PercentRecirc)
-        stream.EnthalpyNom = self.getEnthalpyNom(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap, stream.MassFlowAvg)
+        stream.EnthalpyNom = self.getEnthalpyNom(stream.EndTemp.getAvg(), 
+                                                 stream.StartTemp.getAvg(), 
+                                                 stream.SpecHeatCap, 
+                                                 stream.MassFlowAvg)
+
         stream.EnthalpyVector = self.getEnthalpyVectorCondRec(stream)
-        stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, stream.EndTemp, stream.StartTemp)
+        stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, 
+                                                       stream.EndTemp, stream.StartTemp)
+
 
         stream.HeatTransferCoeff = self.getHeatTransferCoefficient(stream.FluidDensity)
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
@@ -1109,7 +1173,8 @@ class DistLineStreams(StreamUtils, StreamSet):
         return enthalpy_vector
 
     def getMassFlowVectorCondRec(self, stream):
-        stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, stream.EndTemp, stream.StartTemp)
+        stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, 
+                                                       stream.EndTemp, stream.StartTemp)
 
 
     def getBFWMassFlow(self):
@@ -1222,12 +1287,15 @@ class WHEEStreams(StreamUtils, StreamSet):
         stream.SpecEnthalpy = val.SensibleHeat
         #stream.MassFlowAvg, stream.MassFlowVector = self.getMediumFlow(self.QWHEE, self.SpecificMassFlow, stream)
 
-        stream.EnthalpyNom = val.QWHEE*(val.SensibleHeat/(val.SensibleHeat+val.LatentHeat))
-        stream.MassFlowAvg = stream.EnthalpyNom/val.SensibleHeat
         stream.EnthalpyVector = []
         stream.MassFlowVector = []
 
         self.getVectorSensHeat(stream)
+        nomEnthalpyAndMassFlow(stream)
+
+        stream.EnthalpyNom = val.QWHEE*(val.SensibleHeat/(val.SensibleHeat+val.LatentHeat))
+        stream.MassFlowAvg = stream.EnthalpyNom/val.SensibleHeat
+
 
         stream.HeatTransferCoeff = self.getHeatTransferCoefficient(stream.FluidDensity)
         stream.SpecHeatCap = self.getWasteHeatSpecificCapacity(stream)
@@ -1368,7 +1436,9 @@ class EquipmentStreams(StreamUtils, StreamSet):
                 pass
             elif etype == equipTypes["thermal chiller"]: # thermal chiller
                 pass
-            elif etype == equipTypes["solar thermal (flat-plate)"] or etype == equipTypes["solar thermal (evacuated tubes)"] or etype == equipTypes["solar thermal (concentrating solar systems)"]: # solar thermal
+            elif etype == equipTypes["solar thermal (flat-plate)"] or \
+            etype == equipTypes["solar thermal (evacuated tubes)"] or \
+            etype == equipTypes["solar thermal (concentrating solar systems)"]: # solar thermal
                 pass
             elif etype == equipTypes["CHP engine"]: # CHP engine
                 self.appendFullEquip(name, eID, equipment, DB)
@@ -1465,7 +1535,11 @@ class EquipmentStreams(StreamUtils, StreamSet):
         stream.SpecEnthalpy = self.getSpecificEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap)
 
         stream.MassFlowAvg, stream.MassFlowVector = self.getMassFlowBFW(val.DistribCircFlow, val.PercentRecirc)
-        stream.EnthalpyNom, stream.EnthalpyVector = self.getEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap, stream.MassFlowVector, stream.MassFlowAvg)
+        stream.EnthalpyNom, stream.EnthalpyVector = self.getEnthalpy(stream.EndTemp.getAvg(), 
+                                                                     stream.StartTemp.getAvg(), 
+                                                                     stream.SpecHeatCap, 
+                                                                     stream.MassFlowVector, 
+                                                                     stream.MassFlowAvg)
 
         stream.HeatTransferCoeff = self.getHeatTransferCoefficient(val.FluidDensity)
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
@@ -1490,12 +1564,18 @@ class EquipmentStreams(StreamUtils, StreamSet):
         stream.EndTemp.setAverageTemperature(val.Tcond)
         stream.Type = self.getStreamType(stream.StartTemp.getAvg(), stream.EndTemp.getAvg())
         stream.SpecHeatCap = val.OffgasHeatCapacity
-        stream.SpecEnthalpy = self.getSpecificEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap)
+        stream.SpecEnthalpy = self.getSpecificEnthalpy(stream.EndTemp.getAvg(), 
+                                                       stream.StartTemp.getAvg(), 
+                                                       stream.SpecHeatCap)
 #        stream.MassFlowAvg = self.getOffGasFlow(val.FuelConsum, val.PartLoad, val.Offgas)
 #        stream.EnthalpyNom = self.getEnthalpyNom(stream.EndTemp, stream.StartTemp, stream.SpecHeatCap, stream.MassFlowAvg)
         stream.EnthalpyVector = Status.int.QWHEq_t[self.getEquipmentID(stream)] # get Vector not matrix
 #        print "Status.int.QWHEq_t: " + str(stream.EnthalpyVector)
-        stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, stream.EndTemp, stream.StartTemp)
+        stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, 
+                                                       stream.EndTemp, stream.StartTemp)
+        
+        nomEnthalpyAndMassFlow(stream)
+        
         stream.MassFlowAvg=max(stream.MassFlowVector)
         stream.EnthalpyNom=max(stream.EnthalpyVector)
 
@@ -1520,7 +1600,8 @@ class EquipmentStreams(StreamUtils, StreamSet):
         stream.EnthalpyVector = Status.int.QWHEq_t[self.getEquipmentID(stream)]
 
     def getMassFlowVectorExGas(self, stream):
-        stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, stream.EndTemp, stream.StartTemp)
+        stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, 
+                                                       stream.EndTemp, stream.StartTemp)
 
     def getEquipmentID(self, stream):
         PId = Status.PId
@@ -1548,14 +1629,17 @@ class EquipmentStreams(StreamUtils, StreamSet):
         stream.Type = self.getStreamType(stream.StartTemp.getAvg(), stream.EndTemp.getAvg())
         stream.SpecHeatCap = val.LatentHeatWater/0.1
         stream.SpecEnthalpy = val.LatentHeatWater
-        stream.MassFlowAvg = self.getH20Air(val.FuelConsum, val.CombAir, val.PartLoad)
-        stream.EnthalpyNom = self.getEnthalpyNom(stream.EndTemp, stream.StartTemp, stream.SpecHeatCap, stream.MassFlowAvg)
+
         scheduleEGC = self.calcScheduleEGC(stream.EnthalpyNom, Status.int.QWHEq_t[self.getEquipmentID(stream)])
         stream.EnthalpyVector = scheduleEGC
         stream.MassFlowVector = []
         for elem in scheduleEGC:
             stream.MassFlowVector.append(elem/stream.EnthalpyNom*stream.MassFlowAvg)
+            
+        nomEnthalpyAndMassFlow(stream)
 
+        stream.MassFlowAvg = self.getH20Air(val.FuelConsum, val.CombAir, val.PartLoad)
+        stream.EnthalpyNom = self.getEnthalpyNom(stream.EndTemp, stream.StartTemp, stream.SpecHeatCap, stream.MassFlowAvg)
         #stream.MassFlowAvg, stream.MassFlowVector = self.getH20Air(self.FuelConsum, self.CombAir, self.PartLoad)
         #stream.EnthalpyNom, stream.EnthalpyVector = self.getEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap, stream.MassFlowVector, stream.MassFlowAvg)
         stream.HeatTransferCoeff = self.getHeatTransferCoefficient(stream.FluidDensity)
@@ -1597,10 +1681,11 @@ class EquipmentStreams(StreamUtils, StreamSet):
         stream.EndTemp.setAverageTemperature(val.TExhaustGas) # Calculate from Climate Data
         stream.Type = self.getStreamType(stream.StartTemp.getAvg(), stream.EndTemp.getAvg())
         stream.SpecHeatCap = val.FluidCpAir
-        stream.SpecEnthalpy = self.getSpecificEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap)
+        stream.SpecEnthalpy = self.getSpecificEnthalpy(stream.EndTemp.getAvg(), 
+                                                       stream.StartTemp.getAvg(), 
+                                                       stream.SpecHeatCap)
 
-        stream.MassFlowAvg = self.getCombustionAirMassFlow(val.FuelConsum, val.CombAir, val.PartLoad)
-        stream.EnthalpyNom = self.getEnthalpyNom(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap, stream.MassFlowAvg)
+
         stream.EnthalpyVector = self.getEnthalpyVectorComAir(stream)
 #        print "USHj_t: " + str(Status.int.USHj_t)
 #        print "USHj: " + str(Status.int.USHj)
@@ -1613,7 +1698,14 @@ class EquipmentStreams(StreamUtils, StreamSet):
 #        for i in xrange(Status.Nt):
 #            stream.EnthalpyVector.append(0.1)
         
-        stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, stream.EndTemp, stream.StartTemp)
+        stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, 
+                                                       stream.EndTemp, stream.StartTemp)
+
+        nomEnthalpyAndMassFlow(stream)
+
+        stream.MassFlowAvg = self.getCombustionAirMassFlow(val.FuelConsum, val.CombAir, val.PartLoad)
+        stream.EnthalpyNom = self.getEnthalpyNom(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), 
+                                                 stream.SpecHeatCap, stream.MassFlowAvg)
 
         stream.HeatTransferCoeff = self.getHeatTransferCoefficient(stream.FluidDensity)
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
@@ -1642,7 +1734,8 @@ class EquipmentStreams(StreamUtils, StreamSet):
         return stream.EnthalpyVector
 
     def getMassFlowVectorCombAir(self, stream):
-        stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, stream.EndTemp, stream.StartTemp)
+        stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, 
+                                                       stream.EndTemp, stream.StartTemp)
 
     def getMassFlowBFW(self, DistribCircFlow, PercentRecirc):
 
@@ -1685,7 +1778,7 @@ class EquipmentStreams(StreamUtils, StreamSet):
 
 
 
-class NameGeneration():
+class StreamGeneration():
     def __init__(self):
 
         self.process = ProcessStreams()

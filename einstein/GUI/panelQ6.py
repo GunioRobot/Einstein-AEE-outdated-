@@ -212,9 +212,9 @@ class PanelQ6(wx.Panel):
         self.HXName = None
         self.WHEEName = None
 
-        if Status.int.NameGen == None:
-            Status.int.NameGen = NameGeneration()
-            Status.int.NameGen.loadDataFromDB()
+        if Status.int.StreamGen == None:
+            Status.int.StreamGen = StreamGeneration()
+            Status.int.StreamGen.loadDataFromDB()
 
         self.HXPinch = None
         self.selectedSStream = None
@@ -753,8 +753,8 @@ class PanelQ6(wx.Panel):
         for elem in Status.int.HXPinchConnection:
             elem.deleteFromDB()
             
-#        Status.int.NameGen.calcStreams()
-#        Status.int.NameGen.printStreams()
+#        Status.int.StreamGen.calcStreams()
+#        Status.int.StreamGen.printStreams()
 
         for elem in Status.int.HXPinchConnection:
             elem.writeToDB()
@@ -815,14 +815,14 @@ class PanelQ6(wx.Panel):
         streamType = stype.cbStreamType.GetValue()
 
         if streamType == 'Processes':
-            self.appendStreamNames(Status.int.NameGen.process.streams, stype)
-            #self.appendStreamNames(Status.int.NameGen.process.processContStreams)
+            self.appendStreamNames(Status.int.StreamGen.process.streams, stype)
+            #self.appendStreamNames(Status.int.StreamGen.process.processContStreams)
         elif streamType == 'Distribution Lines':
-            self.appendStreamNames(Status.int.NameGen.distline.streams, stype)
+            self.appendStreamNames(Status.int.StreamGen.distline.streams, stype)
         elif streamType == 'WHEE':
-            self.appendStreamNames(Status.int.NameGen.whee.streams, stype)
+            self.appendStreamNames(Status.int.StreamGen.whee.streams, stype)
         elif streamType == 'Equipments':
-            self.appendStreamNames(Status.int.NameGen.equipment.streams, stype)
+            self.appendStreamNames(Status.int.StreamGen.equipment.streams, stype)
 
     def appendStreamNames(self, streamList, stype):
         for el in streamList:
@@ -840,10 +840,10 @@ class PanelQ6(wx.Panel):
         selectedType = stype.cbStreamType.GetStringSelection()
         selectedStream = stype.cbStream.GetStringSelection()
 
-        streamList = Status.int.NameGen.process.streams + \
-                     Status.int.NameGen.distline.streams + \
-                     Status.int.NameGen.equipment.streams + \
-                     Status.int.NameGen.whee.streams
+        streamList = Status.int.StreamGen.process.streams + \
+                     Status.int.StreamGen.distline.streams + \
+                     Status.int.StreamGen.equipment.streams + \
+                     Status.int.StreamGen.whee.streams
         pinch = pinchTemp()
         for elem in streamList:
             if elem.name == selectedStream:

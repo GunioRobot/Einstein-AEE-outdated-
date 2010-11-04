@@ -23,6 +23,10 @@ class HXCombination():
 
     def combineAllStreams(self):
         for elem in Status.int.HXPinchConnection:
+            if len(elem.sinkstreams) < 1:
+                return -1
+            if len(elem.sourcestreams) < 1:
+                return -1
             print elem.HXID, elem.Name
             print "--------------------SINKSTREAMS TO COMBINE----------------------"
             for el in elem.sinkstreams:
@@ -82,7 +86,7 @@ class HXCombination():
             elem.combinedSource.stream.printStream()
 
 #            print "MassFlowVectorSink: ", str(pT.stream.MassFlowVector[0:200])
-
+        return 0
 
     def combineMassFlowNom(self, sstreams):
         massflow = 0
@@ -971,7 +975,10 @@ class HXSimulation():
                 pass
             if type(self.Tcsin) == type([]):
                 for i in xrange(Status.Nt):
-                    self.Tcsout.append(self.Tcsin[i] + self.Q/(mcsAvg*cpcs*self.bhxcs[i]/100))
+                    if mcsAvg*cpcs*self.bhxcs[i] != 0:
+                        self.Tcsout.append(self.Tcsin[i] + self.Q/(mcsAvg*cpcs*self.bhxcs[i]/100))
+                    else:
+                        self.Tcsout.append(self.Tcsin[i])
             else:
 
                 self.Tcsout.append(self.Tcsin + self.Q/(mcsAvg*cpcs*self.bhxcs[i]/100))

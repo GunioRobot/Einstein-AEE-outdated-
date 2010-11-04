@@ -599,7 +599,7 @@ class EinsteinFrame(wx.Frame):
 # DO CURVE CALCULATION
         if Status.processData.outOfDate == True:
             Status.processData.createAggregateDemand()
-        Status.int.NameGen.calcStreams()
+        Status.int.StreamGen.calcStreams()
 #        curvecalc = CurveCalculation()
 #        curvecalc.calculate()
 #        curvecalc.printResults()
@@ -639,7 +639,7 @@ class EinsteinFrame(wx.Frame):
         if Status.processData.outOfDate == True:
             Status.processData.createAggregateDemand()
         print "-------------------CALCULATE STREAMS--------------------"
-#        Status.int.NameGen.initStreams()
+#        Status.int.StreamGen.initStreams()
         for i in xrange(len(Status.int.HXPinchConnection)):
             for j in xrange(len(Status.int.HXPinchConnection[i].sinkstreams)):
                 stream = Status.int.HXPinchConnection[i].sinkstreams[j].stream
@@ -652,7 +652,7 @@ class EinsteinFrame(wx.Frame):
                 stream.printStream()
 
 
-        Status.int.NameGen.calcStreams()
+        Status.int.StreamGen.calcStreams()
 
         print "--------STREAM CURVE CALCULATION--------"
 
@@ -660,7 +660,7 @@ class EinsteinFrame(wx.Frame):
         curvecalc.calculate()
         curvecalc.printResults()
         print "---------------------PRINT STREAMS----------------------"
-#        Status.int.NameGen.printStreams()
+#        Status.int.StreamGen.printStreams()
 
         hxcomb = HXCombination()
         hxcomb.combineAllStreams()

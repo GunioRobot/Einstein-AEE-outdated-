@@ -37,7 +37,7 @@ class HXProposal():
         
     def __getStreams(self):
         try:
-            self.streams = Status.int.NameGen.getAllStreams()
+            self.streams = Status.int.StreamGen.getAllStreams()
         except:
             self.streams = []
             
@@ -210,8 +210,8 @@ class HXProposal():
             Status.int.HXPinchConnection.append(hxpinch)
         
     def setStreamData(self, conn):
-        conn.stream.Source = STREAMSOURCE[5]
-        conn.stream.DBType = STREAMTYPE[13]
+#        conn.stream.Source = STREAMSOURCE[5]
+#        conn.stream.DBType = STREAMTYPE[13]
         conn.stream.MassFlowVector = [conn.stream.MassFlowAvg]*Status.Nt
         return conn
         

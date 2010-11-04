@@ -389,7 +389,11 @@ class ModuleHR(object):
         
     def calculateHX(self):
         hxcomb = HXCombination()
-        hxcomb.combineAllStreams()
+        hxresult = hxcomb.combineAllStreams()
+        
+        if hxresult == -1:
+            wx.MessageBox("Either inlet or outlet Stream is undefined. Can't combine Streams.", 'Info')
+            return -1
         print "--------------------COMBINED STREAMS--------------------"
 #        for elem in Status.int.HXPinchConnection:
 #            elem.combinedSink.stream.printStream()
@@ -416,9 +420,9 @@ class ModuleHR(object):
             
         
     def initCurves(self):
-        if Status.int.NameGen == None:
-            Status.int.NameGen = NameGeneration()
-            Status.int.NameGen.loadDataFromDB()
+        if Status.int.StreamGen == None:
+            Status.int.StreamGen = StreamGeneration()
+            Status.int.StreamGen.loadDataFromDB()
         DB = Status.DB
         HXIDList = Status.prj.getHXList("QHeatExchanger_ID")
         HXNameList = Status.prj.getHXList("HXName")
@@ -442,8 +446,8 @@ class ModuleHR(object):
                 self.calcStream(stream)
                 stream.printStream()
 
-        Status.int.NameGen.calcStreams()
-        Status.int.NameGen.deleteEmptyStreams()
+        Status.int.StreamGen.calcStreams()
+        Status.int.StreamGen.deleteEmptyStreams()
 
         self.curvecalc = CurveCalculation()
         self.curvecalc.calculate()
@@ -462,6 +466,8 @@ class ModuleHR(object):
             calcWHEEStream(stream)
         elif stream.Source == STREAMSOURCE[4]:
             calcDistLineStream(stream)
+        elif stream.Source == STREAMSOURCE[5]:
+            calcProposedStream(stream)
 #----------------------------------------------------------------------------------------------------
 # Internal Calculations
 #----------------------------------------------------------------------------------------------------  
