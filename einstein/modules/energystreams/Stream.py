@@ -190,6 +190,7 @@ class HXPinchConnection():
     combinedSink = None
     combinedSource = None
     StorageSize = None
+    QdotHX = None
 
     def __init__(self, HXID, Name):
         self.HXID = HXID

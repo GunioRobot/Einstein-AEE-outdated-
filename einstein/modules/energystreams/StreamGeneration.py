@@ -1153,7 +1153,12 @@ class DistLineStreams(StreamUtils, StreamSet):
             
         print stream.Source, stream.DBType, stream.DBID
         print equipID
-        schedule=Status.int.QWHEq_t[equipID[0]]
+        
+        if len(equipID) == 0:
+            gequip = Status.prj.getEquipments()
+            schedule = Status.int.QWHEq_t[gequip[0].QGenerationHC_ID]        
+        else:
+            schedule=Status.int.QWHEq_t[equipID[0]]
         QWHEq=max(schedule)
         enthalpy_vector=[]
         if QWHEq == 0:

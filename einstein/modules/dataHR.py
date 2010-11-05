@@ -105,6 +105,8 @@ class HRData:
         
         
         HXID = HXPinchConnection.HXID
+        HXPinchConnection.StorageSize = StorageSize
+        HXPinchConnection.QdotHX = max(QHX_t)
         combinedSink = HXPinchConnection.combinedSink
         combinedSource = HXPinchConnection.combinedSource
         try:      

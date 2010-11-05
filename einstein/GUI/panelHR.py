@@ -565,16 +565,23 @@ class PanelHR(wx.Panel):
     
     def fillGrid(self):
         rows = Status.int.hrdata.hexers
-        for r in xrange(len(rows)):
-            self.grid.SetCellValue(r, 0, str(rows[r]['HXName']))
-            self.grid.SetCellValue(r, 1, str(rows[r]['QdotHX']))
-            self.grid.SetCellValue(r, 2, str(rows[r]['StorageSize']))
-            self.grid.SetCellValue(r, 3, str(Status.int.hrdata.sourceName[r]))
-            self.grid.SetCellValue(r, 4, str(rows[r]['HXTSourceInlet']))
-            self.grid.SetCellValue(r, 5, str(rows[r]['HXTSourceOutlet']))
-            self.grid.SetCellValue(r, 6, str(Status.int.hrdata.sinkName[r]))
-            self.grid.SetCellValue(r, 7, str(rows[r]['HXTSinkInlet']))
-            self.grid.SetCellValue(r, 8, str(rows[r]['HXTSinkOutlet']))
+        HXrows = Status.int.HXPinchConnection
+        for r in xrange(len(HXrows)):
+            self.grid.SetCellValue(r, 0, str(HXrows[r].Name))
+            self.grid.SetCellValue(r, 1, str(HXrows[r].QdotHX))
+            self.grid.SetCellValue(r, 2, str(HXrows[r].StorageSize))
+            name = ""
+            for elem in HXrows[r].sourcestreams:
+                name = name + str(elem.stream.name) + ";"
+            self.grid.SetCellValue(r, 3, name)
+            self.grid.SetCellValue(r, 4, str(HXrows[r].combinedSource.inletTemp))
+            self.grid.SetCellValue(r, 5, str(HXrows[r].combinedSource.outletTemp))
+            name = ""
+            for elem in HXrows[r].sinkstreams:
+                name = name + str(elem.stream.name) + ";"
+            self.grid.SetCellValue(r, 6, name)
+            self.grid.SetCellValue(r, 7, str(HXrows[r].combinedSink.inletTemp))
+            self.grid.SetCellValue(r, 8, str(HXrows[r].combinedSink.outletTemp))
             self.grid.SetCellValue(r, 9, "")
             self.grid.SetCellValue(r, 10, "")
             self.grid.SetCellValue(r, 11, "")

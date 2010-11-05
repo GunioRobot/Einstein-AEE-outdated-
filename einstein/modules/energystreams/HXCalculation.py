@@ -502,17 +502,20 @@ class HXSimulation():
  #       bhxhs = sum(self.bhxhs)/len(self.bhxhs)
  #       bhxcs = sum(self.bhxcs)/len(self.bhxcs)
         
-        bhxhs = round(self.getNonZeroAverage(self.bhxhs, self.QHX1hs),2)
-        bhxcs = round(self.getNonZeroAverage(self.bhxcs, self.QHX1cs),2)
+        bhxhs = round(self.getNonZeroMax(self.bhxhs, self.QHX1hs),2)
+        bhxcs = round(self.getNonZeroMax(self.bhxcs, self.QHX1cs),2)
+        
         for i in xrange(len(Status.int.HXPinchConnection)):
-            for j in xrange(len(Status.int.HXPinchConnection[i].sourcestreams)):
-                source = Status.int.HXPinchConnection[i].sourcestreams[j]
-                self.splitStreamResults(Status.int.HXPinchConnection[i].combinedSource, source, bhxcs)
-            
-            for j in xrange(len(Status.int.HXPinchConnection[i].sinkstreams)):
-                sink = Status.int.HXPinchConnection[i].sinkstreams[j]
-                self.splitStreamResults(Status.int.HXPinchConnection[i].combinedSink, sink, bhxhs)
-                
+            if len(Status.int.HXPinchConnection[i].sourcestreams)>1:
+                for j in xrange(len(Status.int.HXPinchConnection[i].sourcestreams)):
+                    source = Status.int.HXPinchConnection[i].sourcestreams[j]
+                    self.splitStreamResults(Status.int.HXPinchConnection[i].combinedSource, source, bhxcs)
+            else: Status.int.HXPinchConnection[i].sourcestreams[0].PercentHeatFlow = bhxhs
+            if len(Status.int.HXPinchConnection[i].sinkstreams)>1:
+                for j in xrange(len(Status.int.HXPinchConnection[i].sinkstreams)):
+                    sink = Status.int.HXPinchConnection[i].sinkstreams[j]
+                    self.splitStreamResults(Status.int.HXPinchConnection[i].combinedSink, sink, bhxhs)
+            else: Status.int.HXPinchConnection[i].sinkstreams[0].PercentHeatFlow = bhxcs    
         
         for elem in Status.int.HXPinchConnection:
             elem.deleteFromDB()
@@ -521,8 +524,8 @@ class HXSimulation():
         
     def splitStreamResults(self, combined, hxstream, bhx):
         
-        hxstream.stream.MassFlowAvg *= bhx/100
-        hxstream.stream.EnthalpyNom=max(self.QHX1hs)
+        #hxstream.stream.MassFlowAvg *= bhx/100
+        #hxstream.stream.EnthalpyNom=max(self.QHX1hs)
         combinedMassFlowAvg=0
         combinedMassFlowAvg = round(self.getNonZeroAverage(combined.stream.MassFlowVector, self.QHX1cs),2)
         
@@ -562,6 +565,18 @@ class HXSimulation():
                 t.append(T[i])
         if len(t)==0: return 0
         return sum(t)/len(t)
+    
+    def getNonZeroMax(self, T, Q):
+        """
+        T: Split Factor
+        """
+        t = []
+        for i in xrange(Status.Nt):
+            if Q[i] != 0:
+                t.append(T[i])
+        if len(t)==0: return 0
+        return max(t)
+    
 
     def adaptQHX(self):
         for i in xrange(Status.Nt):

@@ -80,7 +80,7 @@ class CurveCalculation():
         
         self.CCC = self.setColdCurves(self.ColdIntervals)
         self.HCC = self.setHotCurves(self.HotIntervals)
-        self.GCC = Curve("HCC")
+        self.GCC = Curve("GCC")
         
         
         if Status.int.hrdata == None:
@@ -288,6 +288,7 @@ class CurveCalculation():
                 by = y2[index+1]
                 bax = bx - ax
                 bay = by - ay
+                
     
                 if bay == 0:
                     x_gcc.append(abs(ax-x1[0]))
