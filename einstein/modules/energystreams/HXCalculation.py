@@ -717,9 +717,10 @@ class HXSimulation():
                 Tcsin = self.Tcsin[i]
             else: Tcsin = self.Tcsin
 
-            if self.Thsout[i] < self.hxPinchCon.combinedSource.stream.EndTemp:
-                self.Thsout[i] = self.hxPinchCon.combinedSource.stream.EndTemp
-                self.QHX1hs[i] = mhs[i]*self.bhxhs[i]/100*cphs*dThs[i]
+            if self.Thsout[i] < self.hxPinchCon.combinedSource.outletTemp:
+                self.Thsout[i] = self.hxPinchCon.combinedSource.outletTemp
+                
+                self.QHX1hs[i] = mhs[i]*self.bhxhs[i]/100*cphs*(self.Tcsout[i]-Tcsin)
                 if (mcs[i]*cpcs*(self.Tcsout[i]-Tcsin))==0:
                     self.bhxcs[i]=0
                 else:
@@ -728,7 +729,7 @@ class HXSimulation():
                 
             if self.Thsout[i] < Tcsin + self.dTmin:
                 self.Thsout[i] = Tcsin + self.dTmin
-                self.QHX1hs[i] = mhs[i]*self.bhxhs[i]/100*cphs*dThs[i]
+                self.QHX1hs[i] = mhs[i]*self.bhxhs[i]/100*cphs*(self.Tcsout[i]-Tcsin)
                 if (mcs[i]*cpcs*(self.Tcsout[i]-Tcsin))==0:
                     self.bhxcs[i]=0
                 else:
@@ -749,10 +750,22 @@ class HXSimulation():
             if type(self.Thsin) == type([]):
                 Thsin = self.Thsin[i]
             else: Thsin = self.Thsin
+            
+            
+            if self.Tcsout[i] > self.hxPinchCon.combinedSink.outletTemp:
+                self.Tcsout[i] = self.hxPinchCon.combinedSink.outletTemp
+                
+                self.QHX1cs[i] = mcs[i]*self.bhxcs[i]/100*cpcs*(Thsin-self.Thsout[i])
+                if mhs[i]*cphs*(Thsin-self.Thsout[i]) != 0:
+                    self.bhxhs[i] = self.QHX1cs[i]/(mhs[i]*cphs*(Thsin-self.Thsout[i]))*100
+                else: self.bhxhs[i] = 0
 
+                self.mhshx1[i] = mhs[i]*self.bhxhs[i]/100
+                
             if self.Tcsout[i] > Thsin - self.dTmin:
                 self.Tcsout[i] = Thsin - self.dTmin
-                self.QHX1cs[i] = mcs[i]*self.bhxcs[i]/100*cpcs*dTcs[i]
+                
+                self.QHX1cs[i] = mcs[i]*self.bhxcs[i]/100*cpcs*(Thsin-self.Thsout[i])
                 if mhs[i]*cphs*(Thsin-self.Thsout[i]) != 0:
                     self.bhxhs[i] = self.QHX1cs[i]/(mhs[i]*cphs*(Thsin-self.Thsout[i]))*100
                 else: self.bhxhs[i] = 0

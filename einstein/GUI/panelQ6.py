@@ -1095,6 +1095,8 @@ class PanelQ6(wx.Panel):
 
     def OnButtonHXAdd(self, event):
         self.clearHX()
+        self.loadOnHXChange(self.Sink, self.HXPinch.sinkstreams)
+        self.loadOnHXChange(self.Source, self.HXPinch.sourcestreams)
 
     def OnButtonHXDelete(self, event):
         Status.prj.deleteHX(self.HXID)
