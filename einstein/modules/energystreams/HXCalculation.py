@@ -525,14 +525,14 @@ class HXSimulation():
     def splitStreamResults(self, combined, hxstream, bhx):
         
         #hxstream.stream.MassFlowAvg *= bhx/100
-        #hxstream.stream.EnthalpyNom=max(self.QHX1hs)
+        QHX_total = max(self.QHX1hs)
+        
+        QHXperStream = 0
+        
         combinedMassFlowAvg=0
         combinedMassFlowAvg = round(self.getNonZeroAverage(combined.stream.MassFlowVector, self.QHX1cs),2)
         
-        if (combinedMassFlowAvg*combined.stream.SpecHeatCap) == 0:
-            hxstream.stream.EnthalpyNom = 0
-        else: 
-            hxstream.stream.EnthalpyNom = hxstream.stream.EnthalpyNom*hxstream.stream.SpecHeatCap\
+        QHXperStream = QHX_total*hxstream.stream.SpecHeatCap\
                 *hxstream.stream.MassFlowAvg/(combinedMassFlowAvg\
                 *combined.stream.SpecHeatCap)
         if (hxstream.stream.MassFlowAvg*hxstream.stream.SpecHeatCap) == 0:
@@ -540,10 +540,10 @@ class HXSimulation():
         else:
             if hxstream.stream.HotColdType == "Cold" or hxstream.stream.HotColdType == "Sink":
                 hxstream.outletTemp = hxstream.inletTemp + \
-                hxstream.stream.EnthalpyNom/(hxstream.stream.MassFlowAvg*hxstream.stream.SpecHeatCap)
+                QHXperStream/(hxstream.stream.MassFlowAvg*hxstream.stream.SpecHeatCap)
             else:
                 hxstream.outletTemp = hxstream.inletTemp - \
-                hxstream.stream.EnthalpyNom/(hxstream.stream.MassFlowAvg*hxstream.stream.SpecHeatCap)
+                QHXperStream/(hxstream.stream.MassFlowAvg*hxstream.stream.SpecHeatCap)
     
 
 
@@ -717,8 +717,8 @@ class HXSimulation():
                 Tcsin = self.Tcsin[i]
             else: Tcsin = self.Tcsin
 
-            if self.Thsout[i] < self.hxPinchCon.combinedSource.outletTemp:
-                self.Thsout[i] = self.hxPinchCon.combinedSource.outletTemp
+            if self.Thsout[i] < self.hxPinchCon.combinedSource.outletTemp[i]:
+                self.Thsout[i] = self.hxPinchCon.combinedSource.outletTemp[i]
                 
                 self.QHX1hs[i] = mhs[i]*self.bhxhs[i]/100*cphs*(self.Tcsout[i]-Tcsin)
                 if (mcs[i]*cpcs*(self.Tcsout[i]-Tcsin))==0:
@@ -1175,4 +1175,4 @@ class HXSimulation():
         
 
 if __name__ == "__main__":
-    HX = HXCalculation()
+    pass
