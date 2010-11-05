@@ -980,8 +980,8 @@ class PanelQ6(wx.Panel):
                 break
 
         if self.HXPinch == None:
-            self.HXPinch = HXPinchConnection(self.HXID)
-            Status.int.HXPinchConnection.append(self.HXPinch, self.HXName)
+            self.HXPinch = HXPinchConnection(self.HXID, self.HXName)
+            Status.int.HXPinchConnection.append(self.HXPinch)
 
         self.Sink.outletHXChoice.Clear()
         self.Sink.inletHXChoice.Clear()

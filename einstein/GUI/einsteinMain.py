@@ -686,10 +686,6 @@ class EinsteinFrame(wx.Frame):
             hxsim.startSimulation()
             
 
-#        self.printMatrix(Status.int.QWHEq_t)
-#        print
-#        self.printMatrix(Status.int.QWHEEEq_t)
-
 
     def printMatrix(self, matrix):
         for elem in matrix:

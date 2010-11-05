@@ -295,8 +295,8 @@ class Processes(object):
                     QWHj_Tt[iT][it] = QWHj_T[iT] * f
 
                     Status.int.QWHEqTotal_Tt[iT][it] += QWHj_Tt[iT][it]
-            self.createHeatFlow_t(equipe.QWHEq, schedule.favTemp, Status.int.QWHEq_t)
-#            self.createHeatFlow_tDict(equipe.QWHEq, schedule.favTemp, Status.int.QWHEq_t, equipe.QGenerationHC_ID)
+#            self.createHeatFlow_t(equipe.QWHEq, schedule.favTemp, Status.int.QWHEq_t)
+            self.createHeatFlow_tDict(equipe.QWHEq, schedule.favTemp, Status.int.QWHEq_t, equipe.QGenerationHC_ID)
         Status.int.QWHEqTotal_t = copy.deepcopy(Status.int.QWHEqTotal_Tt[0])
         
         #   get waste heat from WHEEs
@@ -370,6 +370,7 @@ class Processes(object):
         """
         HeatFlow can be UPHm, UPHs, QWHEE, QWH
         """
+        print ProcessID
         hours_nominal=0.1
         for elem in schedule:
             hours_nominal += elem
