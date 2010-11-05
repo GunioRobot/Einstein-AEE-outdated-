@@ -1574,7 +1574,8 @@ class EquipmentStreams(StreamUtils, StreamSet):
                                                        stream.SpecHeatCap)
 #        stream.MassFlowAvg = self.getOffGasFlow(val.FuelConsum, val.PartLoad, val.Offgas)
 #        stream.EnthalpyNom = self.getEnthalpyNom(stream.EndTemp, stream.StartTemp, stream.SpecHeatCap, stream.MassFlowAvg)
-        stream.EnthalpyVector = Status.int.QWHEq_t[self.getEquipmentID(stream)] # get Vector not matrix
+        equipID = getEquipListperLine(stream.DBID)
+        stream.EnthalpyVector = Status.int.QWHEq_t[stream.DBID] # get Vector not matrix
 #        print "Status.int.QWHEq_t: " + str(stream.EnthalpyVector)
         stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, 
                                                        stream.EndTemp, stream.StartTemp)
@@ -1602,7 +1603,8 @@ class EquipmentStreams(StreamUtils, StreamSet):
         return None
     
     def getEnthalpyVectorExGas(self, stream):
-        stream.EnthalpyVector = Status.int.QWHEq_t[self.getEquipmentID(stream)]
+        equipID = getEquipListperLine(stream.DBID)
+        stream.EnthalpyVector = Status.int.QWHEq_t[stream.DBID]
 
     def getMassFlowVectorExGas(self, stream):
         stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, 
@@ -1635,7 +1637,8 @@ class EquipmentStreams(StreamUtils, StreamSet):
         stream.SpecHeatCap = val.LatentHeatWater/0.1
         stream.SpecEnthalpy = val.LatentHeatWater
 
-        scheduleEGC = self.calcScheduleEGC(stream.EnthalpyNom, Status.int.QWHEq_t[self.getEquipmentID(stream)])
+        equipID = getEquipListperLine(stream.DBID)
+        scheduleEGC = self.calcScheduleEGC(stream.EnthalpyNom, Status.int.QWHEq_t[stream.DBID])
         stream.EnthalpyVector = scheduleEGC
         stream.MassFlowVector = []
         for elem in scheduleEGC:
@@ -1657,7 +1660,8 @@ class EquipmentStreams(StreamUtils, StreamSet):
             stream.OperatingHours = sum(stream.EnthalpyVector)/max(stream.EnthalpyVector)
 
     def getEnthalpyVectorExGasCond(self, stream):
-        scheduleEGC = self.calcScheduleEGC(stream.EnthalpyNom, Status.int.QWHEq_t[self.getEquipmentID(stream)])
+        equipID = getEquipListperLine(stream.DBID)
+        scheduleEGC = self.calcScheduleEGC(stream.EnthalpyNom, Status.int.QWHEq_t[stream.DBID])
         stream.EnthalpyVector = scheduleEGC
     
     def getMassFlowVectorExGasCond(self, stream):
@@ -1726,10 +1730,12 @@ class EquipmentStreams(StreamUtils, StreamSet):
         equip = Status.DB.qgenerationhc.sql_select(equipquery)
 
         partload = equip[0]['PartLoad']
-        enthalpy_nominal = max(Status.int.QWHEq_t[getEquipListperLine(stream.DBID)])
+        equipID = getEquipListperLine(stream.DBID)
+        print "DBID", str(stream.DBID), "EquipID: ", str(equipID)
+        enthalpy_nominal = max(Status.int.QWHEq_t[stream.DBID])
         
 #calculation based on QWHEq_t--> recalculation to schedule and then multpilied by enthalpy
-        for elem in Status.int.QWHEq_t[self.getEquipmentID(stream)]:
+        for elem in Status.int.QWHEq_t[stream.DBID]:
             if enthalpy_nominal == 0:
                 stream.EnthalpyVector.append(0)
             else:    
