@@ -717,6 +717,15 @@ class HXSimulation():
                 Tcsin = self.Tcsin[i]
             else: Tcsin = self.Tcsin
 
+            if self.Thsout[i] < self.hxPinchCon.combinedSource.stream.EndTemp:
+                self.Thsout[i] = self.hxPinchCon.combinedSource.stream.EndTemp
+                self.QHX1hs[i] = mhs[i]*self.bhxhs[i]/100*cphs*dThs[i]
+                if (mcs[i]*cpcs*(self.Tcsout[i]-Tcsin))==0:
+                    self.bhxcs[i]=0
+                else:
+                    self.bhxcs[i] = self.QHX1hs[i]/(mcs[i]*cpcs*(self.Tcsout[i]-Tcsin))*100
+                self.mcshx1[i] = mcs[i]*self.bhxcs[i]/100
+                
             if self.Thsout[i] < Tcsin + self.dTmin:
                 self.Thsout[i] = Tcsin + self.dTmin
                 self.QHX1hs[i] = mhs[i]*self.bhxhs[i]/100*cphs*dThs[i]
