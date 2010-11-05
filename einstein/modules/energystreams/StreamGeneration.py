@@ -699,11 +699,6 @@ class ProcessStreams(StreamUtils, StreamSet):
         nomEnthalpyAndMassFlow(stream)
         stream.MassFlowAvg=max(stream.MassFlowVector)
         stream.EnthalpyNom=max(stream.EnthalpyVector)
-        #stream.EnthalpyNom, stream.EnthalpyVector = self.getEnthalpy(stream.EndTemp.getAvg(), stream.StartTemp.getAvg(), stream.SpecHeatCap, stream.MassFlowVector, stream.MassFlowAvg)
-        #stream.MassFlowAvg, stream.MassFlowVector = self.massFlow.getMassFlowStUp(self.VolProcMed, self.FluidDensity, stream.EnthalpyVector, stream.EnthalpyNom)
-#        except:
-#            stream.EnthalpyVector = []
-#            stream.MassFlowVector = []
             
         stream.HeatTransferCoeff = self.getHeatTransferCoefficient(stream.FluidDensity)
         stream.HeatCap = self.getHeatCapacity(stream.MassFlowAvg, stream.SpecHeatCap)
@@ -1152,18 +1147,12 @@ class DistLineStreams(StreamUtils, StreamSet):
 
     def getEnthalpyVectorCondRec(self, stream):
         equipID = getEquipListperLine(stream.DBID)
-
-#        massflow = [0]
-#        for i in xrange(len(Status.int.QWHEq_t[0])):
-#            for elem in equip:
-#                massflow[i] += Status.int.QWHEq_t[self.getEquipmentNr(elem)][i]
-#            massflow[i] /= len(equip)
-#            massflow.append(0)
         
         for elem in Status.int.QWHEq_t:
             print elem
             
         print stream.Source, stream.DBType, stream.DBID
+        print equipID
         schedule=Status.int.QWHEq_t[equipID[0]]
         QWHEq=max(schedule)
         enthalpy_vector=[]
@@ -1173,8 +1162,6 @@ class DistLineStreams(StreamUtils, StreamSet):
             for elem in schedule:
                 enthalpy_vector.append((elem/QWHEq)*stream.EnthalpyNom)
         
-#        m_vector = massflow
-
         return enthalpy_vector
 
     def getMassFlowVectorCondRec(self, stream):
