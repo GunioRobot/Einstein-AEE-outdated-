@@ -289,7 +289,7 @@ class HXCombination():
     #            combM.append(0)
                 MassFlow = 0
                 for elem in pinchstreams:
-                    print "MassFlowVector: ", str(elem.stream.MassFlowVector[i])
+                    #print "MassFlowVector: ", str(elem.stream.MassFlowVector[i])
                     MassFlow += elem.stream.MassFlowVector[i]*(elem.percentHeatFlow/100)
                 
                 combM[i] = MassFlow 
@@ -442,7 +442,13 @@ class HXSimulation():
             if len(self.hxPinchCon.sinkstreams)>1:
                 # Insert List of new inlet/outletTemp in the right order
                 # inletTSink = [sinktemp1, sinktemp2, ...]
-                pass
+                inletTSink = []
+                outletTSink = []
+                HeatFlowPercentSink = []
+                for elem in self.hxPinchCon.sinkstreams:
+                    inletTSink.append(elem.inletTemp)
+                    HeatFlowPercentSink.append(elem.percentHeatFlow)
+                    outletTSink.append(elem.outletTemp)
             elif len(self.hxPinchCon.sinkstreams)==1:
                 tcsin = round(self.getNonZeroAverage(self.Tcsin, self.QHX1cs),2)
                 tcsout = round(self.getNonZeroAverage(self.Tcsout, self.QHX1cs),2)
@@ -456,7 +462,14 @@ class HXSimulation():
                 HeatFlowPercentSink = []
                 
             if len(self.hxPinchCon.sourcestreams)>1:
-                pass
+                outletTSource = []
+                HeatFlowPercentSource = []
+                inletTSource = []
+                for elem in self.hxPinchCon.sourcestreams:
+                    outletTSource.append(elem.outletTemp)
+                    HeatFlowPercentSource.append(elem.percentHeatFlow)
+                    inletTSource.append(elem.inletTemp)
+                    
             elif len(self.hxPinchCon.sourcestreams)==1:
                 thsin = round(self.getNonZeroAverage(self.Thsin, self.QHX1hs),2)
                 thsout = round(self.getNonZeroAverage(self.Thsout, self.QHX1hs),2)
@@ -475,11 +488,11 @@ class HXSimulation():
             Thsin = avg(self.Thsin)
             Thsout = avg(self.Thsout)
 
-
+            self.startPostProcess()
             Status.int.hrdata.storeHXData(self.hxPinchCon, self.QHX1cs, self.UA, max(self.Tloghx), Tcsin, Tcsout, 
                                           Thsin, Thsout, inletTSink, outletTSink, HeatFlowPercentSink, inletTSource,
                                           outletTSource, HeatFlowPercentSource, round(self.StorageSize,2))
-            self.startPostProcess()
+            
         
 
         elif (self.Thsout == None and self.Tcsout == None) or (self.bhxcs != None and self.bhxhs != None):
@@ -961,16 +974,16 @@ class HXSimulation():
 
     def __checkStartValues(self):
 #        if self.Q == None and self.Energy != None:
-        if self.Energy != None:
-#            print self.hxPinchCon.combinedSource.stream.OperatingHours
-            minOphs = self.hxPinchCon.combinedSource.stream.OperatingHours
-            minOpcs = self.hxPinchCon.combinedSink.stream.OperatingHours
-            if minOphs > minOpcs and minOpcs != 0:
-                self.Q = self.Energy/minOpcs
-            elif minOphs != 0:
-                self.Q = self.Energy/minOphs
-            else:
-                self.Q = 0
+#        if self.Energy != None:
+##            print self.hxPinchCon.combinedSource.stream.OperatingHours
+#            minOphs = self.hxPinchCon.combinedSource.stream.OperatingHours
+#            minOpcs = self.hxPinchCon.combinedSink.stream.OperatingHours
+#            if minOphs > minOpcs and minOpcs != 0:
+#                self.Q = self.Energy/minOpcs
+#            elif minOphs != 0:
+#                self.Q = self.Energy/minOphs
+#            else:
+#                self.Q = 0
 
         mhsAvg = self.hxPinchCon.combinedSource.stream.MassFlowAvg
         mcsAvg = self.hxPinchCon.combinedSink.stream.MassFlowAvg
