@@ -81,6 +81,8 @@ class CurveCalculation():
         self.CCC = self.setColdCurves(self.ColdIntervals)
         self.HCC = self.setHotCurves(self.HotIntervals)
         self.GCC = Curve("HCC")
+        
+        
         if Status.int.hrdata == None:
             Status.int.hrdata = HRData(Status.PId,Status.ANo)
         
@@ -245,6 +247,72 @@ class CurveCalculation():
                 break
         return index
     
+    def calculateGCC(self, x1, y1, x2, y2):
+        x_gcc = []
+        y_gcc = []
+        while len(y1) > 0 and len(y2)>0:
+            if y1[0] < y2[0]:
+                index = self.findCorrespondingLineIndexForX(y2[0], y1) 
+                
+                if index == -1:
+                    del x2[0], y2[0]
+                    continue
+                ax = x1[index]
+                ay = y1[index]
+                bx = x1[index+1]
+                by = y1[index+1]
+                bax = bx - ax
+                bay = by - ay
+    
+                if bay == 0:
+                    x_gcc.append(abs(ax-x2[0]))
+                    y_gcc.append(y2[0])
+                    del x2[0], y2[0]
+                    continue
+                
+                y1n = abs(y2[0]-ay)
+                x1n = (bax*y1n)/bay
+                x_gcc.append(abs(x1[index]+x1n-x2[0]))
+                y_gcc.append(y2[0])
+    
+                del x2[0], y2[0]
+                    
+            elif y1[0] > y2[0]:
+                index = self.findCorrespondingLineIndexForX(y1[0], y2)
+                if index == -1:
+                    del x1[0], y1[0]
+                    continue
+                ax = x2[index]
+                ay = y2[index]
+                bx = x2[index+1]
+                by = y2[index+1]
+                bax = bx - ax
+                bay = by - ay
+    
+                if bay == 0:
+                    x_gcc.append(abs(ax-x1[0]))
+                    y_gcc.append(y1[0])
+                    del x1[0], y1[0]
+                    continue
+                
+                y1n = abs(y1[0]-ay)
+                x1n = (bax*y1n)/bay
+                x_gcc.append(abs(x2[index]+x1n-x1[0]))
+                y_gcc.append(y1[0])
+    
+                del x1[0], y1[0]            
+                
+            elif y1[0] == y2[0]:
+                x_gcc.append(abs(x1[0]-x2[0]))
+                y_gcc.append(y1[0])
+    
+                del x1[0], x2[0], y1[0], y2[0]
+            print x_gcc
+            print y_gcc
+    
+        return x_gcc, y_gcc 
+    
+    
     def shiftTemperatures(self, x_hcc, y_hcc, x_ccc, y_ccc, dT):
         self.shiftCurve(x_hcc, y_hcc, 0, dT/2)
         self.shiftCurve(x_ccc, y_ccc, 0, -dT/2)
@@ -260,6 +328,9 @@ class CurveCalculation():
         self.pinchupper = self.pinch_temperature + dT/2
         self.pinchlower = self.pinch_temperature - dT/2
         self.shiftTemperatures(xh, yh, xc, yc, dT)
+        
+        self.GCC.X, self.GCC.Y = self.calculateGCC(xh[:], yh[:], xc[:], yc[:])
+        
     
     
     def calculate(self):
