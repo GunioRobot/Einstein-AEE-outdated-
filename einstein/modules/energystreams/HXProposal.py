@@ -57,11 +57,11 @@ class HXProposal():
         self.streams_below_pinch_hot  = self.sortStreamWithMCP(self.streams_below_pinch_hot)
         
     def sortStreamWithMCP(self, streamlist):
-        return sorted(streamlist, key=lambda stream: stream.MassFlowAvg*stream.SpecHeatCap)
+        return sorted(streamlist, key=lambda stream: stream.MassFlowAvg*stream.SpecHeatCap*stream.percent/100)
         
     
-    
-        self.matchStreams(self.streams_above_pinch_cold, self.streams_above_pinch_hot, self.match_above_cold, self.match_above_hot)
+#        self.matchStreams(self.streams_above_pinch_cold, self.streams_above_pinch_hot, self.match_above_cold, self.match_above_hot)
+
     def matchStreamsAbovePinch(self):
         """
         match Streams
@@ -75,17 +75,19 @@ class HXProposal():
             run +=1
             # Select Hot Stream with maximal m*cp
             hs = self.streams_above_pinch_hot[-1]
-            mcp_hot = hs.MassFlowAvg * hs.SpecHeatCap
+            mcp_hot = hs.MassFlowAvg * hs.SpecHeatCap * hs.percent/100
             # Find cold stream with closest m*cp value
             index = -1
             diff = 1e10 
             for i in xrange(len(self.streams_above_pinch_cold)):
-                mcp_cold = self.streams_above_pinch_cold[i].MassFlowAvg * self.streams_above_pinch_cold[i].SpecHeatCap 
+                stream = self.streams_above_pinch_cold[i]
+                mcp_cold = stream.MassFlowAvg * stream.SpecHeatCap * stream.percent/100
                 if abs(mcp_hot - mcp_cold) < diff:
                     diff = abs(mcp_hot-mcp_cold)
                     index = i
         
-            mcp_cold = self.streams_above_pinch_cold[index].MassFlowAvg * self.streams_above_pinch_cold[index].SpecHeatCap 
+            stream = self.streams_above_pinch_cold[index]
+            mcp_cold = stream.MassFlowAvg * stream.SpecHeatCap * stream.percent/100 
             
             # Check: mcp_hot < mcp_cold
             if mcp_hot <= mcp_cold:
@@ -95,15 +97,16 @@ class HXProposal():
                 del self.streams_above_pinch_cold[i]
                 del self.streams_above_pinch_hot[-1]
             else:
+                hs1 = self.streams_above_pinch_hot[-1]
                 hs2 = Stream()
                 hs2.copyStream(self.streams_above_pinch_hot[-1])
                 cs1 = self.streams_above_pinch_cold[index]
-                self.streams_above_pinch_hot[-1].MassFlowAvg = cs1.MassFlowAvg \
-                    * cs1.SpecHeatCap / self.streams_above_pinch_hot[-1].SpecHeatCap  
                 
-                hs1 = self.streams_above_pinch_hot[-1]
-                hs2.MassFlowAvg -= hs1.MassFlowAvg
-                hs2.SpecHeatCap -= hs1.SpecHeatCap
+                percent = hs1.percent
+                self.streams_above_pinch_hot[-1].percent = ((percent/100) * (hs1.MassFlowAvg * hs1.SpecHeatCap\
+                                                                              / (cs1.MassFlowAvg*cs1.SpecHeatCap)))*100
+                hs2.percent = percent - hs1.percent
+                
                 self.streams_above_pinch_hot.append(hs2)
                 self.sortStreamWithMCP(self.streams_above_pinch_hot)
         
@@ -138,22 +141,24 @@ class HXProposal():
                 del self.streams_below_pinch_cold[i]
                 del self.streams_below_pinch_hot[-1]
             else:
+                cs1 = self.streams_below_pinch_cold[index]
                 cs2 = Stream()
                 cs2.copyStream(self.streams_below_pinch_cold[index])
                 hs1 = self.streams_below_pinch_hot[-1]
                 
-                self.streams_below_pinch_cold[index].MassFlowAvg = hs1.MassFlowAvg \
-                    * hs1.SpecHeatCap / self.streams_below_pinch_cold[index].SpecHeatCap  
-                
-                cs1 = self.streams_below_pinch_cold[index]
-                
-                #cs2.MassFlowAvg -= cs1.MassFlowAvg
-                #cs2.SpecHeatCap -= cs1.SpecHeatCap
-                cs2.MassFlowAvg = (cs2.MassFlowAvg*cs2.SpecHeatCap - cs1.MassFlowAvg*cs1.SpecHeatCap)/ cs2.SpecHeatCap
-                
+                percent = cs1.percent
+                if (hs1.MassFlowAvg*hs1.SpecHeatCap) == 0:
+                    del self.streams_below_pinch_hot[-1]
+                    continue
+                else:
+                    self.streams_below_pinch_cold[index].percent = ((percent/100) *(cs1.MassFlowAvg * cs1.SpecHeatCap\
+                                                                                / (hs1.MassFlowAvg*hs1.SpecHeatCap)))*100
+                    cs2.percent = percent - cs1.percent
+
                 self.streams_below_pinch_cold.append(cs2)
                 self.sortStreamWithMCP(self.streams_below_pinch_cold)
-                    
+                
+
     def convertMatchesToHX(self):
         
         for i in xrange(len(self.match_above_cold)):
@@ -161,8 +166,8 @@ class HXProposal():
             hxpinch = HXPinchConnection(HXID, "HX_AbovePinch_" +  str(i))
             hconn = pinchTemp()
             cconn = pinchTemp()
-            hconn.percentHeatFlow = 100
-            cconn.percentHeatFlow = 100
+            hconn.percentHeatFlow = self.match_above_hot[i].percent
+            cconn.percentHeatFlow = self.match_above_cold[i].percent
             hconn.inletTemp = self.match_above_hot[i].StartTemp.getAvg()
             hconn.outletTemp = self.match_above_cold[i].EndTemp.getAvg()
 
@@ -188,8 +193,8 @@ class HXProposal():
             hxpinch = HXPinchConnection(HXID, "HX_BelowPinch_" +  str(i))
             hconn = pinchTemp()
             cconn = pinchTemp()
-            hconn.percentHeatFlow = 100
-            cconn.percentHeatFlow = 100
+            hconn.percentHeatFlow = self.match_below_hot[i].percent
+            cconn.percentHeatFlow = self.match_below_cold[i].percent
             hconn.inletTemp = self.match_below_hot[i].StartTemp.getAvg()
             hconn.outletTemp = self.match_below_cold[i].EndTemp.getAvg()
 
@@ -323,22 +328,26 @@ class HXProposal():
                         bp = Stream(StartTemp=stream.StartTemp.getAvg(), EndTemp=stream.EndTemp.getAvg(), 
                                     name=stream.name)
                         bp.copyStreamAttributes(stream)
+                        bp.percent = 100
                         self.streams_below_pinch_cold.append(bp)
                     elif stream.StartTemp.getAvg() > self.pinch_temperature_lower:
                         print "Call Cold Above", str(stream.StartTemp.getAvg()), str(stream.EndTemp.getAvg())
                         ap = Stream(StartTemp=stream.StartTemp.getAvg(), EndTemp=stream.EndTemp.getAvg(), 
                                     name=stream.name)
                         ap.copyStreamAttributes(stream)
+                        ap.percent = 100
                         self.streams_above_pinch_cold.append(ap)
                     else:
                         print "Call Cold Both", str(stream.StartTemp.getAvg()), str(stream.EndTemp.getAvg())
                         bp = Stream(StartTemp=stream.StartTemp.getAvg(), EndTemp=self.pinch_temperature_lower, 
                                     name="Splitted Sink Stream Below Pinch")
                         bp.copyStreamAttributes(stream)
+                        bp.percent = 100
                         self.streams_below_pinch_cold.append(bp)
                         ap = Stream(StartTemp=self.pinch_temperature_lower, EndTemp=stream.EndTemp.getAvg(), 
                                     name="Splitted Sink Stream Above Pinch")
                         ap.copyStreamAttributes(stream)
+                        ap.percent = 100
                         self.streams_above_pinch_cold.append(ap)
                     
                     
@@ -347,21 +356,25 @@ class HXProposal():
                         print "Call Hot Above", str(stream.StartTemp.getAvg()), str(stream.EndTemp.getAvg())
                         ap = Stream(StartTemp=stream.StartTemp.getAvg(), EndTemp = stream.EndTemp.getAvg(), name=stream.name)
                         ap.copyStreamAttributes(stream)
+                        ap.percent = 100
                         self.streams_above_pinch_hot.append(ap)
                     elif stream.StartTemp.getAvg() < self.pinch_temperature_upper:
                         print "Call Hot Below", str(stream.StartTemp.getAvg()), str(stream.EndTemp.getAvg())
                         bp = Stream(StartTemp=stream.StartTemp.getAvg(), EndTemp=stream.EndTemp.getAvg(), name=stream.name)
                         bp.copyStreamAttributes(stream)
+                        bp.percent = 100
                         self.streams_below_pinch_hot.append(bp)
                     else:    
                         print "Call Hot Both", str(stream.StartTemp.getAvg()), str(stream.EndTemp.getAvg())
                         bp = Stream(StartTemp=self.pinch_temperature_upper, EndTemp=stream.EndTemp.getAvg(), 
                                     name="Splitted Souce Stream Below Pinch")
                         bp.copyStreamAttributes(stream)
+                        bp.percent = 100
                         self.streams_below_pinch_hot.append(bp)
                         ap = Stream(StartTemp=stream.StartTemp.getAvg(), EndTemp=self.pinch_temperature_upper, 
                                     name="Splitted Source Stream Above Pinch")
                         ap.copyStreamAttributes(stream)
+                        ap.percent = 100
                         self.streams_above_pinch_hot.append(ap)
                 
         else:

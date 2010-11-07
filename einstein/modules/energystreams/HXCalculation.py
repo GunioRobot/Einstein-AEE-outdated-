@@ -396,7 +396,6 @@ class HXSimulation():
     def __doBasicCalculation(self):
         if (self.Thsout != None and self.Tcsout != None) or (self.bhxcs == None and self.bhxhs == None):
             
-            
             print "CheckThsoutVector"
             self.checkThsoutVector()
             self.printBasicValues()
