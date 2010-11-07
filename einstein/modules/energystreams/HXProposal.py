@@ -103,6 +103,10 @@ class HXProposal():
                 cs1 = self.streams_above_pinch_cold[index]
                 
                 percent = hs1.percent
+                if (cs1.MassFlowAvg*cs1.SpecHeatCap) == 0:
+                    del self.streams_above_pinch_cold[index]
+                    continue
+
                 self.streams_above_pinch_hot[-1].percent = ((percent/100) * (hs1.MassFlowAvg * hs1.SpecHeatCap\
                                                                               / (cs1.MassFlowAvg*cs1.SpecHeatCap)))*100
                 hs2.percent = percent - hs1.percent
@@ -150,10 +154,10 @@ class HXProposal():
                 if (hs1.MassFlowAvg*hs1.SpecHeatCap) == 0:
                     del self.streams_below_pinch_hot[-1]
                     continue
-                else:
-                    self.streams_below_pinch_cold[index].percent = ((percent/100) *(cs1.MassFlowAvg * cs1.SpecHeatCap\
-                                                                                / (hs1.MassFlowAvg*hs1.SpecHeatCap)))*100
-                    cs2.percent = percent - cs1.percent
+                
+                self.streams_below_pinch_cold[index].percent = ((percent/100) *(cs1.MassFlowAvg * cs1.SpecHeatCap\
+                                                                            / (hs1.MassFlowAvg*hs1.SpecHeatCap)))*100
+                cs2.percent = percent - cs1.percent
 
                 self.streams_below_pinch_cold.append(cs2)
                 self.sortStreamWithMCP(self.streams_below_pinch_cold)
