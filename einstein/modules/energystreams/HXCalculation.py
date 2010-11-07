@@ -114,12 +114,9 @@ class HXCombination():
             comb.stream.name = "CombinedStream"
             self.loadVector(sstream)
             comb.stream.EnthalpyVector = self.combineEnthalpy(sstream)
-            print "--------------------AFTER ENTHALPY----------------------"
             for el in sstream:
                 el.stream.printStream()
-            print "Comb:"
-            comb.stream.printStream()
-            print "--------------------END AFTER ENTHALPY-----------------------------"
+
             comb.stream.MassFlowVector = self.combineMassFlow(sstream)
             comb.stream.SpecHeatCap = self.combineSpecificHeatCap(sstream)
 

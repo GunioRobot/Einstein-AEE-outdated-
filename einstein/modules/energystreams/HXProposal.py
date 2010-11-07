@@ -66,35 +66,70 @@ class HXProposal():
         """
         match Streams
         """
+        print "MATCH STREAMS:"
         # ABOVE PINCH
         MAXRUN = len(self.streams_above_pinch_hot)*2
         run = 0
+        print "Above Pinch cold_8"
+        for elem in self.streams_above_pinch_cold:
+            print elem
+        print "Above Pinch Hot_8"
+        for elem in self.streams_above_pinch_hot:
+            print elem    
         while len(self.streams_above_pinch_cold) > 0 and len(self.streams_above_pinch_hot) > 0:
             if run >= MAXRUN:
                 break
             run +=1
+            
+            print "Above Pinch cold_9"
+            for elem in self.streams_above_pinch_cold:
+                print elem
+            print "Above Pinch Hot_9"
+            for elem in self.streams_above_pinch_hot:
+                print elem    
             # Select Hot Stream with maximal m*cp
             hs = self.streams_above_pinch_hot[-1]
             mcp_hot = hs.MassFlowAvg * hs.SpecHeatCap * hs.percent/100
             # Find cold stream with closest m*cp value
             index = -1
             diff = 1e10 
+            print "Above Pinch cold_9.5"
+            for elem in self.streams_above_pinch_cold:
+                print elem
+            print "Above Pinch Hot_9.5"
+            for elem in self.streams_above_pinch_hot:
+                print elem    
+            
             for i in xrange(len(self.streams_above_pinch_cold)):
                 stream = self.streams_above_pinch_cold[i]
                 mcp_cold = stream.MassFlowAvg * stream.SpecHeatCap * stream.percent/100
                 if abs(mcp_hot - mcp_cold) < diff:
                     diff = abs(mcp_hot-mcp_cold)
                     index = i
-        
+
+            print "Above Pinch cold_10"
+            for elem in self.streams_above_pinch_cold:
+                print elem        
+            print "Above Pinch Hot_10"
+            for elem in self.streams_above_pinch_hot:
+                print elem    
             stream = self.streams_above_pinch_cold[index]
             mcp_cold = stream.MassFlowAvg * stream.SpecHeatCap * stream.percent/100 
             
+            print "Above Pinch cold_11"
+            for elem in self.streams_above_pinch_cold:
+                print elem
+            print "Above Pinch Hot_11"
+            for elem in self.streams_above_pinch_hot:
+                print elem    
             # Check: mcp_hot < mcp_cold
+            print mcp_hot, mcp_cold
+            
             if mcp_hot <= mcp_cold:
                 # match
                 self.match_above_cold.append(self.streams_above_pinch_cold[index])
                 self.match_above_hot.append(self.streams_above_pinch_hot[-1])
-                del self.streams_above_pinch_cold[i]
+                del self.streams_above_pinch_cold[index]
                 del self.streams_above_pinch_hot[-1]
             else:
                 hs1 = self.streams_above_pinch_hot[-1]
@@ -103,14 +138,19 @@ class HXProposal():
                 cs1 = self.streams_above_pinch_cold[index]
                 
                 percent = hs1.percent
-                if (cs1.MassFlowAvg*cs1.SpecHeatCap) == 0:
+                if (cs1.MassFlowAvg*cs1.SpecHeatCap* cs1.percent) == 0:
                     del self.streams_above_pinch_cold[index]
+                    print "Call: delete Stream before split"
                     continue
-
-                self.streams_above_pinch_hot[-1].percent = ((percent/100) * (hs1.MassFlowAvg * hs1.SpecHeatCap\
-                                                                              / (cs1.MassFlowAvg*cs1.SpecHeatCap)))*100
+                print self.streams_above_pinch_hot[-1]
+                print hs2
+                print cs1
+                self.streams_above_pinch_hot[-1].percent = ((percent/100) * (cs1.MassFlowAvg * cs1.SpecHeatCap * cs1.percent/100\
+                                                                          / (hs1.MassFlowAvg * hs1.SpecHeatCap * hs1.percent/100)))*100
                 hs2.percent = percent - hs1.percent
                 
+                print self.streams_above_pinch_hot[-1]
+                print hs2
                 self.streams_above_pinch_hot.append(hs2)
                 self.sortStreamWithMCP(self.streams_above_pinch_hot)
         
@@ -142,7 +182,7 @@ class HXProposal():
                 # match
                 self.match_below_cold.append(self.streams_below_pinch_cold[index])
                 self.match_below_hot.append(self.streams_below_pinch_hot[-1])
-                del self.streams_below_pinch_cold[i]
+                del self.streams_below_pinch_cold[index]
                 del self.streams_below_pinch_hot[-1]
             else:
                 cs1 = self.streams_below_pinch_cold[index]
@@ -155,8 +195,8 @@ class HXProposal():
                     del self.streams_below_pinch_hot[-1]
                     continue
                 
-                self.streams_below_pinch_cold[index].percent = ((percent/100) *(cs1.MassFlowAvg * cs1.SpecHeatCap\
-                                                                            / (hs1.MassFlowAvg*hs1.SpecHeatCap)))*100
+                self.streams_below_pinch_cold[index].percent = ((percent/100) *(cs1.MassFlowAvg * cs1.SpecHeatCap * cs1.percent/100\
+                                                                              /(hs1.MassFlowAvg * hs1.SpecHeatCap * hs1.percent/100)))*100
                 cs2.percent = percent - cs1.percent
 
                 self.streams_below_pinch_cold.append(cs2)

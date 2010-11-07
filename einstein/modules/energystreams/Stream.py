@@ -71,7 +71,7 @@ class Stream():
     CalculationMethod = None
     StreamOrigin = None
     splitted = False
-    percent = 0
+    percent = -999
         
     def __init__(self, MediumID=None, StartTemp=None, EndTemp=None, HeatCap=None, 
                  HotColdType=None, MassFlowAvg=None, SpecHeatCap=None, SpecEnthalpy=None,
@@ -112,8 +112,9 @@ class Stream():
         self.origin = None
 
     def __repr__(self):
-        return repr((self.name, self.MassFlowAvg, self.SpecHeatCap, self.MassFlowAvg*self.SpecHeatCap, self.percent, self.origin))
-
+        if self.MassFlowAvg != None and self.SpecHeatCap != None:
+            return repr((self.name, self.MassFlowAvg, self.SpecHeatCap, self.MassFlowAvg*self.SpecHeatCap, self.percent, self.origin))
+        return repr((self.name, self.MassFlowAvg, self.SpecHeatCap, self.percent, self.origin))
 
     def copyStreamAttributes(self, stream):
         self.HeatCap=stream.HeatCap
