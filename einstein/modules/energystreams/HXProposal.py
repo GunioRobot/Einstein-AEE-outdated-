@@ -433,7 +433,62 @@ class HXProposal():
                 
         else:
             # Consider Existing HX
-            pass
+            for stream in self.streams:
+                if stream.HotColdType == "Cold" or stream.HotColdType == "Sink":
+                    
+                    if stream.EndTemp.getAvg() < self.pinch_temperature_lower:
+#                        print "Call Cold Below", str(stream.StartTemp.getAvg()), str(stream.EndTemp.getAvg())
+                        bp = Stream(StartTemp=stream.StartTemp.getAvg(), EndTemp=stream.EndTemp.getAvg(), 
+                                    name=stream.name)
+                        bp.copyStreamAttributes(stream)
+                        bp.percent = 100
+                        self.streams_below_pinch_cold.append(bp)
+                    elif stream.StartTemp.getAvg() > self.pinch_temperature_lower:
+#                        print "Call Cold Above", str(stream.StartTemp.getAvg()), str(stream.EndTemp.getAvg())
+                        ap = Stream(StartTemp=stream.StartTemp.getAvg(), EndTemp=stream.EndTemp.getAvg(), 
+                                    name=stream.name)
+                        ap.copyStreamAttributes(stream)
+                        ap.percent = 100
+                        self.streams_above_pinch_cold.append(ap)
+                    else:
+#                        print "Call Cold Both", str(stream.StartTemp.getAvg()), str(stream.EndTemp.getAvg())
+                        bp = Stream(StartTemp=stream.StartTemp.getAvg(), EndTemp=self.pinch_temperature_lower, 
+                                    name="Sink Below Pinch("+stream.name+")")
+                        bp.copyStreamAttributes(stream)
+                        bp.percent = 100
+                        self.streams_below_pinch_cold.append(bp)
+                        ap = Stream(StartTemp=self.pinch_temperature_lower, EndTemp=stream.EndTemp.getAvg(), 
+                                    name="Sink Above Pinch("+stream.name+")")
+                        ap.copyStreamAttributes(stream)
+                        ap.percent = 100
+                        self.streams_above_pinch_cold.append(ap)
+                    
+                    
+                elif stream.HotColdType == "Hot" or stream.HotColdType == "Source":
+                    if stream.EndTemp.getAvg() > self.pinch_temperature_upper:
+#                        print "Call Hot Above", str(stream.StartTemp.getAvg()), str(stream.EndTemp.getAvg())
+                        ap = Stream(StartTemp=stream.StartTemp.getAvg(), EndTemp = stream.EndTemp.getAvg(), name=stream.name)
+                        ap.copyStreamAttributes(stream)
+                        ap.percent = 100
+                        self.streams_above_pinch_hot.append(ap)
+                    elif stream.StartTemp.getAvg() < self.pinch_temperature_upper:
+#                        print "Call Hot Below", str(stream.StartTemp.getAvg()), str(stream.EndTemp.getAvg())
+                        bp = Stream(StartTemp=stream.StartTemp.getAvg(), EndTemp=stream.EndTemp.getAvg(), name=stream.name)
+                        bp.copyStreamAttributes(stream)
+                        bp.percent = 100
+                        self.streams_below_pinch_hot.append(bp)
+                    else:    
+#                        print "Call Hot Both", str(stream.StartTemp.getAvg()), str(stream.EndTemp.getAvg())
+                        bp = Stream(StartTemp=self.pinch_temperature_upper, EndTemp=stream.EndTemp.getAvg(), 
+                                    name="Source Below Pinch("+stream.name+")")
+                        bp.copyStreamAttributes(stream)
+                        bp.percent = 100
+                        self.streams_below_pinch_hot.append(bp)
+                        ap = Stream(StartTemp=stream.StartTemp.getAvg(), EndTemp=self.pinch_temperature_upper, 
+                                    name="Source Above Pinch("+stream.name+")")
+                        ap.copyStreamAttributes(stream)
+                        ap.percent = 100
+                        self.streams_above_pinch_hot.append(ap)
     
     
 if __name__ == "__main__":
