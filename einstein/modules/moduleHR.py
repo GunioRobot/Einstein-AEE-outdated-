@@ -780,7 +780,11 @@ class ModuleHR(object):
 
         self.__storeResults(UPHProc_Tt, QHXProc_Tt, QWHAmb_Tt)
             
-    def doHXPostProcessing(self, QHX_t):
+    def doHXPostProcessing(self, QHXSinkProc, QHXSinkEq, QHXSinkWh, QHXSinkDist,
+                                 QHXSourceProc, QHXSourceEq, QHXSourceWh, QHXSourceDist):
+        QHX_t = QHXSinkProc
+        
+        
         TempDist = Status.processData.createTempDistHX(8, 322, "heating")
         
         UPH_Tt = Status.int.UPHTotal_Tt
@@ -810,7 +814,7 @@ class ModuleHR(object):
                     QWHAmb_Tt[iTw][itw] = min(QWHAmb_Tt[iTw][itw], QWHAmb_Tt[iTw - 1][itw])    #guarantee monotonous curve
 
         
-        print TempDist
+#        print TempDist
         self.__storeResults(UPHProc_Tt, QHX_Tt, QWHAmb_Tt)
 #------------------------------------------------------------------------------
     def __maxHRPotential(self, UPH_Tt, QWH_Tt, timeShift):

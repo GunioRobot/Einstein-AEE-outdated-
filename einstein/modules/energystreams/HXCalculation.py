@@ -181,7 +181,8 @@ class HXCombination():
                             *(elem.inletTemp-elem.stream.EndTemp.getAvg())
     #                        print elem.outletTemp, elem.inletTemp
                     combH[i] += stream.EnthalpyVector[i]*(elem.percentHeatFlow/100)
-
+        
+        print "Combined H: ", str(sum(combH))
         return combH
 
 
@@ -286,8 +287,8 @@ class HXCombination():
     #            combM.append(0)
                 MassFlow = 0
                 for elem in pinchstreams:
-                    #print "MassFlowVector: ", str(elem.stream.MassFlowVector[i])
-                    MassFlow += elem.stream.MassFlowVector[i]*(elem.percentHeatFlow/100)
+                    print "MassFlowVector: ", str(elem.stream.MassFlowVector[i]), str(elem.percentHeatFlow), str(MassFlow)
+                    MassFlow = MassFlow + elem.stream.MassFlowVector[i]*(elem.percentHeatFlow/100)
                 
                 combM[i] = MassFlow 
     
@@ -408,7 +409,8 @@ class HXSimulation():
             print "CheckQHX"
             self.checkQHX()
             self.printBasicValues()
-            
+            print "QHXcs Sum:", str(sum(self.QHX1cs))
+            print "QHXhs Sum:", str(sum(self.QHX1hs))
             self.dThs = self.calculateDThs()
             print "CalculateQStorage"
             self.calculateQStorage()
@@ -419,6 +421,8 @@ class HXSimulation():
             print "adaptTcsout"
             self.adaptTcsout()
             self.printBasicValues()
+            print "QHXcs Sum:", str(sum(self.QHX1cs))
+            print "QHXhs Sum:", str(sum(self.QHX1hs))
             print "calculateThsoutOverHX"
             self.calculateThsoutOverHX()
             self.printBasicValues()
@@ -431,8 +435,11 @@ class HXSimulation():
             print "CheckQ"
             self.checkQ()
 #            print "Q: " + str(self.Q)
-            self.mod.doHXPostProcessing(self.QHX1cs)
+            
             print "Finished Basic Calculation"
+            print "QHXcs Sum:", str(sum(self.QHX1cs))
+            print "QHXhs Sum:", str(sum(self.QHX1hs))
+    
     
             bhxhs = round(self.getNonZeroMax(self.bhxhs, self.QHX1hs),2)
             bhxcs = round(self.getNonZeroMax(self.bhxcs, self.QHX1cs),2)
@@ -525,7 +532,34 @@ class HXSimulation():
                                           Thsin, Thsout, inletTSink, outletTSink, HeatFlowPercentSink, inletTSource,
                                           outletTSource, HeatFlowPercentSource, round(self.StorageSize,2))
             
-        
+            
+            QHXSinkProc, QHXSinkEq, QHXSinkWh, QHXSinkDist = self.getQHX(self.hxPinchCon.sinkstreams, self.Tcsin, self.Tcsout, self.bhxcs)
+            QHXSourceProc, QHXSourceEq, QHXSourceWh, QHXSourceDist = self.getQHX(self.hxPinchCon.sourcestreams, self.Thsin, self.Thsout, self.bhxhs)
+            
+            print "QHXcs Sum:", str(sum(self.QHX1cs))
+            print "QHXhs Sum:", str(sum(self.QHX1hs))
+            print "QHXSinkProc: ", str(QHXSinkProc[0:200])
+            print "QHXSinkProc Sum: ", str(sum(QHXSinkProc))
+            print "QHXSinkEq: ", str(QHXSinkEq[0:200])
+            print "QHXSinkEq Sum: ", str(sum(QHXSinkEq))
+            print "QHXSinkWh: ", str(QHXSinkWh[0:200])
+            print "QHXSinkWh Sum: ", str(sum(QHXSinkWh))
+            print "QHXSinkDist: ", str(QHXSinkDist[0:200])
+            print "QHXSinkDist Sum: ", str(sum(QHXSinkDist))
+            
+            print "QHXSourceProc: ", str(QHXSourceProc[0:200])
+            print "QHXSourceProc Sum: ", str(sum(QHXSourceProc))
+            print "QHXSourceEq: ", str(QHXSourceEq[0:200])
+            print "QHXSourceEq Sum: ", str(sum(QHXSourceEq))
+            print "QHXSourceWh: ", str(QHXSourceWh[0:200])
+            print "QHXSourceWh Sum: ", str(sum(QHXSourceWh))
+            print "QHXSourceDist: ", str(QHXSourceDist[0:200])
+            print "QHXSourceDist Sum: ", str(sum(QHXSourceDist))
+            
+            
+            
+            self.mod.doHXPostProcessing(QHXSinkProc, QHXSinkEq, QHXSinkWh, QHXSinkDist,
+                                        QHXSourceProc, QHXSourceEq, QHXSourceWh, QHXSourceDist)
 
         elif (self.Thsout == None and self.Tcsout == None) or (self.bhxcs != None and self.bhxhs != None):
             self.calculateThsoutOverTcsin()
@@ -538,8 +572,37 @@ class HXSimulation():
             self.calculateQStorage()
 
             #Recalculate:
-
-
+    
+    def getQHX(self, type, Tin, Tout, bhx):
+        QHXProc =[0]*Status.Nt
+        QHXEq = [0]*Status.Nt
+        QHXWh = [0]*Status.Nt
+        QHXDist = [0]*Status.Nt
+        for el in type:
+            if el.stream.Source == STREAMSOURCE[0] or el.stream.Source == STREAMSOURCE[1]:
+                for i in xrange(len(QHXProc)):
+                    """
+                    temperature difference from heat exchanger is taken, this is in line when sink=1 stream
+                    when sink includes several streams, temperatures per stream are recalculated above
+                    temperature difference still remains the same
+                    """
+                    QHXProc[i] += el.stream.MassFlowVector[i]*el.stream.SpecHeatCap*bhx[i]/100*\
+                                    abs(Tin[i]-Tout[i])
+                                    
+            elif el.stream.Source == STREAMSOURCE[2]:
+                for i in xrange(len(QHXEq)):
+                    QHXEq[i] += el.stream.MassFlowVector[i]*el.stream.SpecHeatCap*bhx[i]/100*\
+                                    abs(Tin[i]-Tout[i])
+                    
+            elif el.stream.Source == STREAMSOURCE[3]:
+                for i in xrange(len(QHXWh)):
+                    QHXWh[i] += el.stream.MassFlowVector[i]*el.stream.SpecHeatCap*bhx[i]/100*\
+                                    abs(Tin[i]-Tout[i])
+            elif el.stream.Source == STREAMSOURCE[4]:
+                for i in xrange(len(QHXDist)):
+                    QHXDist[i] += el.stream.MassFlowVector[i]*el.stream.SpecHeatCap*bhx[i]/100*\
+                                    abs(Tin[i]-Tout[i])
+        return QHXProc, QHXEq, QHXWh, QHXDist
 
     def startPostProcess(self):
         # Split Stream results
@@ -762,6 +825,11 @@ class HXSimulation():
                 Tcsin = self.Tcsin[i]
             else: Tcsin = self.Tcsin
 
+#            if (mhs[i]*cphs*self.bhxhs[i]/100) != 0:
+#                self.Thsout[i] = self.Thsin[i] - self.QHX1hs[i]/(mhs[i]*cphs*self.bhxhs[i]/100)
+#            else: 
+#                self.Thsout[i] = self.Thsin[i]
+
             if self.Thsout[i] < self.hxPinchCon.combinedSource.outletTemp[i]:
                 self.Thsout[i] = self.hxPinchCon.combinedSource.outletTemp[i]
                 
@@ -846,7 +914,7 @@ class HXSimulation():
                 Tcsin = self.Tcsin[i]
             else: Tcsin = self.Tcsin
             
-            if self.QHX1hs[i] != 0:
+            if self.QStorage[i] != 0:
                 mlog = (Thsin-self.Tcsout[i])/(self.Thsout[i]-Tcsin)
     #            print "mlog: " + str(mlog)
                 if mlog==1:
@@ -988,6 +1056,7 @@ class HXSimulation():
     def calculateThsoutOverHX(self):
         self.Thsout = []
         mhs = self.hxPinchCon.combinedSource.stream.MassFlowVector
+        mhs1 = self.mhsAfterStorage
         cphs = self.hxPinchCon.combinedSource.stream.SpecHeatCap
 
         for i in xrange(Status.Nt):
@@ -997,10 +1066,16 @@ class HXSimulation():
 
 
             if (mhs[i]*cphs*self.bhxhs[i]/100) != 0:
-                self.Thsout.append(Thsin - self.QHX1cs[i]/(mhs[i]*cphs*self.bhxhs[i]/100))
+                self.Thsout.append(Thsin - self.QHX1hs[i]/(mhs[i]*cphs*self.bhxhs[i]/100))
             else:
                 self.Thsout.append(Thsin)
-
+                
+#            if (mhs1[i]*cphs*self.bhxhs[i]/100) != 0:
+#                self.Thsout.append(Thsin - self.QStorage[i]/(mhs1[i]*cphs))
+#            else:
+#                self.Thsout.append(Thsin) 
+                
+                
 #    def getStartQHXVector(self):
 #        self.QHX1V = []
 
@@ -1186,16 +1261,25 @@ class HXSimulation():
             else:
                 self.QStorage[i] = self.QHX1hs[i] + realStorageOut[i]
 
-# calculate storage size
+        self.mhsAfterStorage = [0]*Status.Nt
+        for i in xrange(Status.Nt):
+            self.mhsAfterStorage[i] = self.QStorage[i]/ self.hxPinchCon.combinedSource.stream.SpecHeatCap*(self.dThs[i])
+        
+
+        # calculate storage size
+        
+        
         storagesize = []
         for i in xrange(Status.Nt):
             storagesize.append(0)
             if (self.hxPinchCon.combinedSource.stream.MassFlowVector[i]*self.hxPinchCon.combinedSource.stream.SpecHeatCap*(self.dThs[i]))!=0:
                 storagesize[i]=self.QStorage[i]/(self.hxPinchCon.combinedSource.stream.MassFlowVector[i]\
                                              *self.hxPinchCon.combinedSource.stream.SpecHeatCap*(self.dThs[i]))
+#            if self.dThs[i] != 0:
+#                self.hxPinchCon.combinedSource.stream.MassFlowVector[i] = self.QStorage[i]/(self.hxPinchCon.combinedSource.stream.SpecHeatCap*(self.dThs[i]))
         self.StorageSize=max(storagesize)
         
-        self.QHX1hs = self.QStorage
+#        self.QHX1hs = self.QStorage
 #        self.StorageSize=50
         
 #    def calculateTcsoutOverHX(self):

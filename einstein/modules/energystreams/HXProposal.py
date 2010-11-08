@@ -19,7 +19,6 @@ class HXProposal():
     match_above_hot = []
     
     consider_existing_hx = False
-    pinch_temperature = -999
     pinch_temperature_lower = -994
     pinch_temperature_upper = -999
     dT = 5
@@ -37,12 +36,23 @@ class HXProposal():
         
     def __getStreams(self):
         try:
+            # All Streams created in StreamGeneration.py
             self.streams = Status.int.StreamGen.getAllStreams()
         except:
             self.streams = []
             
     def start(self):
+        self.streams_below_pinch_cold = []
+        self.streams_below_pinch_hot = []
+        self.streams_above_pinch_cold = []
+        self.streams_above_pinch_hot = []
+        self.match_below_cold = []
+        self.match_below_hot = []
+        self.match_above_cold = []
+        self.match_above_hot = []
         self.__splitAboveBelowPinch()
+        
+        # Sort by M*CP
         self.sortStreams()
         self.printToSplit()
         self.matchStreamsAbovePinch()
@@ -368,28 +378,28 @@ class HXProposal():
                 if stream.HotColdType == "Cold" or stream.HotColdType == "Sink":
                     
                     if stream.EndTemp.getAvg() < self.pinch_temperature_lower:
-                        print "Call Cold Below", str(stream.StartTemp.getAvg()), str(stream.EndTemp.getAvg())
+#                        print "Call Cold Below", str(stream.StartTemp.getAvg()), str(stream.EndTemp.getAvg())
                         bp = Stream(StartTemp=stream.StartTemp.getAvg(), EndTemp=stream.EndTemp.getAvg(), 
                                     name=stream.name)
                         bp.copyStreamAttributes(stream)
                         bp.percent = 100
                         self.streams_below_pinch_cold.append(bp)
                     elif stream.StartTemp.getAvg() > self.pinch_temperature_lower:
-                        print "Call Cold Above", str(stream.StartTemp.getAvg()), str(stream.EndTemp.getAvg())
+#                        print "Call Cold Above", str(stream.StartTemp.getAvg()), str(stream.EndTemp.getAvg())
                         ap = Stream(StartTemp=stream.StartTemp.getAvg(), EndTemp=stream.EndTemp.getAvg(), 
                                     name=stream.name)
                         ap.copyStreamAttributes(stream)
                         ap.percent = 100
                         self.streams_above_pinch_cold.append(ap)
                     else:
-                        print "Call Cold Both", str(stream.StartTemp.getAvg()), str(stream.EndTemp.getAvg())
+#                        print "Call Cold Both", str(stream.StartTemp.getAvg()), str(stream.EndTemp.getAvg())
                         bp = Stream(StartTemp=stream.StartTemp.getAvg(), EndTemp=self.pinch_temperature_lower, 
-                                    name="Splitted Sink Stream Below Pinch")
+                                    name="Sink Below Pinch("+stream.name+")")
                         bp.copyStreamAttributes(stream)
                         bp.percent = 100
                         self.streams_below_pinch_cold.append(bp)
                         ap = Stream(StartTemp=self.pinch_temperature_lower, EndTemp=stream.EndTemp.getAvg(), 
-                                    name="Splitted Sink Stream Above Pinch")
+                                    name="Sink Above Pinch("+stream.name+")")
                         ap.copyStreamAttributes(stream)
                         ap.percent = 100
                         self.streams_above_pinch_cold.append(ap)
@@ -397,26 +407,26 @@ class HXProposal():
                     
                 elif stream.HotColdType == "Hot" or stream.HotColdType == "Source":
                     if stream.EndTemp.getAvg() > self.pinch_temperature_upper:
-                        print "Call Hot Above", str(stream.StartTemp.getAvg()), str(stream.EndTemp.getAvg())
+#                        print "Call Hot Above", str(stream.StartTemp.getAvg()), str(stream.EndTemp.getAvg())
                         ap = Stream(StartTemp=stream.StartTemp.getAvg(), EndTemp = stream.EndTemp.getAvg(), name=stream.name)
                         ap.copyStreamAttributes(stream)
                         ap.percent = 100
                         self.streams_above_pinch_hot.append(ap)
                     elif stream.StartTemp.getAvg() < self.pinch_temperature_upper:
-                        print "Call Hot Below", str(stream.StartTemp.getAvg()), str(stream.EndTemp.getAvg())
+#                        print "Call Hot Below", str(stream.StartTemp.getAvg()), str(stream.EndTemp.getAvg())
                         bp = Stream(StartTemp=stream.StartTemp.getAvg(), EndTemp=stream.EndTemp.getAvg(), name=stream.name)
                         bp.copyStreamAttributes(stream)
                         bp.percent = 100
                         self.streams_below_pinch_hot.append(bp)
                     else:    
-                        print "Call Hot Both", str(stream.StartTemp.getAvg()), str(stream.EndTemp.getAvg())
+#                        print "Call Hot Both", str(stream.StartTemp.getAvg()), str(stream.EndTemp.getAvg())
                         bp = Stream(StartTemp=self.pinch_temperature_upper, EndTemp=stream.EndTemp.getAvg(), 
-                                    name="Splitted Souce Stream Below Pinch")
+                                    name="Source Below Pinch("+stream.name+")")
                         bp.copyStreamAttributes(stream)
                         bp.percent = 100
                         self.streams_below_pinch_hot.append(bp)
                         ap = Stream(StartTemp=stream.StartTemp.getAvg(), EndTemp=self.pinch_temperature_upper, 
-                                    name="Splitted Source Stream Above Pinch")
+                                    name="Source Above Pinch("+stream.name+")")
                         ap.copyStreamAttributes(stream)
                         ap.percent = 100
                         self.streams_above_pinch_hot.append(ap)
