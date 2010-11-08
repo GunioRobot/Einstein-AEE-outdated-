@@ -577,15 +577,21 @@ class PanelHR(wx.Panel):
             print "Row_"+str(r)
             print "InletTemp Source:", str(HXrows[r].combinedSource.inletTemp)
             print "OutletTemp Source:", str(HXrows[r].combinedSource.outletTemp)
+            outletSource = HXrows[r].combinedSource.outletTemp
+            inletSink = HXrows[r].combinedSink.inletTemp
+            if type(outletSource) == type([]):
+                outletSource == round(max(outletSource),2)
+            if type(inletSink) == type([]):
+                inletSink = round(max(inletSink),2)
             self.grid.SetCellValue(r, 4, str(HXrows[r].combinedSource.inletTemp))
-            self.grid.SetCellValue(r, 5, str(HXrows[r].combinedSource.outletTemp))
+            self.grid.SetCellValue(r, 5, str(outletSource))
             name = ""
             for elem in HXrows[r].sinkstreams:
                 name = name + str(elem.stream.name) + ";"
             self.grid.SetCellValue(r, 6, name)
             print "InletTemp Sink:", str(HXrows[r].combinedSink.inletTemp)
             print "OutletTemp Sink:", str(HXrows[r].combinedSink.outletTemp)
-            self.grid.SetCellValue(r, 7, str(HXrows[r].combinedSink.inletTemp))
+            self.grid.SetCellValue(r, 7, str(inletSink))
             self.grid.SetCellValue(r, 8, str(HXrows[r].combinedSink.outletTemp))
             self.grid.SetCellValue(r, 9, "")
             self.grid.SetCellValue(r, 10, "")
