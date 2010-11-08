@@ -871,9 +871,9 @@ class ProcessStreams(StreamUtils, StreamSet):
         ProcessID = self.getProcessNr(stream)
         if val.TCond > val.PTOutFlow:
                 #no superheating stream exists
-            #stream.EnthalpyVector=[0]*Status.Nt
+            stream.EnthalpyVector=[0]*Status.Nt
             #ACHTUNG!!! ZU AENDERN
-            stream.EnthalpyVector = Status.int.UPH_w_t[stream.DBID]
+            #stream.EnthalpyVector = Status.int.UPH_w_t[stream.DBID]
         else:        
             if val.TCond < val.PTFinal:
                 #in this case desuperheating is definitely  the only waste heat stream:

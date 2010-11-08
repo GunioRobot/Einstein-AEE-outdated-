@@ -323,31 +323,32 @@ class ModuleHR(object):
         
         dlg.update(50.0)
         
-        self.__doPostProcessing()
+#        self.__doPostProcessing()
         dlg.update(99.0)
 
-        self.__updatePanel()
+#        self.__updatePanel()
 
+        
 ### HS2008-10-21: this block is necessary in order to update global demand
 # arrays that will be used in the system simulation
-        Status.int.QD_Tt = Status.int.createQ_Tt()   
-        Status.int.QDc_Tt = Status.int.createQ_Tt()   
-        Status.int.QA_Tt = Status.int.createQ_Tt()
-
-        for iT in range(Status.NT + 2):
-            for it in range(Status.Nt):
-                Status.int.QD_Tt[iT][it] = Status.int.USHTotal_Tt[iT][it]
-                Status.int.QDc_Tt[iT][it] = Status.int.USCTotal_Tt[iT][it]
-                Status.int.QA_Tt[iT][it] = Status.int.QWHAmb_Tt[iT][it]
-
-        Status.int.QD_T = Status.int.calcQ_T(Status.int.QD_Tt)
-        Status.int.QDc_T = Status.int.calcQ_T(Status.int.QDc_Tt)
-        Status.int.QA_T = Status.int.calcQ_T(Status.int.QA_Tt)
-
-        logTrack("Aggregate heat demand = %s" % str(Status.int.QD_T))
-        logTrack("Aggregate cooling demand = %s" % str(Status.int.QDc_T))
-
-        Status.int.initCascadeArrays(0) #start
+#        Status.int.QD_Tt = Status.int.createQ_Tt()   
+#        Status.int.QDc_Tt = Status.int.createQ_Tt()   
+#        Status.int.QA_Tt = Status.int.createQ_Tt()
+#
+#        for iT in range(Status.NT + 2):
+#            for it in range(Status.Nt):
+#                Status.int.QD_Tt[iT][it] = Status.int.USHTotal_Tt[iT][it]
+#                Status.int.QDc_Tt[iT][it] = Status.int.USCTotal_Tt[iT][it]
+#                Status.int.QA_Tt[iT][it] = Status.int.QWHAmb_Tt[iT][it]
+#
+#        Status.int.QD_T = Status.int.calcQ_T(Status.int.QD_Tt)
+#        Status.int.QDc_T = Status.int.calcQ_T(Status.int.QDc_Tt)
+#        Status.int.QA_T = Status.int.calcQ_T(Status.int.QA_Tt)
+#
+#        logTrack("Aggregate heat demand = %s" % str(Status.int.QD_T))
+#        logTrack("Aggregate cooling demand = %s" % str(Status.int.QDc_T))
+#
+#        Status.int.initCascadeArrays(0) #start
 
 ### HS2008-10-21: END BLOCK
                       
@@ -413,11 +414,12 @@ class ModuleHR(object):
                                     hxes[0].UA,\
                                     hx
                                     )
-            hxsim.startSimulation()
-            Status.int.hrdata.loadDatabaseData()
-            self.data = Status.int.hrdata
-            self.data.loadDatabaseData() 
-            
+            """ Disabled for Testing """           
+#            hxsim.startSimulation()
+#            Status.int.hrdata.loadDatabaseData()
+#            self.data = Status.int.hrdata
+#            self.data.loadDatabaseData() 
+            """ -- """
         
     def initCurves(self):
         if Status.int.StreamGen == None:

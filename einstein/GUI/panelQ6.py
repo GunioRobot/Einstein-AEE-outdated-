@@ -937,6 +937,8 @@ class PanelQ6(wx.Panel):
 
         if sstream[id].percentHeatFlow == None:
             stype.tbPercentHeatFlow.SetValue('100')
+        elif sstream[id].percentHeatFlow > 100:
+            stype.tbPercentHeatFlow.SetValue('100')
         else: stype.tbPercentHeatFlow.SetValue(str(sstream[id].percentHeatFlow))
 
         if sstream[id].inletHX == None:

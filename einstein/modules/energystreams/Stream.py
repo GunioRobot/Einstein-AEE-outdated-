@@ -71,7 +71,7 @@ class Stream():
     CalculationMethod = None
     StreamOrigin = None
     splitted = False
-    percent = -999
+    percent = None
         
     def __init__(self, MediumID=None, StartTemp=None, EndTemp=None, HeatCap=None, 
                  HotColdType=None, MassFlowAvg=None, SpecHeatCap=None, SpecEnthalpy=None,
@@ -131,6 +131,7 @@ class Stream():
         self.origin = stream.name
         self.EnthalpyNom = stream.EnthalpyNom
         self.HeatTransferCoeff = stream.HeatTransferCoeff
+        self.percent = stream.percent
 
     def copyStream(self, stream):
         self.StartTemp=stream.StartTemp
@@ -149,6 +150,7 @@ class Stream():
         self.origin = stream.name
         self.EnthalpyNom = stream.EnthalpyNom
         self.HeatTransferCoeff = stream.HeatTransferCoeff
+        self.percent = stream.percent
 
 
     def writeToDB(self):

@@ -557,9 +557,14 @@ class HXSimulation():
             print "QHXSourceDist Sum: ", str(sum(QHXSourceDist))
             
             
-            
+            for elem in Status.int.HXPinchConnection: 
+                elem.combinedSink.inletTemp = max(elem.combinedSink.inletTemp)
+                elem.combinedSource.outletTemp = max(elem.combinedSource.outletTemp)
+                
             self.mod.doHXPostProcessing(QHXSinkProc, QHXSinkEq, QHXSinkWh, QHXSinkDist,
                                         QHXSourceProc, QHXSourceEq, QHXSourceWh, QHXSourceDist)
+
+
 
         elif (self.Thsout == None and self.Tcsout == None) or (self.bhxcs != None and self.bhxhs != None):
             self.calculateThsoutOverTcsin()

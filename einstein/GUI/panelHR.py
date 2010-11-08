@@ -574,12 +574,17 @@ class PanelHR(wx.Panel):
             for elem in HXrows[r].sourcestreams:
                 name = name + str(elem.stream.name) + ";"
             self.grid.SetCellValue(r, 3, name)
+            print "Row_"+str(r)
+            print "InletTemp Source:", str(HXrows[r].combinedSource.inletTemp)
+            print "OutletTemp Source:", str(HXrows[r].combinedSource.outletTemp)
             self.grid.SetCellValue(r, 4, str(HXrows[r].combinedSource.inletTemp))
             self.grid.SetCellValue(r, 5, str(HXrows[r].combinedSource.outletTemp))
             name = ""
             for elem in HXrows[r].sinkstreams:
                 name = name + str(elem.stream.name) + ";"
             self.grid.SetCellValue(r, 6, name)
+            print "InletTemp Sink:", str(HXrows[r].combinedSink.inletTemp)
+            print "OutletTemp Sink:", str(HXrows[r].combinedSink.outletTemp)
             self.grid.SetCellValue(r, 7, str(HXrows[r].combinedSink.inletTemp))
             self.grid.SetCellValue(r, 8, str(HXrows[r].combinedSink.outletTemp))
             self.grid.SetCellValue(r, 9, "")
