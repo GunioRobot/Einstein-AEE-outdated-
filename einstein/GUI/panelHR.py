@@ -579,10 +579,12 @@ class PanelHR(wx.Panel):
             print "OutletTemp Source:", str(HXrows[r].combinedSource.outletTemp)
             outletSource = HXrows[r].combinedSource.outletTemp
             inletSink = HXrows[r].combinedSink.inletTemp
-            if type(outletSource) == type([]):
+            try:
                 outletSource == round(max(outletSource),2)
-            if type(inletSink) == type([]):
                 inletSink = round(max(inletSink),2)
+            except:
+                pass
+            print outletSource, inletSink
             self.grid.SetCellValue(r, 4, str(HXrows[r].combinedSource.inletTemp))
             self.grid.SetCellValue(r, 5, str(outletSource))
             name = ""
