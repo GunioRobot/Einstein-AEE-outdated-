@@ -326,7 +326,7 @@ class ModuleHR(object):
 #        self.__doPostProcessing()
         dlg.update(99.0)
 
-#        self.__updatePanel()
+        self.__updatePanel()
 
         
 ### HS2008-10-21: this block is necessary in order to update global demand
@@ -415,10 +415,10 @@ class ModuleHR(object):
                                     hx
                                     )
             """ Disabled for Testing """           
-#            hxsim.startSimulation()
-#            Status.int.hrdata.loadDatabaseData()
-#            self.data = Status.int.hrdata
-#            self.data.loadDatabaseData() 
+            hxsim.startSimulation()
+            Status.int.hrdata.loadDatabaseData()
+            self.data = Status.int.hrdata
+            self.data.loadDatabaseData() 
             """ -- """
         
     def initCurves(self):
