@@ -580,8 +580,8 @@ class PanelHR(wx.Panel):
             outletSource = HXrows[r].combinedSource.outletTemp
             inletSink = HXrows[r].combinedSink.inletTemp
             try:
-                outletSource = round(max(outletSource),2)
-                inletSink = round(max(inletSink),2)
+                outletSource = round(sum(outletSource)/len(outletSource),2)
+                inletSink = round(sum(inletSink)/len(inletSink),2)
             except:
                 pass
             print outletSource, inletSink

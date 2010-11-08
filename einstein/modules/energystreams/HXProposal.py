@@ -432,13 +432,15 @@ class HXProposal():
         return
 
     def __splitAboveBelowPinch(self):
-        
+        if self.consider_existing_hx == False:
+            Status.int.HXPinchConnection = []
+            for elem in Status.int.HXPinchConnection: 
+                Status.prj.deleteHX(elem.HXID)
             
         for i, stream in enumerate(self.streams):
             if self.consider_existing_hx == True:
                 self.matchStreamToHX(stream, i)    
-            else:
-                Status.int.HXPinchConnection = []
+            
             
             if stream.HotColdType == "Cold" or stream.HotColdType == "Sink":
                 
