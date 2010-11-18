@@ -423,8 +423,8 @@ class HXProposal():
                         upperStream.EndTemp = stream.EndTemp
                         self.streams.append(upperStream)
             
-                    stream.StartTemp = Temperature(el.inletTemp)
-                    stream.EndTemp = Temperature(el.outletTemp, None)
+                    stream.StartTemp = Temperature(el.outletTemp, None)
+                    stream.EndTemp = Temperature(el.inletTemp, None)
                     stream.name += "_middle" 
                     if stream.percent == 0:
                         del self.streams[index]

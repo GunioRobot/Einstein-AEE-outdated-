@@ -36,6 +36,9 @@ class HXCombination():
             for el in elem.sourcestreams:
                 el.stream.printStream()
             print "--------------------END SOURCESTREAMS---------------------------"
+            """
+            SINKS
+            """
             elem.combinedSink = pinchTemp()
             self.combineStream(elem.combinedSink, elem.sinkstreams)
             pT = elem.combinedSink
@@ -61,7 +64,9 @@ class HXCombination():
 #                print "OutletTemp: " + str(pT.outletTemp)
 
             elem.combinedSink.stream.printStream()
-
+            """
+            SOURCES
+            """
             elem.combinedSource = pinchTemp()
             self.combineStream(elem.combinedSource, elem.sourcestreams)
             pT = elem.combinedSource
@@ -171,6 +176,9 @@ class HXCombination():
                         if elem.outletTemp != None and elem.outletTemp <= elem.stream.EndTemp.getAvg():
                             stream.EnthalpyVector[i] = (stream.EnthalpyVector[i]/(elem.stream.EndTemp.getAvg()-elem.stream.StartTemp.getAvg()))\
                             *(elem.outletTemp-elem.stream.StartTemp.getAvg())
+                        if elem.outletTemp != None and elem.inletTemp >= elem.stream.StartTemp.getAvg():
+                            stream.EnthalpyVector[i] = (stream.EnthalpyVector[i]/(elem.stream.EndTemp.getAvg()-elem.stream.StartTemp.getAvg()))\
+                            *(elem.stream.EndTemp.getAvg()-elem.inletTemp)
                     elif elem.stream.HotColdType == "Source" or elem.stream.HotColdType == "Hot":
                         if elem.stream.MassFlowVector[i]!=0:
                             elem.outletTemp = elem.inletTemp-stream.EnthalpyVector[i]/(elem.stream.MassFlowVector[i]*elem.stream.SpecHeatCap)
@@ -179,6 +187,9 @@ class HXCombination():
                         if elem.outletTemp != None and elem.outletTemp < elem.stream.EndTemp.getAvg() and elem.stream.StartTemp.getAvg()!=elem.stream.EndTemp.getAvg():
                             stream.EnthalpyVector[i] = (stream.EnthalpyVector[i]/(elem.stream.StartTemp.getAvg()-elem.stream.EndTemp.getAvg()))\
                             *(elem.inletTemp-elem.stream.EndTemp.getAvg())
+                        if elem.outletTemp != None and elem.outletTemp < elem.stream.EndTemp.getAvg() and elem.stream.StartTemp.getAvg()!=elem.stream.EndTemp.getAvg():
+                            stream.EnthalpyVector[i] = (stream.EnthalpyVector[i]/(elem.stream.StartTemp.getAvg()-elem.stream.EndTemp.getAvg()))\
+                            *(elem.stream.StartTemp.getAvg()-elem.outletTemp)
     #                        print elem.outletTemp, elem.inletTemp
                     combH[i] += stream.EnthalpyVector[i]*(elem.percentHeatFlow/100)
         
@@ -187,12 +198,19 @@ class HXCombination():
 
 
     def combineTempIn(self, pinchstreams):
+        """
+        for Sources
+        """
         TIn = 0
         div = 0
         for elem in pinchstreams:
 
             if elem.InTempActive:
                 inTemp = elem.inletTemp
+                #check if temperature is in possible range
+                if inTemp > elem.stream.StartTemp.getAvg():
+                    inTemp=elem.stream.StartTemp.getAvg()
+            
             else:
                 inTemp = 0
                 """
@@ -239,6 +257,9 @@ class HXCombination():
 #        pass
 
     def combineSinkTempOut(self, pinchstreams):
+        """
+        for SINKS
+        """
         try:
             if pinchstreams[0].OutTempActive:
                 TOut = pinchstreams[0].outletTemp
@@ -254,6 +275,9 @@ class HXCombination():
         for elem in pinchstreams:
             if elem.OutTempActive:
                 outTemp = elem.outletTemp
+                #check if temperature is in possible range
+                if outTemp > elem.stream.EndTemp.getAvg():
+                    outTemp=elem.stream.EndTemp.getAvg()
             else:
                 outTemp = 0
                 """
@@ -459,16 +483,19 @@ class HXSimulation():
                     combinedMassFlowAvg=0
                     combinedMassFlowAvg = round(self.getNonZeroAverage(combined.stream.MassFlowVector, self.QHX1cs),2)
                     
-                    if (combinedMassFlowAvg*combined.stream.SpecHeatCap):
-                        pass
-                    QHXperStream = QHX_total*elem.stream.SpecHeatCap\
+                    if (combinedMassFlowAvg*combined.stream.SpecHeatCap) == 0:
+                        QHXperStream = 0
+                    else:    
+                        QHXperStream = QHX_total*elem.stream.SpecHeatCap\
                                             *elem.stream.MassFlowAvg*(bhxcs/100)/(combinedMassFlowAvg\
                                             *combined.stream.SpecHeatCap)
                     if (elem.stream.MassFlowAvg*elem.stream.SpecHeatCap) == 0:
                         elem.outletTemp = 0
                     else:
-                        elem.outletTemp = elem.inletTemp + \
-                        QHXperStream/(elem.stream.MassFlowAvg*(bhxcs/100)*elem.stream.SpecHeatCap)
+                        if (elem.stream.MassFlowAvg*(bhxcs/100)*elem.stream.SpecHeatCap) != 0:
+                            elem.outletTemp = elem.inletTemp + \
+                                QHXperStream/(elem.stream.MassFlowAvg*(bhxcs/100)*elem.stream.SpecHeatCap)
+                        else: elem.outletTemp = 0
                         outletTSink.append(elem.outletTemp)
                         HeatFlowPercentSink.append(bhxcs)
                     
@@ -481,9 +508,9 @@ class HXSimulation():
                 HeatFlowPercentSink = [round(max(self.bhxcs),2)]
 #                HeatFlowPercentSink = [sum(self.bhxcs)/len(self.bhxcs)]
             else:
-                inletTSink = []
-                outletTSink = []
-                HeatFlowPercentSink = []
+                inletTSink = [0]
+                outletTSink = [0]
+                HeatFlowPercentSink = [0]
                 
             if len(self.hxPinchCon.sourcestreams)>1:
                 outletTSource = []
@@ -498,14 +525,19 @@ class HXSimulation():
                     combinedMassFlowAvg=0
                     combinedMassFlowAvg = round(self.getNonZeroAverage(combined.stream.MassFlowVector, self.QHX1hs),2)
         
-                    QHXperStream = QHX_total*elem.stream.SpecHeatCap\
+                    if (combinedMassFlowAvg*combined.stream.SpecHeatCap) == 0:
+                        QHXperStream = 0
+                    else:    
+                        QHXperStream = QHX_total*elem.stream.SpecHeatCap\
                                             *elem.stream.MassFlowAvg*(bhxhs/100)/(combinedMassFlowAvg\
                                             *combined.stream.SpecHeatCap)
                     if (elem.stream.MassFlowAvg*elem.stream.SpecHeatCap) == 0:
                         elem.outletTemp = 0
                     else:
-                        elem.outletTemp = elem.inletTemp - \
-                        QHXperStream/(elem.stream.MassFlowAvg*(bhxhs/100)*elem.stream.SpecHeatCap)
+                        if (elem.stream.MassFlowAvg*(bhxcs/100)*elem.stream.SpecHeatCap) != 0:
+                            elem.outletTemp = elem.inletTemp - \
+                                QHXperStream/(elem.stream.MassFlowAvg*(bhxhs/100)*elem.stream.SpecHeatCap)
+                        else: elem.outletTemp = 0
                         outletTSource.append(elem.outletTemp)
                         HeatFlowPercentSource.append(bhxhs)
                                             
@@ -518,9 +550,9 @@ class HXSimulation():
                 HeatFlowPercentSource = [round(max(self.bhxhs),2)]
 #                HeatFlowPercentSource = [sum(self.bhxhs)/len(self.bhxhs)]
             else:
-                inletTSource = []
-                outletTSource = []
-                HeatFlowPercentSource = []
+                inletTSource = [0]
+                outletTSource = [0]
+                HeatFlowPercentSource = [0]
             
             Tcsin = avg(self.Tcsin)
             Tcsout = avg(self.Tcsout)
@@ -557,9 +589,9 @@ class HXSimulation():
             print "QHXSourceDist Sum: ", str(sum(QHXSourceDist))
             
             
-            for elem in Status.int.HXPinchConnection: 
-                elem.combinedSink.inletTemp = max(elem.combinedSink.inletTemp)
-                elem.combinedSource.outletTemp = max(elem.combinedSource.outletTemp)
+#            for elem in Status.int.HXPinchConnection: 
+#                elem.combinedSink.inletTemp = max(elem.combinedSink.inletTemp)
+#                elem.combinedSource.outletTemp = max(elem.combinedSource.outletTemp)
                 
             self.mod.doHXPostProcessing(QHXSinkProc, QHXSinkEq, QHXSinkWh, QHXSinkDist,
                                         QHXSourceProc, QHXSourceEq, QHXSourceWh, QHXSourceDist)
@@ -830,13 +862,16 @@ class HXSimulation():
                 Tcsin = self.Tcsin[i]
             else: Tcsin = self.Tcsin
 
+            if type(self.hxPinchCon.combinedSource.outletTemp) == type([]):
+                outletTemp = self.hxPinchCon.combinedSource.outletTemp[i]
+            else: outletTemp = self.hxPinchCon.combinedSource.outletTemp
 #            if (mhs[i]*cphs*self.bhxhs[i]/100) != 0:
 #                self.Thsout[i] = self.Thsin[i] - self.QHX1hs[i]/(mhs[i]*cphs*self.bhxhs[i]/100)
 #            else: 
 #                self.Thsout[i] = self.Thsin[i]
 
-            if self.Thsout[i] < self.hxPinchCon.combinedSource.outletTemp[i]:
-                self.Thsout[i] = self.hxPinchCon.combinedSource.outletTemp[i]
+            if self.Thsout[i] < outletTemp:
+                self.Thsout[i] = outletTemp
                 
                 self.QHX1hs[i] = mhs[i]*self.bhxhs[i]/100*cphs*(self.Tcsout[i]-Tcsin)
                 if (mcs[i]*cpcs*(self.Tcsout[i]-Tcsin))==0:
@@ -1101,7 +1136,7 @@ class HXSimulation():
         mcsAvg = self.hxPinchCon.combinedSink.stream.MassFlowAvg
         cphs = self.hxPinchCon.combinedSource.stream.SpecHeatCap
         cpcs = self.hxPinchCon.combinedSink.stream.SpecHeatCap
-
+        """
         if self.Q != None:
             self.Thsout = []
             try:
@@ -1155,7 +1190,8 @@ class HXSimulation():
 #            print self.Tcsout
 #            self.Thsout = self.calculateThsoutOverHX()
 #            self.Tcsout = self.calculateTcsoutOverHX()
-        elif self.Thsout != None:
+        """
+        if self.Thsout != None:
             pass
         elif self.Tcsout != None:
             pass
