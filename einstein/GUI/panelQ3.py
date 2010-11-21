@@ -159,9 +159,9 @@ class PanelQ3(wx.Panel):
         self.notebook.SetFont(fp.getFont())
 
         # Process schedule
-        self.xrcSchedule = wx.xrc.XmlResource('Schedule.xrc')
+        self.xrcSchedule = wx.xrc.XmlResource(os.path.join(sys.path[0], 'Schedule.xrc'))
         # Input/output streams
-        self.xrcStreams  = wx.xrc.XmlResource('Streams.xrc')
+        self.xrcStreams  = wx.xrc.XmlResource(os.path.join(sys.path[0], 'Streams.xrc'))
         
         self.page0 = wx.Panel(self.notebook)
         self.page1 = self.xrcSchedule.LoadPanel(self.notebook, 'OperationPanel')
