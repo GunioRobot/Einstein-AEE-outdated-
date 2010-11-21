@@ -83,7 +83,7 @@ class StreamSet():
 
     def getStreamType(self, StartTemp, EndTemp):
         """
-	Get Type of Stream
+	    Get Type of Stream
 
         :param StartTemp: Data base value of Start Temperature
         :type  StartTemp: Double
@@ -107,7 +107,7 @@ class StreamSet():
 
     def getHeatCapacity(self, massFlowMax, SpecHeatCap):
         """
-	Calculates Heat Capacity
+	    Calculates Heat Capacity
 
         :param massFlow: Calculated Mass Flow values
         :type  massFlow: List of Double values
@@ -201,12 +201,12 @@ class StreamSet():
         enthalpy_nom = abs(EndTemp-StartTemp)*SpecHeatCap*massFlowNom
         return enthalpy_nom
 
-    def getMassVectorFromEnthalpy():
+    def getMassVectorFromEnthalpy(self):
         pass
 
     def getHeatTransferCoefficient(self, FluidDensity):
         """
-	Get Heat Transfer Coefficient
+	    Get Heat Transfer Coefficient
 
         :param FluidDensity: Fluid Density
         :type  FluidDensity: Double

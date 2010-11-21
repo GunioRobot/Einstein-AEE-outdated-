@@ -1105,7 +1105,7 @@ class DistLineStreams(StreamUtils, StreamSet):
 
     def generateCondensateRecoveryStream(self, stream):
         """
-	Generates Stream for Condensate Recovery
+	    Generates Stream for Condensate Recovery
 
         :returns: nothing
         """
@@ -1521,9 +1521,9 @@ class EquipmentStreams(StreamUtils, StreamSet):
         return stream
 
     def generateFeedWaterStream(self, stream):
-	"""
-	Generates Stream for BoilerFeedWater
-
+    	"""
+    	Generates Stream for BoilerFeedWater
+    
         :returns: Stream
         """
         val = stream.BaseValues
@@ -1697,10 +1697,8 @@ class EquipmentStreams(StreamUtils, StreamSet):
                                          stream.SpecHeatCap, stream.MassFlowAvg)
 
 
-
         stream.EnthalpyVector = self.getEnthalpyVectorComAir(stream)
 
-        
         stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, 
                                                        stream.EndTemp, stream.StartTemp)
 
