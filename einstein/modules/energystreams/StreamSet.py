@@ -125,7 +125,7 @@ class StreamSet():
 
     def getHotCold(self, stream):
         """
-	Query if Medium is hot or cold
+	    Query if Medium is hot or cold
 
         :param stream: stream with calculated Temperature values
         :type  stream: class stream
