@@ -1823,7 +1823,10 @@ class StreamGeneration():
     def deleteStream(self, streams):
         delCount = 0
         for i in xrange(len(streams)):
-            if sum(streams[i-delCount].EnthalpyVector) <= 0:
+            if sum(streams[i-delCount].EnthalpyVector) <= 0 or \
+               streams[i-delCount].EnthalpyVector == None   or \
+               streams[i-delCount].EnthalpyNom == 0:
+                
                 del streams[i-delCount]
                 delCount+=1
 
