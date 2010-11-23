@@ -373,10 +373,22 @@ class HXProposal():
 #                 id=None, name=None, Source=None, BaseValues=None, DBID=None, DBType=None):
 
     def matchStreamToHX(self, stream, index):
+        usedPercentInHX = 0
+        for elem in Status.int.HXPinchConnection: 
+            for el in elem.sinkstreams:
+                if stream.name == el.stream.name:
+                    usedPercentInHX += el.percentHeatFlow
+            for el in elem.sourcestreams:
+                if stream.name == el.stream.name:
+                    usedPercentInHX += el.percentHeatFlow
+        
         for elem in Status.int.HXPinchConnection:
             for el in elem.sinkstreams:
                 if stream.name == el.stream.name:
-                    stream.percent = 100 - el.percentHeatFlow
+                    stream.percent = 100 - usedPercentInHX
+                    # If < 0: Should be tested beforehand
+                    # Can't assign less than 0 percent: Possible Problem with Storage
+                    # Needs to be tested beforehand
                     
                     if stream.StartTemp.getAvg() < el.inletTemp:
                         lowerStream = Stream()
@@ -404,7 +416,7 @@ class HXProposal():
             
             for el in elem.sourcestreams:
                 if stream.name == el.stream.name:
-                    stream.percent = 100 - el.percentHeatFlow
+                    stream.percent = 100 - usedPercentInHX
                     
                     if stream.StartTemp.getAvg < el.inletTemp:
                         lowerStream = Stream()
@@ -440,7 +452,6 @@ class HXProposal():
         for i, stream in enumerate(self.streams):
             if self.consider_existing_hx == True:
                 self.matchStreamToHX(stream, i)    
-            
             
             if stream.HotColdType == "Cold" or stream.HotColdType == "Sink":
                 

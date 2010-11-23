@@ -1,5 +1,3 @@
-# To change this template, choose Tools | Templates
-# and open the template in the editor.
 
 __author__="Andre Rattinger"
 __date__ ="$04.08.2010 11:34:15$"
