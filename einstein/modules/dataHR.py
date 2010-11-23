@@ -187,7 +187,7 @@ class HRData:
             
             if HotColdType == "Sink" or HotColdType == "Cold":
                 inletTemp = inletTSink[0]
-                print outletTSink
+                print "OutletTSink:", str(outletTSink)
                 outletTemp = outletTSink[0]
                 HeatFlowPercent = HeatFlowPercentSink[0]
                 del inletTSink[0]
@@ -195,6 +195,7 @@ class HRData:
                 del HeatFlowPercentSink[0]
             else:
                 inletTemp = inletTSource[0]
+                print "OutletTSource:", str(outletTSource)
                 outletTemp = outletTSource[0]
                 HeatFlowPercent = HeatFlowPercentSource[0]
                 del inletTSource[0]
