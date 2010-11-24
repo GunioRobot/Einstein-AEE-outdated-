@@ -195,7 +195,7 @@ class HXCombination():
                             stream.EnthalpyVector[i] = (stream.EnthalpyVector[i]/(elem.stream.StartTemp.getAvg()-elem.stream.EndTemp.getAvg()))\
                             *(elem.stream.StartTemp.getAvg()-elem.outletTemp)
     #                        print elem.outletTemp, elem.inletTemp
-                    combH[i] += stream.EnthalpyVector[i]*(elem.percentHeatFlow/100)
+                    combH[i] += stream.EnthalpyVector[i]*(float(elem.percentHeatFlow)/100)
         
         print "Combined H: ", str(sum(combH))
         return combH
@@ -309,16 +309,31 @@ class HXCombination():
             combM = [x*pinchstreams[0].percentHeatFlow/100 for x in pinchstreams[0].stream.MassFlowVector]
             
         else:
-            combM = [None]*Status.Nt
-            
-            for i in xrange(Status.Nt):
-    #            combM.append(0)
-                MassFlow = 0
-                for elem in pinchstreams:
-                    print "MassFlowVector: ", str(elem.stream.MassFlowVector[i]), str(elem.percentHeatFlow), str(MassFlow)
-                    MassFlow = MassFlow + elem.stream.MassFlowVector[i]*(elem.percentHeatFlow/100)
+            for elem in pinchstreams:
+                print "MassFlow in Combination: ", str(elem.stream.MassFlowVector[0:100])
+                print "percentHeatFlow in Combination: ", str(elem.percentHeatFlow)
                 
-                combM[i] = MassFlow 
+            combM = [0]*Status.Nt
+            for i in xrange(Status.Nt):
+                for elem in pinchstreams:
+                    combM[i] += (elem.stream.MassFlowVector[i]*(float(elem.percentHeatFlow)/100))
+                    if i < 200:
+                        print "MassFlow: " , elem.stream.MassFlowVector[i]
+                        print "PercentHeatFlow: ", float(elem.percentHeatFlow/100)
+                        print "combM: ", str(combM[i])
+                        print 
+            
+            
+#            combM = [None]*Status.Nt
+#            
+#            for i in xrange(Status.Nt):
+#    #            combM.append(0)
+#                MassFlow = 0
+#                for elem in pinchstreams:
+##                    print "MassFlowVector: ", str(elem.stream.MassFlowVector[i]), str(elem.percentHeatFlow), str(MassFlow)
+#                    MassFlow = MassFlow + elem.stream.MassFlowVector[i]*(elem.percentHeatFlow/100)
+#                
+#                combM[i] = MassFlow 
     
         return combM
 
