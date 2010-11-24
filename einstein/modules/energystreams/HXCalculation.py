@@ -148,24 +148,28 @@ class HXCombination():
 #        print "Len of Elements Pinchstream CombEnthalpy: ", str(len(pinchstreams))
         
         if len(pinchstreams)==1:
+            
             for i in xrange(Status.Nt):
-                st = pinchstreams[0].stream
-                ps = pinchstreams[0]
-                combH.append(0)
-                if st.HotColdType == "Sink" or st.HotColdType == "Cold":
-                    if ps.outletTemp != None and ps.outletTemp <= st.EndTemp.getAvg():
-                        pinchstreams[0].stream.EnthalpyVector[i] = (st.EnthalpyVector[i]/(st.EndTemp.getAvg()-st.StartTemp.getAvg()))\
-                        *(ps.outletTemp-st.StartTemp.getAvg())
-                elif st.HotColdType == "Source" or st.HotColdType == "Hot":
-                    if st.MassFlowVector[i]!=0:
-                        pinchstreams[0].outletTemp = ps.inletTemp-st.EnthalpyVector[i]/(st.MassFlowVector[i]*st.SpecHeatCap)
-                    #else:
-                        #pinchstreams[0].outletTemp = pinchstreams[0].inletTemp
-                    if ps.outletTemp != None and ps.outletTemp < st.EndTemp.getAvg() and st.StartTemp.getAvg()!=st.EndTemp.getAvg():
-                        pinchstreams[0].stream.EnthalpyVector[i] = (st.EnthalpyVector[i]/(st.StartTemp.getAvg()-st.EndTemp.getAvg()))\
-                        *(ps.inletTemp-st.EndTemp.getAvg())
-#                        print pinchstreams[0].outletTemp, pinchstreams[0].inletTemp
-                combH[i] += st.EnthalpyVector[i]*(ps.percentHeatFlow/100)
+                combH.append(pinchstreams[0].stream.EnthalpyVector[i] * pinchstreams[0].percentHeatFlow/100)
+            
+#            for i in xrange(Status.Nt):
+#                st = pinchstreams[0].stream
+#                ps = pinchstreams[0]
+#                combH.append(0)
+#                if st.HotColdType == "Sink" or st.HotColdType == "Cold":
+#                    if ps.outletTemp != None and ps.outletTemp <= st.EndTemp.getAvg():
+#                        pinchstreams[0].stream.EnthalpyVector[i] = (st.EnthalpyVector[i]/(st.EndTemp.getAvg()-st.StartTemp.getAvg()))\
+#                        *(ps.outletTemp-st.StartTemp.getAvg())
+#                elif st.HotColdType == "Source" or st.HotColdType == "Hot":
+#                    if st.MassFlowVector[i]!=0:
+#                        pinchstreams[0].outletTemp = ps.inletTemp-st.EnthalpyVector[i]/(st.MassFlowVector[i]*st.SpecHeatCap)
+#                    #else:
+#                        #pinchstreams[0].outletTemp = pinchstreams[0].inletTemp
+#                    if ps.outletTemp != None and ps.outletTemp < st.EndTemp.getAvg() and st.StartTemp.getAvg()!=st.EndTemp.getAvg():
+#                        pinchstreams[0].stream.EnthalpyVector[i] = (st.EnthalpyVector[i]/(st.StartTemp.getAvg()-st.EndTemp.getAvg()))\
+#                        *(ps.inletTemp-st.EndTemp.getAvg())
+##                        print pinchstreams[0].outletTemp, pinchstreams[0].inletTemp
+#                combH[i] += st.EnthalpyVector[i]*(ps.percentHeatFlow/100)
         else:
 
             for i in xrange(Status.Nt):

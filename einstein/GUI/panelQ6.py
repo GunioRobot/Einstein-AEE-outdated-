@@ -1096,6 +1096,18 @@ class PanelQ6(wx.Panel):
         fillChoice(self.tc6_1.entry,getInflowingStreamNamesFromDB(processId))
 
     def OnButtonHXAdd(self, event):
+#        stype = self.getActiveTab()
+#        while stype.listBox.G
+#        if stype.listBox.GetSelection() < 0:
+#            return
+#
+#        del sstream[stype.listBox.GetSelection()]
+#        stype.listBox.Delete(stype.listBox.GetSelection())
+
+        
+        self.setStreamChoiceEmpty(self.getActiveTab())
+#        self.getActiveTab().listBox.Set
+
         self.clearHX()
         self.loadOnHXChange(self.Sink, self.HXPinch.sinkstreams)
         self.loadOnHXChange(self.Source, self.HXPinch.sourcestreams)
