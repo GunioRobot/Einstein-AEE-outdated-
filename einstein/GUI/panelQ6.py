@@ -1097,13 +1097,7 @@ class PanelQ6(wx.Panel):
 
     def OnButtonHXAdd(self, event):
         stype = self.getActiveTab()
-#        while stype.listBox.GetCount() > 0:
-#            stype.listBox.Delete(0)
-#        stype.listBox.Disable()
-#        
-
         self.setStreamChoiceEmpty(self.getActiveTab())
-
         self.clearHX()
         self.loadOnHXChange(self.Sink, self.HXPinch.sinkstreams)
         self.loadOnHXChange(self.Source, self.HXPinch.sourcestreams)
