@@ -117,7 +117,7 @@ class HXCombination():
     def combineStream(self, comb, sstream):
             comb.stream = Stream()
             comb.stream.name = "CombinedStream"
-            self.loadVector(sstream)
+#            self.loadVector(sstream)
             comb.stream.EnthalpyVector = self.combineEnthalpy(sstream)
             for el in sstream:
                 el.stream.printStream()

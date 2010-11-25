@@ -420,16 +420,6 @@ class ProcessStreams(StreamUtils, StreamSet):
         self.continuousCalc = ContinuousMassFlow(self.periodSchedule)
         self.massFlow = None
 
-#    def createTestSchedule(self):
-#        stepUpProfile = profiles.WeeklyProfile("stepUpProfile", weekday=dict(zip(profiles.weekdays, len(profiles.weekdays)*[True])))
-#        stepUpProfile.addInterval(time(10,0), time(12,0),  50)
-#        stepUpProfile.addInterval(time(12,0), time(14,0), 100)
-#        stepUpSchedule = schedules.PeriodSchedule("stepUpSchedule", startup=1.7, inflow=1.7,  outflow=1.7)
-#
-#        stepUpSchedule.addPeriodProfile(start=date(2009, 1, 1), stop=date(2009,12,31), step=1, scale=100, profile=stepUpProfile)
-#        return stepUpSchedule
-
-
     def getStreams(self):
         pass
 
@@ -722,23 +712,23 @@ class ProcessStreams(StreamUtils, StreamSet):
         else:
             stream.OperatingHours = sum(stream.EnthalpyVector)/max(stream.EnthalpyVector)
 
-        self.test_stream(stream)
+#        self.test_stream(stream)
 
-    def getEnthalpyVectorStUp(self, stream):
-#        ProcessID = self.getProcessNr(stream)
-#        stream.EnthalpyVector = []
-        print "DBID: " + str(stream.DBID)
-        print "UPH_s_t: " + str(Status.int.UPH_s_t)
-        stream.EnthalpyVector = Status.int.UPH_s_t[stream.DBID]
+#    def getEnthalpyVectorStUp(self, stream):
+##        ProcessID = self.getProcessNr(stream)
+##        stream.EnthalpyVector = []
+#        print "DBID: " + str(stream.DBID)
+#        print "UPH_s_t: " + str(Status.int.UPH_s_t)
+#        stream.EnthalpyVector = Status.int.UPH_s_t[stream.DBID]
+#
+#    def getMassFlowVectorStUp(self, stream):
+#        return self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, \
+#                                      stream.EndTemp, stream.StartTemp)
 
-    def getMassFlowVectorStUp(self, stream):
-        return self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, \
-                                      stream.EndTemp, stream.StartTemp)
-
-    def test_stream(self, stream):
-        if stream.OperatingHours == None:
-            print stream.name + ": Warning! Operating Hours couldnt be calculated!"
-
+#    def test_stream(self, stream):
+#        if stream.OperatingHours == None:
+#            print stream.name + ": Warning! Operating Hours couldnt be calculated!"
+#
     def getProcessNr(self, stream):
         PId = Status.PId
         ANo = Status.ANo
@@ -752,6 +742,17 @@ class ProcessStreams(StreamUtils, StreamSet):
             id+=1
         return None
 
+
+#    def getEnthalpyVectorStUp(self, stream):
+## ProcessID = self.getProcessNr(stream)
+## stream.EnthalpyVector = []
+#        print "DBID: " + str(stream.DBID)
+#        print "UPH_s_t: " + str(Status.int.UPH_s_t)
+#        stream.EnthalpyVector = Status.int.UPH_s_t[stream.DBID]
+#
+#    def getMassFlowVectorStUp(self, stream):
+#        return self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, \
+#                                      stream.EndTemp, stream.StartTemp)
         
     def generateCircStream(self, stream):
         val = stream.BaseValues
@@ -791,15 +792,15 @@ class ProcessStreams(StreamUtils, StreamSet):
         else:
             stream.OperatingHours = sum(stream.EnthalpyVector)/max(stream.EnthalpyVector)
 
-    def getEnthalpyVectorCirc(self, stream):
-#        ProcessID = self.getProcessNr(stream)
-        stream.EnthalpyVector = Status.int.UPH_c_t[stream.DBID]
-
-    def getMassFlowVectorCirc(self, stream):
-        stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, 
-                                                       stream.SpecHeatCap, 
-                                                       stream.EndTemp, 
-                                                       stream.StartTemp)
+#    def getEnthalpyVectorCirc(self, stream):
+##        ProcessID = self.getProcessNr(stream)
+#        stream.EnthalpyVector = Status.int.UPH_c_t[stream.DBID]
+#
+#    def getMassFlowVectorCirc(self, stream):
+#        stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, 
+#                                                       stream.SpecHeatCap, 
+#                                                       stream.EndTemp, 
+#                                                       stream.StartTemp)
 
 
     def generateMaintainanceStream(self, stream):
@@ -835,15 +836,15 @@ class ProcessStreams(StreamUtils, StreamSet):
         else:
             stream.OperatingHours = sum(stream.EnthalpyVector)/max(stream.EnthalpyVector)
 
-    def getEnthalpyVectorMaintain(self, stream):
-#        ProcessID = self.getProcessNr(stream)
-        stream.EnthalpyVector = Status.int.UPH_m_t[stream.DBID]
-
-    def getMassFlowVectorMaintain(self, stream):
-        stream.MassFlowVector = self.massFlow.getMassFlowOpVector(stream.EnthalpyVector, 
-                                                                  stream.SpecHeatCap, 
-                                                                  stream.StartTemp.getAvg(), 
-                                                                  stream.EndTemp.getAvg())
+#    def getEnthalpyVectorMaintain(self, stream):
+##        ProcessID = self.getProcessNr(stream)
+#        stream.EnthalpyVector = Status.int.UPH_m_t[stream.DBID]
+#
+#    def getMassFlowVectorMaintain(self, stream):
+#        stream.MassFlowVector = self.massFlow.getMassFlowOpVector(stream.EnthalpyVector, 
+#                                                                  stream.SpecHeatCap, 
+#                                                                  stream.StartTemp.getAvg(), 
+#                                                                  stream.EndTemp.getAvg())
 
 
     def generateWHAboveCondStream(self, stream, SpecHeatCap, HeatTransferCoeff = None):
@@ -1115,7 +1116,7 @@ class DistLineStreams(StreamUtils, StreamSet):
 #                print "--CONDENSATE RECOVERY--"
                 self.generateCondensateRecoveryStream(stream)
             elif stream.DBType == STREAMTYPE[9]:
-                print "--BOILERFEEDWATER-"
+                print "generate Boilerfeedwater"
 
     def generateCondensateRecoveryStream(self, stream):
         """
@@ -1156,8 +1157,8 @@ class DistLineStreams(StreamUtils, StreamSet):
             stream.OperatingHours = sum(stream.EnthalpyVector)/max(stream.EnthalpyVector)
         #self.CondRecoveryStream.append(stream)
 
-    def getOperatingHours(self):
-        return None
+#    def getOperatingHours(self):
+#        return None
 
     def getEnthalpyVectorCondRec(self, stream):
         equipID = getEquipListperLine(stream.DBID)
@@ -1185,26 +1186,26 @@ class DistLineStreams(StreamUtils, StreamSet):
         
         return enthalpy_vector
 
-    def getMassFlowVectorCondRec(self, stream):
-        stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, 
-                                                       stream.EndTemp, stream.StartTemp)
+#    def getMassFlowVectorCondRec(self, stream):
+#        stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, 
+#                                                       stream.EndTemp, stream.StartTemp)
 
 
-    def getBFWMassFlow(self):
-        pass
+#    def getBFWMassFlow(self):
+#        pass
 
-    def getEquipmentNr(self, dbid):
-        PId = Status.PId
-        ANo = Status.ANo
-        DB = Status.DB
-        query = "Questionnaire_id = '"+str(PId)+"' AND AlternativeProposalNo ='"+str(ANo)+"'"
-        self.equipments = DB.qgenerationhc.sql_select(query)
-        id = 0
-        for equip in self.equipments:
-            if dbid == equip['QGenerationHC_ID']:
-                return id
-            id+=1
-        return None
+#    def getEquipmentNr(self, dbid):
+#        PId = Status.PId
+#        ANo = Status.ANo
+#        DB = Status.DB
+#        query = "Questionnaire_id = '"+str(PId)+"' AND AlternativeProposalNo ='"+str(ANo)+"'"
+#        self.equipments = DB.qgenerationhc.sql_select(query)
+#        id = 0
+#        for equip in self.equipments:
+#            if dbid == equip['QGenerationHC_ID']:
+#                return id
+#            id+=1
+#        return None
 
     def getCondrecMassFlow(self, DistribCircFlow, PercentRecirc):
         m_average = DistribCircFlow *(1-PercentRecirc)/3600
@@ -1213,14 +1214,14 @@ class DistLineStreams(StreamUtils, StreamSet):
 
 
 
-    def getLineFromStream(self, stream):
-        """
-        Example Usage:
-        distline.getLineFromStream(stream)
-        """
-        for line in self.lines:
-            if line['QDistributionHC_ID'] == stream.DBID:
-                print line
+#    def getLineFromStream(self, stream):
+#        """
+#        Example Usage:
+#        distline.getLineFromStream(stream)
+#        """
+#        for line in self.lines:
+#            if line['QDistributionHC_ID'] == stream.DBID:
+#                print line
 
     def __createBasicDistStream(self, name, dbid, fluidID):
         stream = Stream()
@@ -1369,15 +1370,15 @@ class WHEEStreams(StreamUtils, StreamSet):
 #            SpecHeatCap.append(stream.Enthalpy/(elem*(stream.StartTemp.getAvg()-stream.EndTemp.getAvg())))
         return SpecHeatCap
 
-    def getMediumFlow(self, QWHEE, SpecificMassFlow, stream):
-        """
-        Create return Vector
-        """
-        m_max = QWHEE * SpecificMassFlow
-        m_vector = []
-        for i in xrange(len(self.periodSchedule.getYearlyBatchInflowProfile())):
-            m_vector.append(m_max)
-        return m_max, m_vector
+#    def getMediumFlow(self, QWHEE, SpecificMassFlow, stream):
+#        """
+#        Create return Vector
+#        """
+#        m_max = QWHEE * SpecificMassFlow
+#        m_vector = []
+#        for i in xrange(len(self.periodSchedule.getYearlyBatchInflowProfile())):
+#            m_vector.append(m_max)
+#        return m_max, m_vector
 
 
     def __createBasicWHEEStream(self, name, dbid, fluidID):
@@ -1604,33 +1605,33 @@ class EquipmentStreams(StreamUtils, StreamSet):
         else:
                 stream.OperatingHours = sum(stream.EnthalpyVector)/max(stream.EnthalpyVector)
         
-    def getOperatingHoursEq(self, stream):
-        equipments = Status.prj.getEquipments()
-        for equipment in equipments:
-            if stream.DBID == equipment.QGenerationHC_ID:
-                return equipment.HPerYearEq
-        return None
+#    def getOperatingHoursEq(self, stream):
+#        equipments = Status.prj.getEquipments()
+#        for equipment in equipments:
+#            if stream.DBID == equipment.QGenerationHC_ID:
+#                return equipment.HPerYearEq
+#        return None
     
-    def getEnthalpyVectorExGas(self, stream):
-        equipID = getEquipListperLine(stream.DBID)
-        stream.EnthalpyVector = Status.int.QWHEq_t[stream.DBID]
+#    def getEnthalpyVectorExGas(self, stream):
+#        equipID = getEquipListperLine(stream.DBID)
+#        stream.EnthalpyVector = Status.int.QWHEq_t[stream.DBID]
 
-    def getMassFlowVectorExGas(self, stream):
-        stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, 
-                                                       stream.EndTemp, stream.StartTemp)
+#    def getMassFlowVectorExGas(self, stream):
+#        stream.MassFlowVector = self.getMassFlowVector(stream.EnthalpyVector, stream.SpecHeatCap, 
+#                                                       stream.EndTemp, stream.StartTemp)
 
-    def getEquipmentID(self, stream):
-        PId = Status.PId
-        ANo = Status.ANo
-        DB = Status.DB
-        query = "Questionnaire_id = '"+str(PId)+"' AND AlternativeProposalNo ='"+str(ANo)+"'"
-        self.equipments = DB.qgenerationhc.sql_select(query)
-        id = 0
-        for equip in self.equipments:
-            if stream.DBID == equip['QGenerationHC_ID']:
-                return id
-            id+=1
-        return None
+#    def getEquipmentID(self, stream):
+#        PId = Status.PId
+#        ANo = Status.ANo
+#        DB = Status.DB
+#        query = "Questionnaire_id = '"+str(PId)+"' AND AlternativeProposalNo ='"+str(ANo)+"'"
+#        self.equipments = DB.qgenerationhc.sql_select(query)
+#        id = 0
+#        for equip in self.equipments:
+#            if stream.DBID == equip['QGenerationHC_ID']:
+#                return id
+#            id+=1
+#        return None
 
     def generateExhaustGasCondStream(self, stream):
         """
@@ -1765,13 +1766,13 @@ class EquipmentStreams(StreamUtils, StreamSet):
         return m_average, m_vector
 
 
-    def getOffGasFlow(self, FuelConsum, PartLoad, Offgas):
-        FuelAmount = (FuelConsum/3600) * PartLoad
-        OffgasFlow = Offgas * FuelAmount
-#        m_vector = []
-#        for i in xrange(8760):
-#            m_vector.append(OffgasFlow)
-        return OffgasFlow#, m_vector
+#    def getOffGasFlow(self, FuelConsum, PartLoad, Offgas):
+#        FuelAmount = (FuelConsum/3600) * PartLoad
+#        OffgasFlow = Offgas * FuelAmount
+##        m_vector = []
+##        for i in xrange(8760):
+##            m_vector.append(OffgasFlow)
+#        return OffgasFlow#, m_vector
 
     def getH20Air(self, FuelConsum, CombAir, PartLoad):
         m_avg, m_vg = self.getCombustionAirMassFlow(FuelConsum, CombAir, PartLoad)
@@ -1787,10 +1788,6 @@ class EquipmentStreams(StreamUtils, StreamSet):
 #        for i in xrange(8760):
 #            m_vector.append(CombustionAir)
         return CombustionAir#, m_vector
-
-    def getOperatingHours(self):
-        return None
-
 
 
 
