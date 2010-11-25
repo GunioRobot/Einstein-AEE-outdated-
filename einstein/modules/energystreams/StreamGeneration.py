@@ -7,7 +7,7 @@ from einstein.modules.processes import Processes
 from Stream import *
 from StreamSet import *
 from ProcessStreamSet import *
-from EquipmentStreamSet import *
+
 
 
 import einstein.modules.schedules as schedules
@@ -18,6 +18,22 @@ from StreamConstants import *
 
 DEBUG = 0
 DETAILEDOUTPUT = 0
+
+def getEquipListperLine(LineID):
+    equipments = []
+
+    for equip in Status.prj.getEquipments():
+        list = str(equip.PipeDuctEquip).split(';')
+        for i in xrange(len(list)):
+            try:
+                list[i]=int(list[i])
+            except:
+                pass
+
+        if LineID in list and equip.AlternativeProposalNo == Status.ANo:
+            equipments.append(equip.QGenerationHC_ID)
+    return equipments
+
 
 def nom(v, x):
     m = max(v)
