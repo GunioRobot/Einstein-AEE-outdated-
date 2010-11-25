@@ -7,7 +7,7 @@ from Stream import *
 
 
 
-class ProcessStreamSet(StreamSet):
+class ProcessStreamSet():
     """
     Process Stream Set
     """
@@ -22,7 +22,7 @@ class ProcessStreamSet(StreamSet):
         massFlowCalculation can be the classes BatchMassFlow or ContinuousMassFlow
         """
 
-        StreamSet.__init__(self, periodSchedule)
+#        StreamSet.__init__(self, periodSchedule)
         self.massFlow = massFlowCalculation
         self.VInflowCycle = None
         self.mInflowNom = None

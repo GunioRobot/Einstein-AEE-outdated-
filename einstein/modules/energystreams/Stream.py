@@ -31,7 +31,7 @@ from einstein.modules.constants import *
 #from einstein.modules.schedules import *
 #from einstein.modules.schedules import Schedules, PeriodSchedule
 import uuid
-from StreamSet import StreamSet
+#from StreamSet import StreamSet
 from StreamConstants import *
 
 

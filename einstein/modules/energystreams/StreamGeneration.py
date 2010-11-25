@@ -5,7 +5,7 @@ __date__ ="$13.08.2010 09:27:36$"
 
 from einstein.modules.processes import Processes
 from Stream import *
-from StreamSet import *
+#from StreamSet import *
 from ProcessStreamSet import *
 
 
@@ -711,6 +711,7 @@ class ProcessStreams(StreamUtils, StreamSet):
             stream.OperatingHours=0
         else:
             stream.OperatingHours = sum(stream.EnthalpyVector)/max(stream.EnthalpyVector)
+
 
 #
     def getProcessNr(self, stream):

@@ -150,7 +150,7 @@ from dialogImport import DialogImport
 from einstein.GUI.status import Status #processing status of the tool
 
 #from einstein.modules.energystreams.ProcessBatch import ProcessBatch
-from einstein.modules.energystreams.EquipmentStreamSet import *
+#from einstein.modules.energystreams.EquipmentStreamSet import *
 from einstein.modules.energystreams.Stream import *
 from einstein.modules.energystreams.HXCalculation import *
 from einstein.modules.energystreams.HXProposal import *
